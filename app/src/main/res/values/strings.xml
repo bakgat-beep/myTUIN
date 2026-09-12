@@ -1,3 +1,20 @@
 <resources>
-    <string name="app_name">My Application</string>
+    <string name="app_name">myTUIN</string>
+
+    <string name="nav_home">Home</string>
+    <string name="nav_garden">Garden</string>
+    <string name="nav_plants">Plants</string>
+    <string name="nav_planner">Planner</string>
+    <string name="nav_inbox">Inbox</string>
+
+    <string name="add_action_content_description">Add</string>
+    <string name="add_sheet_title">Add</string>
+    <string name="add_option_plant">Plant</string>
+    <string name="add_option_water">Water</string>
+    <string name="add_option_harvest">Harvest</string>
+    <string name="add_option_observe">Observe</string>
+    <string name="add_option_feed">Feed</string>
+    <string name="add_option_prune">Prune</string>
+    <string name="add_option_intervention">Intervention</string>
+    <string name="add_option_more">More</string>
 </resources>
