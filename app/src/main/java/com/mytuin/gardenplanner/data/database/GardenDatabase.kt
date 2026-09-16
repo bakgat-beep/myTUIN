@@ -18,6 +18,19 @@ import com.mytuin.gardenplanner.data.entities.PlantAliasEntity
 import com.mytuin.gardenplanner.data.entities.PlantEntity
 
 /**
+ * The current database schema version.
+ *
+ * Single source of truth (A79=a). Referenced from the @Database
+ * annotation below, and from the diagnostic footer. The two cannot
+ * drift.
+ *
+ * PHASE_0_PROJECT_FOUNDATION §30 item 5, §31 (Project).
+ * RELEASE_AND_VERSIONING §29: application version and schema version
+ * are related but separate.
+ */
+const val GARDEN_DATABASE_VERSION: Int = 3
+
+/**
  * The V1 Room database.
  *
  * Schema version history:
@@ -25,8 +38,8 @@ import com.mytuin.gardenplanner.data.entities.PlantEntity
  *   v2 — adds GrowingSpace (step 5c).
  *   v3 — adds GrowingSpaceHistory (step 5d, DEC-041).
  *
- * Both migrations are @AutoMigration (A60b=a, A72). Room derives the
- * SQL from the schema diff at compile time.
+ * Both migrations are @AutoMigration. Room derives the SQL from the
+ * schema diff at compile time.
  *
  * fallbackToDestructiveMigration is never used.
  */
@@ -39,7 +52,7 @@ import com.mytuin.gardenplanner.data.entities.PlantEntity
         PlantAliasEntity::class,
         CultivarEntity::class,
     ],
-    version = 3,
+    version = GARDEN_DATABASE_VERSION,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
