@@ -1,6 +1,6 @@
 package com.mytuin.gardenplanner.domain.vocabulary
 
-enum class RecordStatus(val id: String) {
+enum class RecordStatus(override val id: String) : VocabularyValue {
     DRAFT("draft"),
     ACTIVE("active"),
     INACTIVE("inactive"),

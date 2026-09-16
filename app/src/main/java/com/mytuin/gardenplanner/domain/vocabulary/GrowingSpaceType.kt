@@ -10,7 +10,7 @@ package com.mytuin.gardenplanner.domain.vocabulary
  * Canonical ids only (DEC-040). Domain layer: no Android, Compose,
  * Room or Hilt dependencies.
  */
-enum class GrowingSpaceType(val id: String) {
+enum class GrowingSpaceType(override val id: String) : VocabularyValue {
     GARDEN_BED("garden_bed"),
     RAISED_BED("raised_bed"),
     IN_GROUND_BED("in_ground_bed"),
