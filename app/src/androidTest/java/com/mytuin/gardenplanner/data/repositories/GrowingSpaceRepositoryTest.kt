@@ -24,6 +24,7 @@ import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import com.mytuin.gardenplanner.platform.identifiers.UuidIdGenerator
 
 @RunWith(AndroidJUnit4::class)
 class GrowingSpaceRepositoryTest {
@@ -39,7 +40,12 @@ class GrowingSpaceRepositoryTest {
         db = Room.inMemoryDatabaseBuilder(context, GardenDatabase::class.java)
             .addCallback(GardenDatabaseFactory.foreignKeysCallback)
             .build()
-        repository = GrowingSpaceRepositoryImpl(growingSpaceDao = db.growingSpaceDao())
+        repository = GrowingSpaceRepositoryImpl(
+            db = db,
+            growingSpaceDao = db.growingSpaceDao(),
+            growingSpaceHistoryDao = db.growingSpaceHistoryDao(),
+            idGenerator = com.mytuin.gardenplanner.platform.identifiers.UuidIdGenerator(),
+        )
 
         db.gardenDao().insert(sampleGarden())
     }

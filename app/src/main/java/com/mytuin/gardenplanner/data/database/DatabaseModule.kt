@@ -4,6 +4,7 @@ import android.content.Context
 import com.mytuin.gardenplanner.data.dao.CultivarDao
 import com.mytuin.gardenplanner.data.dao.GardenDao
 import com.mytuin.gardenplanner.data.dao.GrowingSpaceDao
+import com.mytuin.gardenplanner.data.dao.GrowingSpaceHistoryDao
 import com.mytuin.gardenplanner.data.dao.PlantAliasDao
 import com.mytuin.gardenplanner.data.dao.PlantDao
 import dagger.Module
@@ -28,6 +29,10 @@ object DatabaseModule {
 
     @Provides
     fun provideGrowingSpaceDao(db: GardenDatabase): GrowingSpaceDao = db.growingSpaceDao()
+
+    @Provides
+    fun provideGrowingSpaceHistoryDao(db: GardenDatabase): GrowingSpaceHistoryDao =
+        db.growingSpaceHistoryDao()
 
     @Provides
     fun providePlantDao(db: GardenDatabase): PlantDao = db.plantDao()

@@ -44,7 +44,7 @@ fun GrowingSpace.toEntity(): GrowingSpaceEntity = GrowingSpaceEntity(
     notes = notes,
 )
 
-private fun geometryFromEntity(
+internal fun geometryFromEntity(
     type: GeometryType?,
     data: String?,
 ): Geometry? {
