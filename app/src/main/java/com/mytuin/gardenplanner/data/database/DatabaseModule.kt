@@ -10,6 +10,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
+import com.mytuin.gardenplanner.data.dao.GardenDao
 
 /**
  * Provides the Room database and its DAOs.
@@ -33,6 +34,9 @@ object DatabaseModule {
 
     @Provides
     fun providePlantDao(db: GardenDatabase): PlantDao = db.plantDao()
+
+    @Provides
+    fun provideGardenDao(db: GardenDatabase): GardenDao = db.gardenDao()
 
     @Provides
     fun providePlantAliasDao(db: GardenDatabase): PlantAliasDao = db.plantAliasDao()

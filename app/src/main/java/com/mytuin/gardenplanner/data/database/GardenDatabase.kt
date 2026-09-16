@@ -10,6 +10,7 @@ import com.mytuin.gardenplanner.data.entities.CultivarEntity
 import com.mytuin.gardenplanner.data.entities.GardenEntity
 import com.mytuin.gardenplanner.data.entities.PlantAliasEntity
 import com.mytuin.gardenplanner.data.entities.PlantEntity
+import com.mytuin.gardenplanner.data.dao.GardenDao
 
 /**
  * The V1 Room database.
@@ -45,4 +46,6 @@ abstract class GardenDatabase : RoomDatabase() {
     abstract fun plantDao(): PlantDao
     abstract fun plantAliasDao(): PlantAliasDao
     abstract fun cultivarDao(): CultivarDao
+
+    abstract fun gardenDao(): GardenDao
 }
