@@ -1,5 +1,6 @@
 package com.mytuin.gardenplanner.testdoubles
 
+import com.mytuin.gardenplanner.domain.error.NotFoundError
 import com.mytuin.gardenplanner.domain.model.garden.Geometry
 import com.mytuin.gardenplanner.domain.model.garden.GrowingSpace
 import com.mytuin.gardenplanner.domain.repository.GrowingSpaceRepository
@@ -39,7 +40,8 @@ class FakeGrowingSpaceRepository : GrowingSpaceRepository {
         reason: String?,
     ) {
         if (store.value.none { it.id == id }) {
-            error("GrowingSpace not found: $id")
+            // A101: match the real repository's error type.
+            throw NotFoundError("GrowingSpace", id)
         }
         updateCalls.add(UpdateGeometryCall(id, newGeometry, effectiveAt, reason))
         store.value = store.value.map { space ->

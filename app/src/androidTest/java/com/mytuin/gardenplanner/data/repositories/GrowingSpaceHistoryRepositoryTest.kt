@@ -20,9 +20,11 @@ import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import com.mytuin.gardenplanner.domain.error.NotFoundError
 
 @RunWith(AndroidJUnit4::class)
 class GrowingSpaceHistoryRepositoryTest {
@@ -154,8 +156,11 @@ class GrowingSpaceHistoryRepositoryTest {
                 effectiveAt = 1_700_000_500_000L,
                 reason = null,
             )
-        } catch (expected: IllegalStateException) {
-            // expected
+            fail("Expected NotFoundError; updateGeometry succeeded")
+        } catch (expected: NotFoundError) {
+            // A98: surfaced as a structured DomainError.
+            assertEquals("GrowingSpace", expected.entityType)
+            assertEquals("growingspace_does_not_exist", expected.id)
         }
 
         assertEquals(0, historyRepository.getHistoryForSpace(spaceId).size)

@@ -18,9 +18,11 @@ import javax.inject.Inject
  * new id.
  *
  * The garden_id foreign key is enforced by Room. If the caller passes
- * a gardenId that does not refer to an existing Garden, the insert
- * throws SQLiteConstraintException (A25=C: exceptions, not a
- * structured Result type).
+ * a gardenId that does not refer to an existing Garden, the repository
+ * throws ValidationError (field = "garden_id"). A25=C: exceptions,
+ * not a structured Result type. A98: the repository wraps low-level
+ * exceptions; callers above this layer never see
+ * SQLiteConstraintException.
  */
 class CreateGrowingSpace @Inject constructor(
     private val repository: GrowingSpaceRepository,

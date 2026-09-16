@@ -25,6 +25,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import com.mytuin.gardenplanner.platform.identifiers.UuidIdGenerator
+import com.mytuin.gardenplanner.domain.error.ValidationError
 
 @RunWith(AndroidJUnit4::class)
 class GrowingSpaceRepositoryTest {
@@ -76,9 +77,11 @@ class GrowingSpaceRepositoryTest {
         )
         try {
             repository.insert(orphan)
-            fail("Expected foreign-key violation; insert succeeded")
-        } catch (expected: android.database.sqlite.SQLiteConstraintException) {
-            // V1_DATABASE_SCHEMA §67: FK enforced.
+            fail("Expected ValidationError; insert succeeded")
+        } catch (expected: ValidationError) {
+            // V1_DATABASE_SCHEMA §67: FK enforced. A98: surfaced as a
+            // structured DomainError, not raw SQLiteConstraintException.
+            assertEquals("garden_id", expected.field)
         }
     }
 

@@ -1,7 +1,9 @@
 package com.mytuin.gardenplanner.platform.di
 
+import com.mytuin.gardenplanner.domain.files.FileAccess
 import com.mytuin.gardenplanner.domain.identifiers.IdGenerator
 import com.mytuin.gardenplanner.domain.time.Clock
+import com.mytuin.gardenplanner.platform.files.AndroidFileAccess
 import com.mytuin.gardenplanner.platform.identifiers.UuidIdGenerator
 import com.mytuin.gardenplanner.platform.time.SystemClock
 import dagger.Binds
@@ -26,4 +28,8 @@ abstract class PlatformModule {
     @Binds
     @Singleton
     abstract fun bindClock(impl: SystemClock): Clock
+
+    @Binds
+    @Singleton
+    abstract fun bindFileAccess(impl: AndroidFileAccess): FileAccess
 }

@@ -1,10 +1,13 @@
 package com.mytuin.gardenplanner.data.repositories
 
+import android.database.sqlite.SQLiteConstraintException
 import androidx.room.withTransaction
 import com.mytuin.gardenplanner.data.dao.GrowingSpaceDao
 import com.mytuin.gardenplanner.data.dao.GrowingSpaceHistoryDao
 import com.mytuin.gardenplanner.data.database.GardenDatabase
 import com.mytuin.gardenplanner.data.entities.GrowingSpaceHistoryEntity
+import com.mytuin.gardenplanner.domain.error.NotFoundError
+import com.mytuin.gardenplanner.domain.error.ValidationError
 import com.mytuin.gardenplanner.domain.identifiers.IdGenerator
 import com.mytuin.gardenplanner.domain.model.garden.Geometry
 import com.mytuin.gardenplanner.domain.model.garden.GrowingSpace
@@ -16,9 +19,14 @@ import javax.inject.Inject
 /**
  * Room-backed GrowingSpace repository.
  *
- * updateGeometry runs inside GardenDatabase.withTransaction (A67=a,
- * A73). The transaction writes the prior state to growing_space_history
- * (DEC-041) and updates the current row, atomically.
+ * A98=a: the repository is the boundary between the domain and
+ * infrastructure. Low-level exceptions from Room are caught here and
+ * re-thrown as DomainError subclasses; callers above this layer never
+ * see SQLiteConstraintException.
+ *
+ * updateGeometry runs inside GardenDatabase.withTransaction (A67=a).
+ * A missing space throws NotFoundError before any write occurs, so
+ * the transaction is left untouched and history remains consistent.
  *
  * GardenDatabase is injected directly because Room's withTransaction
  * is a method on RoomDatabase, not on a DAO.
@@ -40,8 +48,21 @@ class GrowingSpaceRepositoryImpl @Inject constructor(
     override suspend fun getGrowingSpace(id: String): GrowingSpace? =
         growingSpaceDao.getById(id)?.toDomain()
 
-    override suspend fun insert(growingSpace: GrowingSpace) =
-        growingSpaceDao.insert(growingSpace.toEntity())
+    override suspend fun insert(growingSpace: GrowingSpace) {
+        try {
+            growingSpaceDao.insert(growingSpace.toEntity())
+        } catch (e: SQLiteConstraintException) {
+            // The GrowingSpace table has exactly one foreign key
+            // (garden_id) and no unique constraint today. A constraint
+            // failure on insert therefore means the referenced garden
+            // does not exist. When additional constraints are added,
+            // this attribution needs refining — inspect e.message.
+            throw ValidationError(
+                field = "garden_id",
+                reason = e.message ?: "constraint violation",
+            )
+        }
+    }
 
     override suspend fun updateGeometry(
         id: String,
@@ -51,7 +72,7 @@ class GrowingSpaceRepositoryImpl @Inject constructor(
     ) {
         db.withTransaction {
             val current = growingSpaceDao.getById(id)
-                ?: error("GrowingSpace not found: $id")
+                ?: throw NotFoundError("GrowingSpace", id)
 
             val previousHistory = growingSpaceHistoryDao.getLatestForSpace(id)
             val validFrom = previousHistory?.valid_to ?: current.created_at
