@@ -1,7 +1,9 @@
 package com.mytuin.gardenplanner.data.repositories
 
 import com.mytuin.gardenplanner.data.dao.GardenDao
+import com.mytuin.gardenplanner.domain.error.NotFoundError
 import com.mytuin.gardenplanner.domain.model.garden.Garden
+import com.mytuin.gardenplanner.domain.model.garden.NewGardenLocation
 import com.mytuin.gardenplanner.domain.repository.GardenRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -22,4 +24,25 @@ class GardenRepositoryImpl @Inject constructor(
 
     override suspend fun insert(garden: Garden) =
         gardenDao.insert(garden.toEntity())
+
+    override suspend fun updateLocation(
+        id: String,
+        location: NewGardenLocation,
+        updatedAt: Long,
+    ) {
+        val rows = gardenDao.updateLocation(
+            id = id,
+            countryCode = location.countryCode,
+            region = location.region,
+            locality = location.locality,
+            latitude = location.latitude,
+            longitude = location.longitude,
+            timezone = location.timezone,
+            hemisphere = location.hemisphere,
+            updatedAt = updatedAt,
+        )
+        if (rows == 0) {
+            throw NotFoundError("Garden", id)
+        }
+    }
 }

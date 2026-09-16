@@ -15,9 +15,12 @@ import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import com.mytuin.gardenplanner.domain.error.NotFoundError
+import com.mytuin.gardenplanner.domain.model.garden.NewGardenLocation
 
 /**
  * Repository tests for the Garden read/write path.
@@ -114,6 +117,94 @@ class GardenRepositoryTest {
         repository.insert(sampleGarden().copy(id = "garden_00000000-0000-0000-0000-000000000001"))
         repository.insert(sampleGarden().copy(id = "garden_00000000-0000-0000-0000-000000000002"))
         assertEquals(2, repository.observeGardens().first().size)
+    }
+
+    @Test
+    fun updateLocation_replaces_all_seven_location_fields() = runBlocking {
+        val garden = sampleGarden()
+        repository.insert(garden)
+
+        repository.updateLocation(
+            id = garden.id,
+            location = NewGardenLocation(
+                countryCode = "AU",
+                region = "Victoria",
+                locality = "Melbourne",
+                latitude = -37.8136,
+                longitude = 144.9631,
+                timezone = "Australia/Melbourne",
+                hemisphere = Hemisphere.SOUTHERN,
+            ),
+            updatedAt = 1_700_000_500_000L,
+        )
+
+        val updated = repository.getGarden(garden.id)!!
+        assertEquals("AU", updated.countryCode)
+        assertEquals("Victoria", updated.region)
+        assertEquals("Melbourne", updated.locality)
+        assertEquals(-37.8136, updated.latitude!!, 0.0)
+        assertEquals(144.9631, updated.longitude!!, 0.0)
+        assertEquals("Australia/Melbourne", updated.timezone)
+        assertEquals(Hemisphere.SOUTHERN, updated.hemisphere)
+        assertEquals(1_700_000_500_000L, updated.updatedAt)
+    }
+
+    @Test
+    fun updateLocation_leaves_id_name_description_status_and_createdAt_alone() = runBlocking {
+        val garden = sampleGarden()
+        repository.insert(garden)
+
+        repository.updateLocation(
+            id = garden.id,
+            location = NewGardenLocation(
+                countryCode = "AU",
+                hemisphere = Hemisphere.SOUTHERN,
+            ),
+            updatedAt = 1_700_000_500_000L,
+        )
+
+        val updated = repository.getGarden(garden.id)!!
+        assertEquals(garden.id, updated.id)
+        assertEquals(garden.name, updated.name)
+        assertEquals(garden.description, updated.description)
+        assertEquals(garden.status, updated.status)
+        assertEquals(garden.createdAt, updated.createdAt)
+    }
+
+    @Test
+    fun updateLocation_with_nulls_clears_existing_values() = runBlocking {
+        val garden = sampleGarden()
+        repository.insert(garden)
+
+        repository.updateLocation(
+            id = garden.id,
+            location = NewGardenLocation(),
+            updatedAt = 1_700_000_500_000L,
+        )
+
+        val updated = repository.getGarden(garden.id)!!
+        assertNull(updated.countryCode)
+        assertNull(updated.region)
+        assertNull(updated.locality)
+        assertNull(updated.latitude)
+        assertNull(updated.longitude)
+        assertNull(updated.timezone)
+        assertEquals(Hemisphere.UNKNOWN, updated.hemisphere)
+    }
+
+    @Test
+    fun updateLocation_throws_NotFoundError_when_garden_does_not_exist() = runBlocking {
+        try {
+            repository.updateLocation(
+                id = "garden_does_not_exist",
+                location = NewGardenLocation(hemisphere = Hemisphere.SOUTHERN),
+                updatedAt = 1_700_000_500_000L,
+            )
+            fail("Expected NotFoundError; updateLocation succeeded")
+        } catch (expected: NotFoundError) {
+            assertEquals("Garden", expected.entityType)
+            assertEquals("garden_does_not_exist", expected.id)
+        }
     }
 
     private fun sampleGarden(): Garden = Garden(

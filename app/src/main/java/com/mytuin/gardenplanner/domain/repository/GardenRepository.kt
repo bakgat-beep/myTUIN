@@ -1,19 +1,18 @@
 package com.mytuin.gardenplanner.domain.repository
 
 import com.mytuin.gardenplanner.domain.model.garden.Garden
+import com.mytuin.gardenplanner.domain.model.garden.NewGardenLocation
 import kotlinx.coroutines.flow.Flow
 
 /**
  * Repository interface for Garden.
  *
- * V1_TECHNICAL_ARCHITECTURE §9. Interface in the domain; implementation
- * in data/. Read methods mirror PlantRepository (A43=A).
+ * A125=a: updateLocation takes the id, the new location, and the
+ * effective updatedAt. It replaces the seven location fields on the
+ * row; a null field overwrites. It does not touch id, name,
+ * description, status, or createdAt.
  *
- * List queries return Flow; point lookups return suspend (A24).
- *
- * No uniqueness constraint on Garden name (A45; V1_DATABASE_SCHEMA §11
- * does not require it; DATA_MODEL §4 says renaming does not change
- * identity).
+ * A127=a: throws NotFoundError if no Garden with [id] exists.
  */
 interface GardenRepository {
 
@@ -24,4 +23,10 @@ interface GardenRepository {
     suspend fun getGarden(id: String): Garden?
 
     suspend fun insert(garden: Garden)
+
+    suspend fun updateLocation(
+        id: String,
+        location: NewGardenLocation,
+        updatedAt: Long,
+    )
 }
