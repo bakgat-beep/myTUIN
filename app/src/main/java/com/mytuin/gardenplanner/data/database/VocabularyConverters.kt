@@ -1,6 +1,8 @@
 package com.mytuin.gardenplanner.data.database
 
 import androidx.room.TypeConverter
+import com.mytuin.gardenplanner.domain.vocabulary.GeometryType
+import com.mytuin.gardenplanner.domain.vocabulary.GrowingSpaceType
 import com.mytuin.gardenplanner.domain.vocabulary.Hemisphere
 import com.mytuin.gardenplanner.domain.vocabulary.PlantAliasType
 import com.mytuin.gardenplanner.domain.vocabulary.PlantLifecycle
@@ -46,4 +48,20 @@ class VocabularyConverters {
     fun idToPlantAliasType(id: String): PlantAliasType =
         PlantAliasType.fromId(id)
             ?: error("Unknown PlantAliasType id stored in database: '$id'")
+
+    @TypeConverter
+    fun growingSpaceTypeToId(value: GrowingSpaceType): String = value.id
+
+    @TypeConverter
+    fun idToGrowingSpaceType(id: String): GrowingSpaceType =
+        GrowingSpaceType.fromId(id)
+            ?: error("Unknown GrowingSpaceType id stored in database: '$id'")
+
+    @TypeConverter
+    fun geometryTypeToId(value: GeometryType): String = value.id
+
+    @TypeConverter
+    fun idToGeometryType(id: String): GeometryType =
+        GeometryType.fromId(id)
+            ?: error("Unknown GeometryType id stored in database: '$id'")
 }
