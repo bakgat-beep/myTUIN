@@ -4,16 +4,24 @@ import android.content.Context
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.mytuin.gardenplanner.data.database.seed.SeedCallback
 
 /**
  * The point at which the Room database is constructed.
  *
- * The overload accepting a [name] parameter exists for the vertical
- * slice test (A74), which needs a real file-backed database under an
- * isolated name.
+ * The overload accepting a [name] parameter exists for tests that
+ * need a real file-backed database under an isolated name.
  *
- * V1_DATABASE_SCHEMA.md §67 requires foreign keys to be enforced
- * where practical. SQLite does not enable them by default.
+ * Two callbacks are registered:
+ *   - foreignKeysCallback: enables SQLite foreign-key enforcement
+ *     (D11; V1_DATABASE_SCHEMA §67).
+ *   - SeedCallback: applies SeedData on first creation
+ *     (§11, §30 item 12).
+ *
+ * Room accepts multiple callbacks; both run on the appropriate
+ * lifecycle event.
+ *
+ * fallbackToDestructiveMigration is never used.
  */
 object GardenDatabaseFactory {
 
@@ -29,6 +37,7 @@ object GardenDatabaseFactory {
             name,
         )
             .addCallback(foreignKeysCallback)
+            .addCallback(SeedCallback)
             .build()
 
     val foreignKeysCallback: RoomDatabase.Callback = object : RoomDatabase.Callback() {
