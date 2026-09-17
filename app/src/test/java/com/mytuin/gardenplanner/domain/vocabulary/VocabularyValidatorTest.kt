@@ -1,15 +1,15 @@
 package com.mytuin.gardenplanner.domain.vocabulary
 
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
 
 /**
  * Tests for VocabularyValidator.
  *
  * PHASE_0_PROJECT_FOUNDATION §31 (Vocabulary); DEC-040.
- * A93: pure JVM unit tests, no Android runtime.
- * A94: six cases, as specified.
+ * A140=c: this is the JUnit 5 exemplar. Other src/test tests remain
+ * on JUnit 4, running under the vintage engine.
  */
 class VocabularyValidatorTest {
 
@@ -27,8 +27,8 @@ class VocabularyValidatorTest {
         allVocabularies.forEach { vocabulary ->
             vocabulary.forEach { value ->
                 assertTrue(
-                    "expected '${value.id}' to be valid in its vocabulary",
                     VocabularyValidator.isValid(vocabulary, value.id),
+                    "expected '${value.id}' to be valid in its vocabulary",
                 )
             }
         }
@@ -40,9 +40,9 @@ class VocabularyValidatorTest {
             val ids = vocabulary.map { it.id }
             val unique = ids.toSet()
             assertTrue(
+                ids.size == unique.size,
                 "vocabulary #$index contains duplicate ids: " +
                         ids.groupBy { it }.filterValues { it.size > 1 }.keys,
-                ids.size == unique.size,
             )
         }
     }
@@ -53,8 +53,8 @@ class VocabularyValidatorTest {
         allVocabularies.forEach { vocabulary ->
             vocabulary.forEach { value ->
                 assertTrue(
-                    "id '${value.id}' does not match lowercase snake_case",
                     pattern.matches(value.id),
+                    "id '${value.id}' does not match lowercase snake_case",
                 )
             }
         }
@@ -79,7 +79,6 @@ class VocabularyValidatorTest {
 
     @Test
     fun unknown_is_a_valid_id_for_hemisphere() {
-        // A88: "unknown" is a canonical value, not an error.
         assertTrue(VocabularyValidator.isValid(Hemisphere.entries, "unknown"))
     }
 }
