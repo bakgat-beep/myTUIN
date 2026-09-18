@@ -25,4 +25,20 @@
     <string name="poc_map_edit">Edit geometry</string>
     <string name="poc_map_finish_editing">Finish editing</string>
     <string name="poc_map_reset">Reset</string>
+
+    <string name="empty_home_title">Your garden at a glance</string>
+    <string name="empty_home_description">Priorities, upcoming work and recent activity will appear here.</string>
+    <string name="empty_garden_title">Your garden spaces</string>
+    <string name="empty_garden_description">Areas and growing spaces will appear here.</string>
+    <string name="empty_plants_title">Your plant records</string>
+    <string name="empty_plants_description">Plants you add will appear here.</string>
+    <string name="empty_planner_title">Your garden plans</string>
+    <string name="empty_planner_description">Plans for future work will appear here.</string>
+    <string name="empty_inbox_title">Garden items needing attention</string>
+    <string name="empty_inbox_description">Items your garden brings to your attention will appear here.</string>
+
+    <string name="error_retry">Retry</string>
+    <string name="error_details_show">Details</string>
+    <string name="error_details_hide">Hide details</string>
+    <string name="error_default_message">We couldn\'t load that.</string>
 </resources>
