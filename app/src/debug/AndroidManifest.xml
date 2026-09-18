@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+      Debug-only INTERNET permission.
+
+      The MapLibre proof of concept (step 6h) loads MapLibre's demo
+      style from demotiles.maplibre.org. The release manifest does not
+      declare INTERNET, preserving PHASE_0_PROJECT_FOUNDATION §3.1's
+      offline-first principle for production. When offline tiles are
+      bundled (a later step), this debug manifest is deleted.
+    -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+</manifest>
