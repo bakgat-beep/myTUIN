@@ -3,6 +3,8 @@ package com.mytuin.gardenplanner.domain.vocabulary
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import com.mytuin.gardenplanner.domain.display.ThemeMode
+import com.mytuin.gardenplanner.domain.display.UnitSystem
 
 /**
  * Tests for VocabularyValidator.
@@ -23,6 +25,8 @@ class VocabularyValidatorTest {
         GardenPriority.entries,
         GardenPreferenceKey.entries,
         GardenPlantPreferenceKind.entries,
+        ThemeMode.entries,
+        UnitSystem.entries,
     )
 
     @Test

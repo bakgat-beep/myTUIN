@@ -78,6 +78,7 @@ dependencies {
     implementation(libs.hilt.android)
     implementation(libs.maplibre.android.sdk)
     implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.datastore.preferences)
 
     ksp(libs.hilt.android.compiler)
 
