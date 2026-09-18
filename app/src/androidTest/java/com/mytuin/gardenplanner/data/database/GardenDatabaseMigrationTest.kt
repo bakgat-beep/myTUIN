@@ -9,21 +9,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
-/**
- * Migration test harness.
- *
- * PHASE_0_PROJECT_FOUNDATION §30 item 8; DATA_MIGRATION_STRATEGY
- * §43–§46, §98.
- *
- * The three original fixtures now chain 1→3 (both auto-migrations).
- * A fourth exercises 2→3 directly. Together they cover every supported
- * source schema.
- *
- * validateDroppedTables = true: the helper fails if any table present
- * at the source schema is missing at the target without an explicit
- * drop. Our migrations only add tables, so this passes trivially and
- * guards against future accidental drops.
- */
 @RunWith(AndroidJUnit4::class)
 class GardenDatabaseMigrationTest {
 
@@ -34,12 +19,17 @@ class GardenDatabaseMigrationTest {
     )
 
     @Test
-    fun empty_database_fixture_migrates_from_v1_to_v3() {
+    fun empty_database_fixture_migrates_from_v1_to_v4() {
         helper.createDatabase("empty-fixture", 1).close()
 
-        val migrated = helper.runMigrationsAndValidate("empty-fixture", 3, true)
+        val migrated = helper.runMigrationsAndValidate("empty-fixture", 4, true)
 
-        listOf("growing_space", "growing_space_history").forEach { table ->
+        listOf(
+            "growing_space",
+            "growing_space_history",
+            "garden_preference",
+            "garden_plant_preference",
+        ).forEach { table ->
             migrated.query(
                 "SELECT name FROM sqlite_master WHERE type = 'table' AND name = '$table'"
             ).use { cursor ->
@@ -50,7 +40,7 @@ class GardenDatabaseMigrationTest {
     }
 
     @Test
-    fun minimal_garden_fixture_migrates_from_v1_to_v3_with_data_intact() {
+    fun minimal_garden_fixture_migrates_from_v1_to_v4_with_data_intact() {
         helper.createDatabase("minimal-garden-fixture", 1).apply {
             execSQL(
                 """
@@ -69,7 +59,7 @@ class GardenDatabaseMigrationTest {
             close()
         }
 
-        val migrated = helper.runMigrationsAndValidate("minimal-garden-fixture", 3, true)
+        val migrated = helper.runMigrationsAndValidate("minimal-garden-fixture", 4, true)
 
         migrated.query(
             "SELECT name FROM garden WHERE id = 'garden_test_minimal'"
@@ -81,7 +71,7 @@ class GardenDatabaseMigrationTest {
     }
 
     @Test
-    fun representative_garden_fixture_migrates_from_v1_to_v3_with_full_row_intact() {
+    fun representative_garden_fixture_migrates_from_v1_to_v4_with_full_row_intact() {
         helper.createDatabase("representative-garden-fixture", 1).apply {
             execSQL(
                 """
@@ -110,7 +100,7 @@ class GardenDatabaseMigrationTest {
         }
 
         val migrated = helper.runMigrationsAndValidate(
-            "representative-garden-fixture", 3, true
+            "representative-garden-fixture", 4, true
         )
 
         migrated.query(
@@ -139,7 +129,7 @@ class GardenDatabaseMigrationTest {
     }
 
     @Test
-    fun fixture_migrates_from_v2_to_v3_with_growing_space_intact() {
+    fun fixture_migrates_from_v2_to_v4_with_growing_space_intact() {
         helper.createDatabase("v2-fixture", 2).apply {
             execSQL(
                 """
@@ -176,7 +166,7 @@ class GardenDatabaseMigrationTest {
             close()
         }
 
-        val migrated = helper.runMigrationsAndValidate("v2-fixture", 3, true)
+        val migrated = helper.runMigrationsAndValidate("v2-fixture", 4, true)
 
         migrated.query(
             """
@@ -185,7 +175,7 @@ class GardenDatabaseMigrationTest {
             WHERE id = 'growingspace_test_v2'
             """.trimIndent()
         ).use { cursor ->
-            assertTrue("v2 growing_space row must survive 2→3 migration", cursor.moveToFirst())
+            assertTrue("v2 growing_space row must survive migration", cursor.moveToFirst())
             assertEquals("V2 Bed", cursor.getString(0))
             assertEquals("raised_bed", cursor.getString(1))
             assertEquals("point", cursor.getString(2))
@@ -194,10 +184,72 @@ class GardenDatabaseMigrationTest {
                 cursor.getString(3),
             )
         }
+        migrated.close()
+    }
+
+    @Test
+    fun fixture_migrates_from_v3_to_v4_with_history_intact() {
+        helper.createDatabase("v3-fixture", 3).apply {
+            execSQL(
+                """
+                INSERT INTO garden (
+                    id, name, created_at, updated_at, status, hemisphere
+                ) VALUES (
+                    'garden_test_v3',
+                    'V3 Garden',
+                    1700000000000,
+                    1700000000000,
+                    'draft',
+                    'unknown'
+                )
+                """.trimIndent()
+            )
+            execSQL(
+                """
+                INSERT INTO growing_space (
+                    id, garden_id, name, space_type, status,
+                    created_at, updated_at
+                ) VALUES (
+                    'growingspace_test_v3',
+                    'garden_test_v3',
+                    'V3 Bed',
+                    'raised_bed',
+                    'active',
+                    1700000000000,
+                    1700000000000
+                )
+                """.trimIndent()
+            )
+            execSQL(
+                """
+                INSERT INTO growing_space_history (
+                    id, growing_space_id, valid_from, valid_to, recorded_at
+                ) VALUES (
+                    'growingspacehistory_test_v3',
+                    'growingspace_test_v3',
+                    1700000000000,
+                    1700000500000,
+                    1700000500000
+                )
+                """.trimIndent()
+            )
+            close()
+        }
+
+        val migrated = helper.runMigrationsAndValidate("v3-fixture", 4, true)
+
         migrated.query(
-            "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'growing_space_history'"
+            """
+            SELECT id, growing_space_id, valid_from, valid_to
+            FROM growing_space_history
+            WHERE id = 'growingspacehistory_test_v3'
+            """.trimIndent()
         ).use { cursor ->
-            assertTrue(cursor.moveToFirst())
+            assertTrue("v3 history row must survive migration", cursor.moveToFirst())
+            assertEquals("growingspacehistory_test_v3", cursor.getString(0))
+            assertEquals("growingspace_test_v3", cursor.getString(1))
+            assertEquals(1_700_000_000_000L, cursor.getLong(2))
+            assertEquals(1_700_000_500_000L, cursor.getLong(3))
         }
         migrated.close()
     }

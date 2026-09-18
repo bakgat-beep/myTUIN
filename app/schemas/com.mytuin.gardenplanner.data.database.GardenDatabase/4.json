@@ -1,0 +1,708 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 4,
+    "identityHash": "27619b2b2512c16c3d4d5849f6ce26a8",
+    "entities": [
+      {
+        "tableName": "garden",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `created_at` INTEGER NOT NULL, `updated_at` INTEGER NOT NULL, `status` TEXT NOT NULL, `description` TEXT, `country_code` TEXT, `region` TEXT, `locality` TEXT, `latitude` REAL, `longitude` REAL, `timezone` TEXT, `hemisphere` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "created_at",
+            "columnName": "created_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updated_at",
+            "columnName": "updated_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "description",
+            "columnName": "description",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "country_code",
+            "columnName": "country_code",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "region",
+            "columnName": "region",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "locality",
+            "columnName": "locality",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "latitude",
+            "columnName": "latitude",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "longitude",
+            "columnName": "longitude",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "timezone",
+            "columnName": "timezone",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "hemisphere",
+            "columnName": "hemisphere",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "garden_preference",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`garden_id` TEXT NOT NULL, `preference_key` TEXT NOT NULL, `priority` TEXT NOT NULL, PRIMARY KEY(`garden_id`, `preference_key`), FOREIGN KEY(`garden_id`) REFERENCES `garden`(`id`) ON UPDATE RESTRICT ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "garden_id",
+            "columnName": "garden_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "preference_key",
+            "columnName": "preference_key",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "priority",
+            "columnName": "priority",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "garden_id",
+            "preference_key"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": [
+          {
+            "table": "garden",
+            "onDelete": "RESTRICT",
+            "onUpdate": "RESTRICT",
+            "columns": [
+              "garden_id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "garden_plant_preference",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`garden_id` TEXT NOT NULL, `plant_id` TEXT NOT NULL, `kind` TEXT NOT NULL, PRIMARY KEY(`garden_id`, `plant_id`, `kind`), FOREIGN KEY(`garden_id`) REFERENCES `garden`(`id`) ON UPDATE RESTRICT ON DELETE RESTRICT , FOREIGN KEY(`plant_id`) REFERENCES `plant`(`id`) ON UPDATE RESTRICT ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "garden_id",
+            "columnName": "garden_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "plant_id",
+            "columnName": "plant_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "kind",
+            "columnName": "kind",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "garden_id",
+            "plant_id",
+            "kind"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_garden_plant_preference_plant_id",
+            "unique": false,
+            "columnNames": [
+              "plant_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_garden_plant_preference_plant_id` ON `${TABLE_NAME}` (`plant_id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "garden",
+            "onDelete": "RESTRICT",
+            "onUpdate": "RESTRICT",
+            "columns": [
+              "garden_id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          },
+          {
+            "table": "plant",
+            "onDelete": "RESTRICT",
+            "onUpdate": "RESTRICT",
+            "columns": [
+              "plant_id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "growing_space",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `garden_id` TEXT NOT NULL, `name` TEXT NOT NULL, `space_type` TEXT NOT NULL, `status` TEXT NOT NULL, `created_at` INTEGER NOT NULL, `updated_at` INTEGER NOT NULL, `geometry_type` TEXT, `geometry_data` TEXT, `length` REAL, `width` REAL, `height` REAL, `diameter` REAL, `area` REAL, `volume` REAL, `description` TEXT, `notes` TEXT, PRIMARY KEY(`id`), FOREIGN KEY(`garden_id`) REFERENCES `garden`(`id`) ON UPDATE RESTRICT ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "garden_id",
+            "columnName": "garden_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "space_type",
+            "columnName": "space_type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "created_at",
+            "columnName": "created_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updated_at",
+            "columnName": "updated_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "geometry_type",
+            "columnName": "geometry_type",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "geometry_data",
+            "columnName": "geometry_data",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "length",
+            "columnName": "length",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "width",
+            "columnName": "width",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "height",
+            "columnName": "height",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "diameter",
+            "columnName": "diameter",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "area",
+            "columnName": "area",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "volume",
+            "columnName": "volume",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "description",
+            "columnName": "description",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_growing_space_garden_id",
+            "unique": false,
+            "columnNames": [
+              "garden_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_growing_space_garden_id` ON `${TABLE_NAME}` (`garden_id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "garden",
+            "onDelete": "RESTRICT",
+            "onUpdate": "RESTRICT",
+            "columns": [
+              "garden_id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "growing_space_history",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `growing_space_id` TEXT NOT NULL, `geometry_type` TEXT, `geometry_data` TEXT, `length` REAL, `width` REAL, `height` REAL, `diameter` REAL, `area` REAL, `volume` REAL, `valid_from` INTEGER NOT NULL, `valid_to` INTEGER NOT NULL, `recorded_at` INTEGER NOT NULL, `reason` TEXT, PRIMARY KEY(`id`), FOREIGN KEY(`growing_space_id`) REFERENCES `growing_space`(`id`) ON UPDATE RESTRICT ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "growing_space_id",
+            "columnName": "growing_space_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "geometry_type",
+            "columnName": "geometry_type",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "geometry_data",
+            "columnName": "geometry_data",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "length",
+            "columnName": "length",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "width",
+            "columnName": "width",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "height",
+            "columnName": "height",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "diameter",
+            "columnName": "diameter",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "area",
+            "columnName": "area",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "volume",
+            "columnName": "volume",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "valid_from",
+            "columnName": "valid_from",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "valid_to",
+            "columnName": "valid_to",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "recorded_at",
+            "columnName": "recorded_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reason",
+            "columnName": "reason",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_growing_space_history_growing_space_id_valid_from",
+            "unique": false,
+            "columnNames": [
+              "growing_space_id",
+              "valid_from"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_growing_space_history_growing_space_id_valid_from` ON `${TABLE_NAME}` (`growing_space_id`, `valid_from`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "growing_space",
+            "onDelete": "RESTRICT",
+            "onUpdate": "RESTRICT",
+            "columns": [
+              "growing_space_id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "plant",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `canonical_name` TEXT NOT NULL, `created_at` INTEGER NOT NULL, `updated_at` INTEGER NOT NULL, `status` TEXT NOT NULL, `scientific_name` TEXT, `genus` TEXT, `species` TEXT, `family` TEXT, `lifecycle` TEXT, `description` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "canonical_name",
+            "columnName": "canonical_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "created_at",
+            "columnName": "created_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updated_at",
+            "columnName": "updated_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "scientific_name",
+            "columnName": "scientific_name",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "genus",
+            "columnName": "genus",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "species",
+            "columnName": "species",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "family",
+            "columnName": "family",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "lifecycle",
+            "columnName": "lifecycle",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "description",
+            "columnName": "description",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "plant_alias",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `plant_id` TEXT NOT NULL, `alias` TEXT NOT NULL, `alias_type` TEXT NOT NULL, `language` TEXT, PRIMARY KEY(`id`), FOREIGN KEY(`plant_id`) REFERENCES `plant`(`id`) ON UPDATE RESTRICT ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "plant_id",
+            "columnName": "plant_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "alias",
+            "columnName": "alias",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "alias_type",
+            "columnName": "alias_type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "language",
+            "columnName": "language",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_plant_alias_plant_id_alias",
+            "unique": true,
+            "columnNames": [
+              "plant_id",
+              "alias"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_plant_alias_plant_id_alias` ON `${TABLE_NAME}` (`plant_id`, `alias`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "plant",
+            "onDelete": "RESTRICT",
+            "onUpdate": "RESTRICT",
+            "columns": [
+              "plant_id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "cultivar",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `plant_id` TEXT NOT NULL, `name` TEXT NOT NULL, `created_at` INTEGER NOT NULL, `updated_at` INTEGER NOT NULL, `status` TEXT NOT NULL, `description` TEXT, `notes` TEXT, PRIMARY KEY(`id`), FOREIGN KEY(`plant_id`) REFERENCES `plant`(`id`) ON UPDATE RESTRICT ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "plant_id",
+            "columnName": "plant_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "created_at",
+            "columnName": "created_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updated_at",
+            "columnName": "updated_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "description",
+            "columnName": "description",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_cultivar_plant_id",
+            "unique": false,
+            "columnNames": [
+              "plant_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_cultivar_plant_id` ON `${TABLE_NAME}` (`plant_id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "plant",
+            "onDelete": "RESTRICT",
+            "onUpdate": "RESTRICT",
+            "columns": [
+              "plant_id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '27619b2b2512c16c3d4d5849f6ce26a8')"
+    ]
+  }
+}

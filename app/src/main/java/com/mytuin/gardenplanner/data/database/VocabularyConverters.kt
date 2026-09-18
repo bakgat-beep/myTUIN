@@ -1,6 +1,9 @@
 package com.mytuin.gardenplanner.data.database
 
 import androidx.room.TypeConverter
+import com.mytuin.gardenplanner.domain.vocabulary.GardenPlantPreferenceKind
+import com.mytuin.gardenplanner.domain.vocabulary.GardenPreferenceKey
+import com.mytuin.gardenplanner.domain.vocabulary.GardenPriority
 import com.mytuin.gardenplanner.domain.vocabulary.GeometryType
 import com.mytuin.gardenplanner.domain.vocabulary.GrowingSpaceType
 import com.mytuin.gardenplanner.domain.vocabulary.Hemisphere
@@ -8,13 +11,6 @@ import com.mytuin.gardenplanner.domain.vocabulary.PlantAliasType
 import com.mytuin.gardenplanner.domain.vocabulary.PlantLifecycle
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
 
-/**
- * Room TypeConverters for canonical vocabulary enums.
- *
- * DEC-040: stored values use the canonical identifier; the enum
- * constant name is never written to the database. Reading an unknown
- * id from the database is a validation error, not a silent fallback.
- */
 class VocabularyConverters {
 
     @TypeConverter
@@ -64,4 +60,29 @@ class VocabularyConverters {
     fun idToGeometryType(id: String): GeometryType =
         GeometryType.fromId(id)
             ?: error("Unknown GeometryType id stored in database: '$id'")
+
+    @TypeConverter
+    fun gardenPriorityToId(value: GardenPriority): String = value.id
+
+    @TypeConverter
+    fun idToGardenPriority(id: String): GardenPriority =
+        GardenPriority.fromId(id)
+            ?: error("Unknown GardenPriority id stored in database: '$id'")
+
+    @TypeConverter
+    fun gardenPreferenceKeyToId(value: GardenPreferenceKey): String = value.id
+
+    @TypeConverter
+    fun idToGardenPreferenceKey(id: String): GardenPreferenceKey =
+        GardenPreferenceKey.fromId(id)
+            ?: error("Unknown GardenPreferenceKey id stored in database: '$id'")
+
+    @TypeConverter
+    fun gardenPlantPreferenceKindToId(value: GardenPlantPreferenceKind): String =
+        value.id
+
+    @TypeConverter
+    fun idToGardenPlantPreferenceKind(id: String): GardenPlantPreferenceKind =
+        GardenPlantPreferenceKind.fromId(id)
+            ?: error("Unknown GardenPlantPreferenceKind id stored in database: '$id'")
 }

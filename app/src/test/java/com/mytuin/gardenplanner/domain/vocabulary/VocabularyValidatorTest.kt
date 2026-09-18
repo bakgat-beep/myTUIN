@@ -20,6 +20,9 @@ class VocabularyValidatorTest {
         PlantAliasType.entries,
         GrowingSpaceType.entries,
         GeometryType.entries,
+        GardenPriority.entries,
+        GardenPreferenceKey.entries,
+        GardenPlantPreferenceKind.entries,
     )
 
     @Test
