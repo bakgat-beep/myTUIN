@@ -50,36 +50,20 @@ import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
 data class GrowingSpaceEntity(
     @PrimaryKey
     val id: String,
-
     val garden_id: String,
-
     val name: String,
-
     val space_type: GrowingSpaceType,
-
     val status: RecordStatus,
-
     val created_at: Long,
-
     val updated_at: Long,
-
     val geometry_type: GeometryType? = null,
-
     val geometry_data: String? = null,
-
     val length: Double? = null,
-
     val width: Double? = null,
-
     val height: Double? = null,
-
     val diameter: Double? = null,
-
     val area: Double? = null,
-
     val volume: Double? = null,
-
     val description: String? = null,
-
     val notes: String? = null,
 )

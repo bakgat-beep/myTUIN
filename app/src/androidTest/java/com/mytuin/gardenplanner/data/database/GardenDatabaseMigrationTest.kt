@@ -11,12 +11,12 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class GardenDatabaseMigrationTest {
-
     @get:Rule
-    val helper: MigrationTestHelper = MigrationTestHelper(
-        InstrumentationRegistry.getInstrumentation(),
-        GardenDatabase::class.java,
-    )
+    val helper: MigrationTestHelper =
+        MigrationTestHelper(
+            InstrumentationRegistry.getInstrumentation(),
+            GardenDatabase::class.java,
+        )
 
     @Test
     fun empty_database_fixture_migrates_from_v1_to_v4() {
@@ -30,11 +30,12 @@ class GardenDatabaseMigrationTest {
             "garden_preference",
             "garden_plant_preference",
         ).forEach { table ->
-            migrated.query(
-                "SELECT name FROM sqlite_master WHERE type = 'table' AND name = '$table'"
-            ).use { cursor ->
-                assertTrue("$table must exist after migration", cursor.moveToFirst())
-            }
+            migrated
+                .query(
+                    "SELECT name FROM sqlite_master WHERE type = 'table' AND name = '$table'",
+                ).use { cursor ->
+                    assertTrue("$table must exist after migration", cursor.moveToFirst())
+                }
         }
         migrated.close()
     }
@@ -54,19 +55,20 @@ class GardenDatabaseMigrationTest {
                     'draft',
                     'unknown'
                 )
-                """.trimIndent()
+                """.trimIndent(),
             )
             close()
         }
 
         val migrated = helper.runMigrationsAndValidate("minimal-garden-fixture", 4, true)
 
-        migrated.query(
-            "SELECT name FROM garden WHERE id = 'garden_test_minimal'"
-        ).use { cursor ->
-            assertTrue("v1 garden row must survive migration", cursor.moveToFirst())
-            assertEquals("Minimal Garden", cursor.getString(0))
-        }
+        migrated
+            .query(
+                "SELECT name FROM garden WHERE id = 'garden_test_minimal'",
+            ).use { cursor ->
+                assertTrue("v1 garden row must survive migration", cursor.moveToFirst())
+                assertEquals("Minimal Garden", cursor.getString(0))
+            }
         migrated.close()
     }
 
@@ -94,37 +96,41 @@ class GardenDatabaseMigrationTest {
                     1700000000000,
                     'draft'
                 )
-                """.trimIndent()
+                """.trimIndent(),
             )
             close()
         }
 
-        val migrated = helper.runMigrationsAndValidate(
-            "representative-garden-fixture", 4, true
-        )
-
-        migrated.query(
-            """
-            SELECT name, description, country_code, region, locality,
-                   latitude, longitude, timezone, hemisphere
-            FROM garden
-            WHERE id = 'garden_test_representative'
-            """.trimIndent()
-        ).use { cursor ->
-            assertTrue(cursor.moveToFirst())
-            assertEquals("Representative Garden", cursor.getString(0))
-            assertEquals(
-                "A garden with all optional fields populated",
-                cursor.getString(1),
+        val migrated =
+            helper.runMigrationsAndValidate(
+                "representative-garden-fixture",
+                4,
+                true,
             )
-            assertEquals("NZ", cursor.getString(2))
-            assertEquals("Canterbury", cursor.getString(3))
-            assertEquals("Christchurch", cursor.getString(4))
-            assertEquals(-43.5321, cursor.getDouble(5), 0.0)
-            assertEquals(172.6362, cursor.getDouble(6), 0.0)
-            assertEquals("Pacific/Auckland", cursor.getString(7))
-            assertEquals("southern", cursor.getString(8))
-        }
+
+        migrated
+            .query(
+                """
+                SELECT name, description, country_code, region, locality,
+                       latitude, longitude, timezone, hemisphere
+                FROM garden
+                WHERE id = 'garden_test_representative'
+                """.trimIndent(),
+            ).use { cursor ->
+                assertTrue(cursor.moveToFirst())
+                assertEquals("Representative Garden", cursor.getString(0))
+                assertEquals(
+                    "A garden with all optional fields populated",
+                    cursor.getString(1),
+                )
+                assertEquals("NZ", cursor.getString(2))
+                assertEquals("Canterbury", cursor.getString(3))
+                assertEquals("Christchurch", cursor.getString(4))
+                assertEquals(-43.5321, cursor.getDouble(5), 0.0)
+                assertEquals(172.6362, cursor.getDouble(6), 0.0)
+                assertEquals("Pacific/Auckland", cursor.getString(7))
+                assertEquals("southern", cursor.getString(8))
+            }
         migrated.close()
     }
 
@@ -143,7 +149,7 @@ class GardenDatabaseMigrationTest {
                     'draft',
                     'unknown'
                 )
-                """.trimIndent()
+                """.trimIndent(),
             )
             execSQL(
                 """
@@ -161,29 +167,30 @@ class GardenDatabaseMigrationTest {
                     'point',
                     '{"type":"Point","coordinates":[1.0,2.0]}'
                 )
-                """.trimIndent()
+                """.trimIndent(),
             )
             close()
         }
 
         val migrated = helper.runMigrationsAndValidate("v2-fixture", 4, true)
 
-        migrated.query(
-            """
-            SELECT name, space_type, geometry_type, geometry_data
-            FROM growing_space
-            WHERE id = 'growingspace_test_v2'
-            """.trimIndent()
-        ).use { cursor ->
-            assertTrue("v2 growing_space row must survive migration", cursor.moveToFirst())
-            assertEquals("V2 Bed", cursor.getString(0))
-            assertEquals("raised_bed", cursor.getString(1))
-            assertEquals("point", cursor.getString(2))
-            assertEquals(
-                """{"type":"Point","coordinates":[1.0,2.0]}""",
-                cursor.getString(3),
-            )
-        }
+        migrated
+            .query(
+                """
+                SELECT name, space_type, geometry_type, geometry_data
+                FROM growing_space
+                WHERE id = 'growingspace_test_v2'
+                """.trimIndent(),
+            ).use { cursor ->
+                assertTrue("v2 growing_space row must survive migration", cursor.moveToFirst())
+                assertEquals("V2 Bed", cursor.getString(0))
+                assertEquals("raised_bed", cursor.getString(1))
+                assertEquals("point", cursor.getString(2))
+                assertEquals(
+                    """{"type":"Point","coordinates":[1.0,2.0]}""",
+                    cursor.getString(3),
+                )
+            }
         migrated.close()
     }
 
@@ -202,7 +209,7 @@ class GardenDatabaseMigrationTest {
                     'draft',
                     'unknown'
                 )
-                """.trimIndent()
+                """.trimIndent(),
             )
             execSQL(
                 """
@@ -218,7 +225,7 @@ class GardenDatabaseMigrationTest {
                     1700000000000,
                     1700000000000
                 )
-                """.trimIndent()
+                """.trimIndent(),
             )
             execSQL(
                 """
@@ -231,26 +238,27 @@ class GardenDatabaseMigrationTest {
                     1700000500000,
                     1700000500000
                 )
-                """.trimIndent()
+                """.trimIndent(),
             )
             close()
         }
 
         val migrated = helper.runMigrationsAndValidate("v3-fixture", 4, true)
 
-        migrated.query(
-            """
-            SELECT id, growing_space_id, valid_from, valid_to
-            FROM growing_space_history
-            WHERE id = 'growingspacehistory_test_v3'
-            """.trimIndent()
-        ).use { cursor ->
-            assertTrue("v3 history row must survive migration", cursor.moveToFirst())
-            assertEquals("growingspacehistory_test_v3", cursor.getString(0))
-            assertEquals("growingspace_test_v3", cursor.getString(1))
-            assertEquals(1_700_000_000_000L, cursor.getLong(2))
-            assertEquals(1_700_000_500_000L, cursor.getLong(3))
-        }
+        migrated
+            .query(
+                """
+                SELECT id, growing_space_id, valid_from, valid_to
+                FROM growing_space_history
+                WHERE id = 'growingspacehistory_test_v3'
+                """.trimIndent(),
+            ).use { cursor ->
+                assertTrue("v3 history row must survive migration", cursor.moveToFirst())
+                assertEquals("growingspacehistory_test_v3", cursor.getString(0))
+                assertEquals("growingspace_test_v3", cursor.getString(1))
+                assertEquals(1_700_000_000_000L, cursor.getLong(2))
+                assertEquals(1_700_000_500_000L, cursor.getLong(3))
+            }
         migrated.close()
     }
 }

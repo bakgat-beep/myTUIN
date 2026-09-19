@@ -17,14 +17,17 @@ import com.mytuin.gardenplanner.domain.vocabulary.GeometryType
  * cannot exist inside the domain.
  */
 sealed interface Geometry {
-
     val geometryType: GeometryType
 
-    data class Point(val at: Coordinate) : Geometry {
+    data class Point(
+        val at: Coordinate,
+    ) : Geometry {
         override val geometryType: GeometryType = GeometryType.POINT
     }
 
-    data class LineString(val vertices: List<Coordinate>) : Geometry {
+    data class LineString(
+        val vertices: List<Coordinate>,
+    ) : Geometry {
         override val geometryType: GeometryType = GeometryType.LINE
 
         init {
@@ -34,7 +37,9 @@ sealed interface Geometry {
         }
     }
 
-    data class Polygon(val ring: List<Coordinate>) : Geometry {
+    data class Polygon(
+        val ring: List<Coordinate>,
+    ) : Geometry {
         override val geometryType: GeometryType = GeometryType.POLYGON
 
         init {

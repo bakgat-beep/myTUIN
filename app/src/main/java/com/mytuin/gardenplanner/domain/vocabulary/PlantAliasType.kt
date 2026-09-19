@@ -8,7 +8,9 @@ package com.mytuin.gardenplanner.domain.vocabulary
  * Canonical ids only (DEC-040). Domain layer: no Android, Compose,
  * Room or Hilt dependencies.
  */
-enum class PlantAliasType(override val id: String) : VocabularyValue {
+enum class PlantAliasType(
+    override val id: String,
+) : VocabularyValue {
     COMMON_NAME("common_name"),
     REGIONAL_NAME("regional_name"),
     SYNONYM("synonym"),
@@ -17,7 +19,6 @@ enum class PlantAliasType(override val id: String) : VocabularyValue {
     ;
 
     companion object {
-        fun fromId(id: String): PlantAliasType? =
-            entries.firstOrNull { it.id == id }
+        fun fromId(id: String): PlantAliasType? = entries.firstOrNull { it.id == id }
     }
 }

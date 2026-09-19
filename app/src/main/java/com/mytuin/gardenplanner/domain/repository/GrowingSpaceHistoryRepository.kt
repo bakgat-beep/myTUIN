@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.Flow
  * transaction, not by direct calls from use cases.
  */
 interface GrowingSpaceHistoryRepository {
-
     fun observeHistoryForSpace(growingSpaceId: String): Flow<List<GrowingSpaceHistory>>
 
     suspend fun getHistoryForSpace(growingSpaceId: String): List<GrowingSpaceHistory>

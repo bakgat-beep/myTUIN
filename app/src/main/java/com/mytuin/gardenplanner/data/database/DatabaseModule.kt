@@ -18,7 +18,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
-
     @Provides
     @Singleton
     fun provideGardenDatabase(
@@ -29,15 +28,13 @@ object DatabaseModule {
     fun provideGardenDao(db: GardenDatabase): GardenDao = db.gardenDao()
 
     @Provides
-    fun provideGardenPreferenceDao(db: GardenDatabase): GardenPreferenceDao =
-        db.gardenPreferenceDao()
+    fun provideGardenPreferenceDao(db: GardenDatabase): GardenPreferenceDao = db.gardenPreferenceDao()
 
     @Provides
     fun provideGrowingSpaceDao(db: GardenDatabase): GrowingSpaceDao = db.growingSpaceDao()
 
     @Provides
-    fun provideGrowingSpaceHistoryDao(db: GardenDatabase): GrowingSpaceHistoryDao =
-        db.growingSpaceHistoryDao()
+    fun provideGrowingSpaceHistoryDao(db: GardenDatabase): GrowingSpaceHistoryDao = db.growingSpaceHistoryDao()
 
     @Provides
     fun providePlantDao(db: GardenDatabase): PlantDao = db.plantDao()

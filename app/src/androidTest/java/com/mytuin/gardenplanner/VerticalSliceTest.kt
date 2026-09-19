@@ -12,9 +12,9 @@ import com.mytuin.gardenplanner.domain.model.garden.Coordinate
 import com.mytuin.gardenplanner.domain.model.garden.Geometry
 import com.mytuin.gardenplanner.domain.model.garden.NewGarden
 import com.mytuin.gardenplanner.domain.model.garden.NewGrowingSpace
+import com.mytuin.gardenplanner.domain.repository.GardenRepository
 import com.mytuin.gardenplanner.domain.repository.GrowingSpaceHistoryRepository
 import com.mytuin.gardenplanner.domain.repository.GrowingSpaceRepository
-import com.mytuin.gardenplanner.domain.repository.GardenRepository
 import com.mytuin.gardenplanner.domain.usecases.garden.CreateGarden
 import com.mytuin.gardenplanner.domain.usecases.garden.CreateGrowingSpace
 import com.mytuin.gardenplanner.domain.usecases.garden.UpdateGrowingSpaceGeometry
@@ -51,7 +51,6 @@ import org.junit.runner.RunWith
  */
 @RunWith(AndroidJUnit4::class)
 class VerticalSliceTest {
-
     private val dbName = "vertical-slice-test.db"
 
     private lateinit var context: Context
@@ -79,19 +78,21 @@ class VerticalSliceTest {
             // --- Phase 1: Create Garden through the use case.
 
             val gardenRepository: GardenRepository = GardenRepositoryImpl(db.gardenDao())
-            val createGarden = CreateGarden(
-                repository = gardenRepository,
-                idGenerator = idGenerator,
-                clock = clock,
-            )
-
-            val gardenId = createGarden(
-                NewGarden(
-                    name = "Vertical Slice Garden",
-                    countryCode = "NZ",
-                    hemisphere = Hemisphere.SOUTHERN,
+            val createGarden =
+                CreateGarden(
+                    repository = gardenRepository,
+                    idGenerator = idGenerator,
+                    clock = clock,
                 )
-            )
+
+            val gardenId =
+                createGarden(
+                    NewGarden(
+                        name = "Vertical Slice Garden",
+                        countryCode = "NZ",
+                        hemisphere = Hemisphere.SOUTHERN,
+                    ),
+                )
             assertTrue(
                 "garden id must use the garden_ prefix",
                 gardenId.startsWith("garden_"),
@@ -106,32 +107,35 @@ class VerticalSliceTest {
                     growingSpaceHistoryDao = db.growingSpaceHistoryDao(),
                     idGenerator = idGenerator,
                 )
-            val createGrowingSpace = CreateGrowingSpace(
-                repository = growingSpaceRepository,
-                idGenerator = idGenerator,
-                clock = clock,
-            )
-
-            val initialGeometry = Geometry.Polygon(
-                listOf(
-                    Coordinate(0.0, 0.0),
-                    Coordinate(3.0, 0.0),
-                    Coordinate(3.0, 1.0),
-                    Coordinate(0.0, 1.0),
-                    Coordinate(0.0, 0.0),
+            val createGrowingSpace =
+                CreateGrowingSpace(
+                    repository = growingSpaceRepository,
+                    idGenerator = idGenerator,
+                    clock = clock,
                 )
-            )
 
-            val spaceId = createGrowingSpace(
-                NewGrowingSpace(
-                    gardenId = gardenId,
-                    name = "Bed 2",
-                    spaceType = GrowingSpaceType.RAISED_BED,
-                    geometry = initialGeometry,
-                    lengthMetres = 3.0,
-                    widthMetres = 1.0,
+            val initialGeometry =
+                Geometry.Polygon(
+                    listOf(
+                        Coordinate(0.0, 0.0),
+                        Coordinate(3.0, 0.0),
+                        Coordinate(3.0, 1.0),
+                        Coordinate(0.0, 1.0),
+                        Coordinate(0.0, 0.0),
+                    ),
                 )
-            )
+
+            val spaceId =
+                createGrowingSpace(
+                    NewGrowingSpace(
+                        gardenId = gardenId,
+                        name = "Bed 2",
+                        spaceType = GrowingSpaceType.RAISED_BED,
+                        geometry = initialGeometry,
+                        lengthMetres = 3.0,
+                        widthMetres = 1.0,
+                    ),
+                )
             assertTrue(
                 "growing space id must use the growingspace_ prefix",
                 spaceId.startsWith("growingspace_"),
@@ -179,19 +183,21 @@ class VerticalSliceTest {
 
             // --- Phase 5: History-safe edit.
 
-            val newGeometry = Geometry.Polygon(
-                listOf(
-                    Coordinate(0.0, 0.0),
-                    Coordinate(4.0, 0.0),
-                    Coordinate(4.0, 1.0),
-                    Coordinate(0.0, 1.0),
-                    Coordinate(0.0, 0.0),
+            val newGeometry =
+                Geometry.Polygon(
+                    listOf(
+                        Coordinate(0.0, 0.0),
+                        Coordinate(4.0, 0.0),
+                        Coordinate(4.0, 1.0),
+                        Coordinate(0.0, 1.0),
+                        Coordinate(0.0, 0.0),
+                    ),
                 )
-            )
-            val updateGeometry = UpdateGrowingSpaceGeometry(
-                repository = reloadedSpaceRepository,
-                clock = clock,
-            )
+            val updateGeometry =
+                UpdateGrowingSpaceGeometry(
+                    repository = reloadedSpaceRepository,
+                    clock = clock,
+                )
 
             updateGeometry(
                 growingSpaceId = spaceId,
@@ -244,16 +250,18 @@ class VerticalSliceTest {
             db.close()
             db = GardenDatabaseFactory.create(context, dbName)
 
-            val spaceAfterSecondReload = GrowingSpaceRepositoryImpl(
-                db = db,
-                growingSpaceDao = db.growingSpaceDao(),
-                growingSpaceHistoryDao = db.growingSpaceHistoryDao(),
-                idGenerator = idGenerator,
-            ).getGrowingSpace(spaceId)
+            val spaceAfterSecondReload =
+                GrowingSpaceRepositoryImpl(
+                    db = db,
+                    growingSpaceDao = db.growingSpaceDao(),
+                    growingSpaceHistoryDao = db.growingSpaceHistoryDao(),
+                    idGenerator = idGenerator,
+                ).getGrowingSpace(spaceId)
 
-            val historyAfterSecondReload = GrowingSpaceHistoryRepositoryImpl(
-                growingSpaceHistoryDao = db.growingSpaceHistoryDao(),
-            ).getHistoryForSpace(spaceId)
+            val historyAfterSecondReload =
+                GrowingSpaceHistoryRepositoryImpl(
+                    growingSpaceHistoryDao = db.growingSpaceHistoryDao(),
+                ).getHistoryForSpace(spaceId)
 
             assertEquals(newGeometry, spaceAfterSecondReload?.geometry)
             assertEquals(1, historyAfterSecondReload.size)

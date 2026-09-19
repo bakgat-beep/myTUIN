@@ -25,18 +25,20 @@ import javax.inject.Inject
  *
  * A127=a: a missing garden throws NotFoundError from the repository.
  */
-class UpdateGardenLocation @Inject constructor(
-    private val repository: GardenRepository,
-    private val clock: Clock,
-) {
-    suspend operator fun invoke(
-        gardenId: String,
-        location: NewGardenLocation,
+class UpdateGardenLocation
+    @Inject
+    constructor(
+        private val repository: GardenRepository,
+        private val clock: Clock,
     ) {
-        repository.updateLocation(
-            id = gardenId,
-            location = location,
-            updatedAt = clock.nowMillis(),
-        )
+        suspend operator fun invoke(
+            gardenId: String,
+            location: NewGardenLocation,
+        ) {
+            repository.updateLocation(
+                id = gardenId,
+                location = location,
+                updatedAt = clock.nowMillis(),
+            )
+        }
     }
-}

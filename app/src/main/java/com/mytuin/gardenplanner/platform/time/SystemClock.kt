@@ -10,7 +10,8 @@ import javax.inject.Inject
  * Direct use of System.currentTimeMillis() elsewhere in application
  * code should be avoided; inject Clock instead.
  */
-class SystemClock @Inject constructor() : Clock {
-
-    override fun nowMillis(): Long = System.currentTimeMillis()
-}
+class SystemClock
+    @Inject
+    constructor() : Clock {
+        override fun nowMillis(): Long = System.currentTimeMillis()
+    }

@@ -15,7 +15,6 @@ import kotlinx.coroutines.flow.Flow
  * IdGenerator (A68=a).
  */
 interface GrowingSpaceRepository {
-
     fun observeGrowingSpacesInGarden(gardenId: String): Flow<List<GrowingSpace>>
 
     fun observeGrowingSpace(id: String): Flow<GrowingSpace?>

@@ -4,13 +4,12 @@ import org.junit.Assert
 import org.junit.Test
 
 class DestinationsTest {
-
     @Test
     fun `all contains the five V1 destinations in specification order`() {
         val routes = Destination.all.map { it.route }
         Assert.assertEquals(
             listOf("home", "garden", "plants", "planner", "inbox"),
-            routes
+            routes,
         )
     }
 

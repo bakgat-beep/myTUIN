@@ -16,7 +16,6 @@ import org.junit.Test
  * PHASE_0_PROJECT_FOUNDATION §31 (Presentation).
  */
 class EmptyStateTest {
-
     @get:Rule
     val composeRule = createComposeRule()
 

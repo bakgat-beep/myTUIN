@@ -12,7 +12,6 @@ import com.mytuin.gardenplanner.domain.vocabulary.PlantLifecycle
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
 
 class VocabularyConverters {
-
     @TypeConverter
     fun hemisphereToId(value: Hemisphere): String = value.id
 
@@ -78,8 +77,7 @@ class VocabularyConverters {
             ?: error("Unknown GardenPreferenceKey id stored in database: '$id'")
 
     @TypeConverter
-    fun gardenPlantPreferenceKindToId(value: GardenPlantPreferenceKind): String =
-        value.id
+    fun gardenPlantPreferenceKindToId(value: GardenPlantPreferenceKind): String = value.id
 
     @TypeConverter
     fun idToGardenPlantPreferenceKind(id: String): GardenPlantPreferenceKind =

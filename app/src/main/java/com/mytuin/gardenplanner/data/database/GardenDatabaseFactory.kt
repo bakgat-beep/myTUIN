@@ -24,25 +24,25 @@ import com.mytuin.gardenplanner.data.database.seed.SeedCallback
  * fallbackToDestructiveMigration is never used.
  */
 object GardenDatabaseFactory {
-
     const val DATABASE_NAME: String = "garden.db"
 
     fun create(
         context: Context,
         name: String = DATABASE_NAME,
     ): GardenDatabase =
-        Room.databaseBuilder(
-            context.applicationContext,
-            GardenDatabase::class.java,
-            name,
-        )
-            .addCallback(foreignKeysCallback)
+        Room
+            .databaseBuilder(
+                context.applicationContext,
+                GardenDatabase::class.java,
+                name,
+            ).addCallback(foreignKeysCallback)
             .addCallback(SeedCallback)
             .build()
 
-    val foreignKeysCallback: RoomDatabase.Callback = object : RoomDatabase.Callback() {
-        override fun onOpen(db: SupportSQLiteDatabase) {
-            db.execSQL("PRAGMA foreign_keys = ON")
+    val foreignKeysCallback: RoomDatabase.Callback =
+        object : RoomDatabase.Callback() {
+            override fun onOpen(db: SupportSQLiteDatabase) {
+                db.execSQL("PRAGMA foreign_keys = ON")
+            }
         }
-    }
 }

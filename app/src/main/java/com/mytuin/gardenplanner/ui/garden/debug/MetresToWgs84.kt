@@ -24,26 +24,35 @@ import kotlin.math.cos
  *
  * PHASE_0_PROJECT_FOUNDATION §22, §23; DEC-039.
  */
-data class Wgs84(val latitude: Double, val longitude: Double)
+data class Wgs84(
+    val latitude: Double,
+    val longitude: Double,
+)
 
 object MetresToWgs84 {
-
     private const val METRES_PER_DEGREE_LATITUDE = 111_320.0
 
-    fun toWgs84(origin: Wgs84, coordinate: Coordinate): Wgs84 {
+    fun toWgs84(
+        origin: Wgs84,
+        coordinate: Coordinate,
+    ): Wgs84 {
         val latitude = origin.latitude + coordinate.y / METRES_PER_DEGREE_LATITUDE
-        val longitude = origin.longitude +
+        val longitude =
+            origin.longitude +
                 coordinate.x / metresPerDegreeLongitude(origin.latitude)
         return Wgs84(latitude, longitude)
     }
 
-    fun toCoordinate(origin: Wgs84, point: Wgs84): Coordinate {
+    fun toCoordinate(
+        origin: Wgs84,
+        point: Wgs84,
+    ): Coordinate {
         val y = (point.latitude - origin.latitude) * METRES_PER_DEGREE_LATITUDE
-        val x = (point.longitude - origin.longitude) *
+        val x =
+            (point.longitude - origin.longitude) *
                 metresPerDegreeLongitude(origin.latitude)
         return Coordinate(x, y)
     }
 
-    private fun metresPerDegreeLongitude(latitude: Double): Double =
-        METRES_PER_DEGREE_LATITUDE * cos(Math.toRadians(latitude))
+    private fun metresPerDegreeLongitude(latitude: Double): Double = METRES_PER_DEGREE_LATITUDE * cos(Math.toRadians(latitude))
 }

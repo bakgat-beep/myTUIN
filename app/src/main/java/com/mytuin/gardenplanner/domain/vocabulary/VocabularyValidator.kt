@@ -35,7 +35,6 @@ package com.mytuin.gardenplanner.domain.vocabulary
  * Domain layer: no Android, Compose, Room or Hilt dependencies.
  */
 object VocabularyValidator {
-
     /**
      * Returns true if [candidateId] is a canonical id of [vocabulary].
      *

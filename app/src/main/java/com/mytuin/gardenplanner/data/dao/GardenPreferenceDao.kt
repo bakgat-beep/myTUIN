@@ -17,7 +17,6 @@ import kotlinx.coroutines.flow.Flow
  */
 @Dao
 interface GardenPreferenceDao {
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(preference: GardenPreferenceEntity)
 
@@ -32,7 +31,7 @@ interface GardenPreferenceDao {
 
     @Query(
         "SELECT * FROM garden_preference " +
-                "WHERE garden_id = :gardenId AND preference_key = :key"
+            "WHERE garden_id = :gardenId AND preference_key = :key",
     )
     suspend fun getPreference(
         gardenId: String,
@@ -41,13 +40,16 @@ interface GardenPreferenceDao {
 
     @Query(
         "DELETE FROM garden_preference " +
-                "WHERE garden_id = :gardenId AND preference_key = :key"
+            "WHERE garden_id = :gardenId AND preference_key = :key",
     )
-    suspend fun deletePreference(gardenId: String, key: GardenPreferenceKey)
+    suspend fun deletePreference(
+        gardenId: String,
+        key: GardenPreferenceKey,
+    )
 
     @Query(
         "SELECT * FROM garden_plant_preference " +
-                "WHERE garden_id = :gardenId AND kind = :kind"
+            "WHERE garden_id = :gardenId AND kind = :kind",
     )
     suspend fun getPlantPreferences(
         gardenId: String,
@@ -56,7 +58,7 @@ interface GardenPreferenceDao {
 
     @Query(
         "SELECT * FROM garden_plant_preference " +
-                "WHERE garden_id = :gardenId AND kind = :kind"
+            "WHERE garden_id = :gardenId AND kind = :kind",
     )
     fun observePlantPreferences(
         gardenId: String,
@@ -65,7 +67,7 @@ interface GardenPreferenceDao {
 
     @Query(
         "DELETE FROM garden_plant_preference " +
-                "WHERE garden_id = :gardenId AND plant_id = :plantId AND kind = :kind"
+            "WHERE garden_id = :gardenId AND plant_id = :plantId AND kind = :kind",
     )
     suspend fun deletePlantPreference(
         gardenId: String,

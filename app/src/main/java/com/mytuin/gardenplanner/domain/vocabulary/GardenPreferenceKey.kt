@@ -10,7 +10,9 @@ package com.mytuin.gardenplanner.domain.vocabulary
  *
  * A187.
  */
-enum class GardenPreferenceKey(override val id: String) : VocabularyValue {
+enum class GardenPreferenceKey(
+    override val id: String,
+) : VocabularyValue {
     WATER_CONSERVATION_PRIORITY("water_conservation_priority"),
     POLLINATOR_PRIORITY("pollinator_priority"),
     LOW_MAINTENANCE_PREFERENCE("low_maintenance_preference"),
@@ -20,7 +22,6 @@ enum class GardenPreferenceKey(override val id: String) : VocabularyValue {
     ;
 
     companion object {
-        fun fromId(id: String): GardenPreferenceKey? =
-            entries.firstOrNull { it.id == id }
+        fun fromId(id: String): GardenPreferenceKey? = entries.firstOrNull { it.id == id }
     }
 }

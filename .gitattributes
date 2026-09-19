@@ -1,0 +1,16 @@
+* text=auto eol=lf
+
+*.jar binary
+*.keystore binary
+*.jks binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ttf binary
+*.otf binary
+*.so binary
+
+app/schemas/**/*.json text eol=lf
+*.bat text eol=crlf

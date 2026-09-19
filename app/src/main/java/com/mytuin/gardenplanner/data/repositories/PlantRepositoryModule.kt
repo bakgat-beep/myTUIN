@@ -14,10 +14,7 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class PlantRepositoryModule {
-
     @Binds
     @Singleton
-    abstract fun bindPlantRepository(
-        impl: PlantRepositoryImpl,
-    ): PlantRepository
+    abstract fun bindPlantRepository(impl: PlantRepositoryImpl): PlantRepository
 }

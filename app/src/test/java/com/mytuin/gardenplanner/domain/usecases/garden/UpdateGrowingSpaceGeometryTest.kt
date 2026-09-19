@@ -18,81 +18,88 @@ import org.junit.Test
  * TESTING_STRATEGY §4: pure unit tests, no Android runtime.
  */
 class UpdateGrowingSpaceGeometryTest {
-
     private val repository = FakeGrowingSpaceRepository()
     private val clock = FakeClock(nowMillisValue = 1_700_000_500_000L)
 
-    private val useCase = UpdateGrowingSpaceGeometry(
-        repository = repository,
-        clock = clock,
-    )
+    private val useCase =
+        UpdateGrowingSpaceGeometry(
+            repository = repository,
+            clock = clock,
+        )
 
     private val existingId = "growingspace_test_0001"
 
     @Before
-    fun setUp() = runBlocking {
-        repository.insert(
-            GrowingSpace(
-                id = existingId,
-                gardenId = "garden_test_0001",
-                name = "Bed 2",
-                spaceType = GrowingSpaceType.RAISED_BED,
-                status = RecordStatus.ACTIVE,
-                geometry = Geometry.Point(Coordinate(0.0, 0.0)),
-                lengthMetres = null,
-                widthMetres = null,
-                heightMetres = null,
-                diameterMetres = null,
-                areaSquareMetres = null,
-                volumeCubicMetres = null,
-                description = null,
-                notes = null,
-                createdAt = 1_700_000_000_000L,
-                updatedAt = 1_700_000_000_000L,
+    fun setUp() =
+        runBlocking {
+            repository.insert(
+                GrowingSpace(
+                    id = existingId,
+                    gardenId = "garden_test_0001",
+                    name = "Bed 2",
+                    spaceType = GrowingSpaceType.RAISED_BED,
+                    status = RecordStatus.ACTIVE,
+                    geometry = Geometry.Point(Coordinate(0.0, 0.0)),
+                    lengthMetres = null,
+                    widthMetres = null,
+                    heightMetres = null,
+                    diameterMetres = null,
+                    areaSquareMetres = null,
+                    volumeCubicMetres = null,
+                    description = null,
+                    notes = null,
+                    createdAt = 1_700_000_000_000L,
+                    updatedAt = 1_700_000_000_000L,
+                ),
             )
-        )
-    }
+        }
 
     @Test
-    fun invoke_forwards_new_geometry_to_repository() = runBlocking {
-        val newGeometry = Geometry.LineString(
-            listOf(Coordinate(0.0, 0.0), Coordinate(1.0, 1.0))
-        )
+    fun invoke_forwards_new_geometry_to_repository() =
+        runBlocking {
+            val newGeometry =
+                Geometry.LineString(
+                    listOf(Coordinate(0.0, 0.0), Coordinate(1.0, 1.0)),
+                )
 
-        useCase(existingId, newGeometry)
+            useCase(existingId, newGeometry)
 
-        assertEquals(1, repository.updateCalls().size)
-        assertEquals(newGeometry, repository.updateCalls().first().newGeometry)
-    }
-
-    @Test
-    fun invoke_supplies_effectiveAt_from_clock() = runBlocking {
-        useCase(existingId, null)
-
-        assertEquals(1_700_000_500_000L, repository.updateCalls().first().effectiveAt)
-    }
+            assertEquals(1, repository.updateCalls().size)
+            assertEquals(newGeometry, repository.updateCalls().first().newGeometry)
+        }
 
     @Test
-    fun invoke_passes_reason_through() = runBlocking {
-        useCase(existingId, null, reason = "Survey correction")
+    fun invoke_supplies_effectiveAt_from_clock() =
+        runBlocking {
+            useCase(existingId, null)
 
-        assertEquals("Survey correction", repository.updateCalls().first().reason)
-    }
-
-    @Test
-    fun invoke_defaults_reason_to_null() = runBlocking {
-        useCase(existingId, null)
-
-        assertNull(repository.updateCalls().first().reason)
-    }
+            assertEquals(1_700_000_500_000L, repository.updateCalls().first().effectiveAt)
+        }
 
     @Test
-    fun invoke_updates_current_geometry_on_the_stored_space() = runBlocking {
-        val newGeometry = Geometry.Point(Coordinate(5.0, 5.0))
+    fun invoke_passes_reason_through() =
+        runBlocking {
+            useCase(existingId, null, reason = "Survey correction")
 
-        useCase(existingId, newGeometry)
+            assertEquals("Survey correction", repository.updateCalls().first().reason)
+        }
 
-        assertEquals(newGeometry, repository.snapshot().first().geometry)
-        assertEquals(1_700_000_500_000L, repository.snapshot().first().updatedAt)
-    }
+    @Test
+    fun invoke_defaults_reason_to_null() =
+        runBlocking {
+            useCase(existingId, null)
+
+            assertNull(repository.updateCalls().first().reason)
+        }
+
+    @Test
+    fun invoke_updates_current_geometry_on_the_stored_space() =
+        runBlocking {
+            val newGeometry = Geometry.Point(Coordinate(5.0, 5.0))
+
+            useCase(existingId, newGeometry)
+
+            assertEquals(newGeometry, repository.snapshot().first().geometry)
+            assertEquals(1_700_000_500_000L, repository.snapshot().first().updatedAt)
+        }
 }

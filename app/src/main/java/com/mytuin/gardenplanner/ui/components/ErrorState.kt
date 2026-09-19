@@ -55,9 +55,10 @@ fun ErrorState(
     var detailsVisible by remember { mutableStateOf(false) }
 
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(Spacing.screenMargin),
+        modifier =
+            modifier
+                .fillMaxSize()
+                .padding(Spacing.screenMargin),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
@@ -89,9 +90,12 @@ fun ErrorState(
             TextButton(onClick = { detailsVisible = !detailsVisible }) {
                 Text(
                     stringResource(
-                        if (detailsVisible) R.string.error_details_hide
-                        else R.string.error_details_show
-                    )
+                        if (detailsVisible) {
+                            R.string.error_details_hide
+                        } else {
+                            R.string.error_details_show
+                        },
+                    ),
                 )
             }
             if (detailsVisible) {

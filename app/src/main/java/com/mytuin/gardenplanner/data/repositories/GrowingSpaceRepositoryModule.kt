@@ -10,10 +10,7 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class GrowingSpaceRepositoryModule {
-
     @Binds
     @Singleton
-    abstract fun bindGrowingSpaceRepository(
-        impl: GrowingSpaceRepositoryImpl,
-    ): GrowingSpaceRepository
+    abstract fun bindGrowingSpaceRepository(impl: GrowingSpaceRepositoryImpl): GrowingSpaceRepository
 }

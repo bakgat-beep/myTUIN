@@ -7,7 +7,6 @@ class FakeIdGenerator(
     private val nextGrowingSpaceIdValue: String = "growingspace_test_id_0001",
     private val nextGrowingSpaceHistoryIdValue: String = "growingspacehistory_test_id_0001",
 ) : IdGenerator {
-
     override fun newGardenId(): String = nextGardenIdValue
 
     override fun newGrowingSpaceId(): String = nextGrowingSpaceIdValue

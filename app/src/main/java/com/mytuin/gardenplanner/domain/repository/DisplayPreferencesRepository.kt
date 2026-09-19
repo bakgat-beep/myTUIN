@@ -20,7 +20,6 @@ import kotlinx.coroutines.flow.Flow
  * future export step must not call this repository.
  */
 interface DisplayPreferencesRepository {
-
     val preferences: Flow<DisplayPreferences>
 
     suspend fun setThemeMode(mode: ThemeMode)

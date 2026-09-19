@@ -31,24 +31,14 @@ import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
 data class PlantEntity(
     @PrimaryKey
     val id: String,
-
     val canonical_name: String,
-
     val created_at: Long,
-
     val updated_at: Long,
-
     val status: RecordStatus,
-
     val scientific_name: String? = null,
-
     val genus: String? = null,
-
     val species: String? = null,
-
     val family: String? = null,
-
     val lifecycle: PlantLifecycle? = null,
-
     val description: String? = null,
 )

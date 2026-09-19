@@ -14,7 +14,6 @@ import org.junit.Test
  * PHASE_0_PROJECT_FOUNDATION §31 (Presentation).
  */
 class ErrorStateTest {
-
     @get:Rule
     val composeRule = createComposeRule()
 
@@ -26,7 +25,8 @@ class ErrorStateTest {
             }
         }
 
-        composeRule.onNodeWithText("We couldn't save that change.")
+        composeRule
+            .onNodeWithText("We couldn't save that change.")
             .assertIsDisplayed()
     }
 

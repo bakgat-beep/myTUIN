@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PlantDao {
-
     @Insert
     suspend fun insert(plant: PlantEntity)
 

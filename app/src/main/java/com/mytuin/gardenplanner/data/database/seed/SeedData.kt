@@ -34,41 +34,40 @@ package com.mytuin.gardenplanner.data.database.seed
  * deprecation (status = 'deprecated'), not deletion.
  */
 object SeedData {
-
     /**
      * SQL statements to execute once, immediately after schema
      * creation. Order matters when foreign keys between seed rows
      * exist; today these are independent inserts into `plant`.
      */
-    val insertStatements: List<String> = listOf(
-        """
-        INSERT INTO plant (
-            id, canonical_name, scientific_name, genus, species, family,
-            lifecycle, description, status, created_at, updated_at
-        ) VALUES (
-            'plant_example_0001',
-            'Example Plant A',
-            NULL, NULL, NULL, NULL, NULL,
-            'Phase 0 seed row. Replaced by real Plant Library content in a later step.',
-            'active',
-            0,
-            0
+    val insertStatements: List<String> =
+        listOf(
+            """
+            INSERT INTO plant (
+                id, canonical_name, scientific_name, genus, species, family,
+                lifecycle, description, status, created_at, updated_at
+            ) VALUES (
+                'plant_example_0001',
+                'Example Plant A',
+                NULL, NULL, NULL, NULL, NULL,
+                'Phase 0 seed row. Replaced by real Plant Library content in a later step.',
+                'active',
+                0,
+                0
+            )
+            """.trimIndent(),
+            """
+            INSERT INTO plant (
+                id, canonical_name, scientific_name, genus, species, family,
+                lifecycle, description, status, created_at, updated_at
+            ) VALUES (
+                'plant_example_0002',
+                'Example Plant B',
+                NULL, NULL, NULL, NULL, NULL,
+                'Phase 0 seed row. Replaced by real Plant Library content in a later step.',
+                'active',
+                0,
+                0
+            )
+            """.trimIndent(),
         )
-        """.trimIndent(),
-
-        """
-        INSERT INTO plant (
-            id, canonical_name, scientific_name, genus, species, family,
-            lifecycle, description, status, created_at, updated_at
-        ) VALUES (
-            'plant_example_0002',
-            'Example Plant B',
-            NULL, NULL, NULL, NULL, NULL,
-            'Phase 0 seed row. Replaced by real Plant Library content in a later step.',
-            'active',
-            0,
-            0
-        )
-        """.trimIndent(),
-    )
 }

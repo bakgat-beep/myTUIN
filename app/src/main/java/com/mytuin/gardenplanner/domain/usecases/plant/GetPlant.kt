@@ -13,8 +13,10 @@ import javax.inject.Inject
  * Returns null when no Plant exists for the given id. Null is a valid
  * result, not an error (CORE_VOCABULARIES §4).
  */
-class GetPlant @Inject constructor(
-    private val repository: PlantRepository,
-) {
-    suspend operator fun invoke(id: String): Plant? = repository.getPlant(id)
-}
+class GetPlant
+    @Inject
+    constructor(
+        private val repository: PlantRepository,
+    ) {
+        suspend operator fun invoke(id: String): Plant? = repository.getPlant(id)
+    }

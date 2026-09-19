@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>myTUIN — UI/UX Reference</title>
+<style>
+:root{--green:#176b4d;--green2:#23805d;--pale:#eaf4ee;--ink:#23312b;--muted:#68756f;--line:#dfe7e2;--paper:#f7f8f5;--card:#fff;--warn:#fff4df;--danger:#fff0ee;--info:#edf6fb;--shadow:0 10px 30px rgba(31,55,45,.09)}
+*{box-sizing:border-box}body{margin:0;background:#eef1ed;color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}button{font:inherit}
+.top{position:sticky;top:0;z-index:10;background:rgba(247,248,245,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.topin{max-width:1400px;margin:auto;padding:14px 22px;display:flex;align-items:center;gap:24px;flex-wrap:wrap}.brand{font-weight:800;font-size:21px;letter-spacing:-.5px}.brand span{color:var(--green)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}.tabs button{border:0;background:transparent;padding:9px 13px;border-radius:10px;color:var(--muted);cursor:pointer}.tabs button.active{background:var(--green);color:white}
+.wrap{max-width:1400px;margin:auto;padding:28px 22px 60px}.hero{display:grid;grid-template-columns:1.4fr .8fr;gap:22px;margin-bottom:22px}.hero,.reference,.know,.legend{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);overflow:hidden}.heroText{padding:30px}.eyebrow{text-transform:uppercase;letter-spacing:1.3px;font-size:11px;color:var(--green);font-weight:800}.hero h1{font-size:36px;line-height:1.05;margin:8px 0 12px}.hero p{max-width:760px;color:var(--muted);line-height:1.6;margin:0}.principles{padding:26px;background:var(--pale)}.principles h3{margin:0 0 14px}.principles li{margin:9px 0;color:#39564a;font-size:14px}
+.legend{padding:22px 26px;margin-bottom:22px}.legend h2{margin:0 0 8px;font-size:19px}.legend .lede{color:var(--muted);font-size:13px;line-height:1.6;max-width:900px;margin:0 0 16px}
+.legendgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.legendgrid div{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:11px 13px;font-size:12px;line-height:1.55;color:#596760}
+.legendgrid b{display:block;font-size:11px;color:var(--ink);margin-bottom:4px;letter-spacing:.2px}
+.legendgrid code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:10.5px;background:#e9eee9;padding:1px 4px;border-radius:3px;color:#4a5f53}
+.reference{padding:22px;margin-bottom:22px}.reference img{width:100%;display:block;border-radius:14px}.refcap{display:flex;justify-content:space-between;gap:20px;align-items:center;margin-top:12px;color:var(--muted);font-size:13px}.refcap a{color:var(--green);font-weight:700}
+.app{display:grid;grid-template-columns:minmax(360px,430px) 1fr;gap:25px;align-items:start}.phone{background:#e7ebe7;border:1px solid #ccd5cf;border-radius:34px;padding:10px;box-shadow:0 20px 50px rgba(25,45,35,.16);max-width:430px;margin:auto}
+.screen{background:#fafbf8;height:760px;border-radius:26px;overflow:hidden;position:relative;display:flex;flex-direction:column}
+.scroll{flex:1;overflow-y:auto;scrollbar-width:thin}
+.status{height:27px;display:flex;justify-content:space-between;padding:7px 15px 0;font-size:10px;color:#64736b}
+.bar{display:flex;align-items:center;justify-content:space-between;padding:14px 17px 10px}.bar h2{font-size:21px;margin:0;letter-spacing:-.4px}.bar .logo{font-weight:800;font-size:18px}
+.content{padding:0 15px 20px}
+.card{background:white;border:1px solid var(--line);border-radius:14px;padding:13px;margin:10px 0;box-shadow:0 2px 8px rgba(35,50,43,.035)}.card h3,.card p{margin:0}.card h3{font-size:14px}
+.sub{font-size:11px;color:var(--muted);margin-top:4px!important}
+.section{font-size:12px;font-weight:800;margin:18px 2px 7px}
+.row{display:flex;align-items:center;gap:11px}.icon{width:32px;height:32px;border-radius:10px;background:var(--pale);display:grid;place-items:center;flex:0 0 32px}.arrow{margin-left:auto;color:#829088}
+.pill{display:inline-block;padding:5px 9px;border-radius:999px;background:#f0f3ef;color:#5f6e66;font-size:10px;margin:2px}.pill.on{background:var(--green);color:white}
+.alert{background:var(--danger);border-color:#f4d2cc}.info{background:var(--info)}.yellow{background:var(--warn)}.why{background:var(--pale);border-color:#cfe3d6}
+.bottom{flex:0 0 65px;background:rgba(255,255,255,.96);border-top:1px solid var(--line);display:flex;justify-content:space-around;align-items:center}
+.navitem{font-size:9px;color:#718078;text-align:center;cursor:pointer}.navitem b{display:block;font-size:18px;line-height:20px}.navitem.active{color:var(--green);font-weight:800}
+.fab{position:absolute;right:17px;bottom:78px;width:47px;height:47px;border-radius:50%;background:var(--green);color:white;border:0;font-size:27px;box-shadow:0 8px 20px rgba(23,107,77,.3);cursor:pointer}
+.btnrow{display:flex;gap:10px;margin-top:14px}.btn{flex:1;border:0;border-radius:12px;padding:12px;font-weight:700;font-size:13px;background:var(--green);color:#fff;cursor:pointer}.btn.ghost{background:#fff;border:1px solid var(--line);color:var(--ink)}
+.smallphoto{width:43px;height:43px;border-radius:10px;background:linear-gradient(135deg,#7da566,#d6e5bd);flex:0 0 43px;display:grid;place-items:center;font-size:20px}
+.detailHero{border-radius:14px;background:linear-gradient(135deg,#dcebd2,#8aae6f);height:120px;display:flex;align-items:flex-end;padding:13px;color:#18382a;margin-bottom:10px}.detailHero strong{font-size:20px}.detailHero .latin{font-size:11px;opacity:.75;display:block}
+.tabs2{display:flex;background:#edf1ed;border-radius:10px;padding:3px;margin-bottom:11px}.tabs2 span{flex:1;text-align:center;padding:7px;border-radius:8px;font-size:10px;color:#66746d}.tabs2 .sel{background:white;color:var(--green);font-weight:800;box-shadow:0 1px 3px #dce3de}
+.search{border:1px solid var(--line);background:white;border-radius:12px;padding:10px 12px;color:#849088;font-size:12px}
+.screenmap{height:220px;border-radius:13px;background:linear-gradient(135deg,#dbe9d7,#c9dfc3);position:relative;overflow:hidden;margin-bottom:10px}
+.plot{position:absolute;background:#87a978;border:3px solid #698b5d;border-radius:10px}.plot.p1{left:8%;top:12%;width:28%;height:31%}.plot.p2{left:43%;top:9%;width:23%;height:34%}.plot.p3{left:69%;top:18%;width:24%;height:27%}.plot.p4{left:13%;top:51%;width:35%;height:35%}.plot.p5{left:55%;top:55%;width:34%;height:30%}
+.tree{position:absolute;font-size:22px}.t1{left:5%;top:4%}.t2{right:3%;bottom:4%}
+.checkrow{display:flex;align-items:center;gap:10px;font-size:13px;padding:8px 0;border-bottom:1px solid var(--line)}.checkrow:last-child{border-bottom:0}.checkrow span:first-child{color:var(--green);font-weight:800}
+/* Vocabulary chips */
+.vids{margin-top:7px;line-height:1.85}
+.vid{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:9.5px;color:#4e6357;background:#eef2ee;border:1px solid #e0e7e1;padding:2px 6px;border-radius:4px;display:inline-block;margin:0 3px 0 0;letter-spacing:.1px;white-space:nowrap}
+.vid b{color:#81948a;font-weight:500;margin:0 2px}
+.vid.plan{background:#eaf4ee;border-color:#cfe3d6;color:#28613f}
+.vid.prov{background:#eaf0f8;border-color:#d3e0f0;color:#3d5f8a}
+.vid.act{background:#f6efe4;border-color:#ecdcc2;color:#7a5a2b}
+.vid.prob{background:#f9ecea;border-color:#eed4cf;color:#8a4a3f}
+.vid.soil{background:#f2efe4;border-color:#e5dec6;color:#6a5e2c}
+.note{background:white;border:1px solid var(--line);border-radius:18px;padding:23px;box-shadow:var(--shadow)}.note h2{margin:0 0 6px}.note .purpose{color:var(--green);font-weight:700;margin-bottom:18px}.note h3{font-size:14px;margin:19px 0 7px}.note p,.note li{font-size:13px;line-height:1.55;color:#596760}.note ul{padding-left:19px}
+.note .vocablist{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:6px;font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:11px;line-height:1.75;color:#4e6357;word-break:break-all}
+.note .docrefs{font-size:11px;color:#7a8a80;margin-top:12px;line-height:1.7}
+.note .docrefs code{background:#eef2ee;padding:1px 5px;border-radius:3px;font-size:10.5px}
+.flow{display:flex;gap:7px;flex-wrap:wrap}.flow span{background:var(--pale);padding:8px 10px;border-radius:10px;font-size:11px;font-weight:700;color:#3c6655}
+@media(max-width:1100px){.legendgrid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:900px){.hero,.app{grid-template-columns:1fr}.heroText{padding:24px}.phone{max-width:430px}.note{max-width:700px;margin:auto}}
+</style>
+</head>
+<body>
+<header class="top"><div class="topin"><div class="brand">my<span>TUIN</span></div><div class="tabs" id="tabs"></div></div></header>
+<main class="wrap">
+
+<section class="hero">
+  <div class="heroText">
+    <div class="eyebrow">UI / UX grounding reference</div>
+    <h1>The myTUIN experience</h1>
+    <p>This is a visual and interactive reference for the coding AI. It shows the intended <b>feel, hierarchy, relationships</b> and <b>controlled vocabulary bindings</b> of the app. It is not a technical specification and not a pixel-perfect design.</p>
+    <div class="flow" style="margin-top:20px"><span>Understand</span><span>Plan</span><span>Decide</span><span>Act</span><span>Observe</span><span>Learn</span></div>
+  </div>
+  <div class="principles">
+    <h3>Build for the gardener</h3>
+    <ul>
+      <li>Calm, clear, earthy and practical.</li>
+      <li>Cards organise information; they do not bury it.</li>
+      <li>Show context and relationships, not isolated records.</li>
+      <li>Maps feel like a real garden, not a GIS application.</li>
+      <li>Recommendations explain themselves.</li>
+      <li>Recording something should be quick.</li>
+      <li><b>Never blur what you recorded, what you observed, what myTUIN inferred, what it recommends, and what actually happened.</b></li>
+    </ul>
+  </div>
+</section>
+
+<section class="legend">
+  <div class="eyebrow">Convention</div>
+  <h2>How to read this reference</h2>
+  <p class="lede">Every chip below a label shows the <b>canonical vocabulary identifier</b> the coding AI must store — never the display text. Display strings are localisation concerns. Rules, validation, import/export and database values all use the identifiers shown.</p>
+  <div class="legendgrid">
+    <div><b>Semantic layers</b><code>data_origin</code> <code>evidence_type</code> <code>information_state</code> <code>confidence</code> — a fact, an observation, an inference and a recommendation are never the same record.</div>
+    <div><b>Planning vs. reality</b><code>planning_status</code> is intent. <code>activity_type</code>+<code>status</code> is what happened. A plan is never evidence that an activity occurred.</div>
+    <div><b>Recommendation</b><code>recommendation_status</code>, <code>confidence</code>, <code>suitability_dimension</code>, <code>recommendation_factor_result</code> and <code>recommendation_reason_type</code> are separate fields. Suitability is not confidence.</div>
+    <div><b>Sources</b><code>source_status</code>, <code>evidence_type</code> and <code>knowledge_maturity</code> describe provenance. Verified does not mean guaranteed correct.</div>
+  </div>
+</section>
+
+<section class="reference">
+  <img src="visual_reference.png" alt="Original myTUIN UI concept board">
+  <div class="refcap"><span>Original visual concept board — broad visual target. The screens below are the <b>vocabulary-conformant</b> reference.</span><a href="#screens">Jump to interactive screens ↓</a></div>
+</section>
+
+<section class="app" id="screens"><div class="phone"><div class="screen" id="screen"></div></div><aside class="note" id="notes"></aside></section>
+</main>
+
+<script>
+const NAV=[['Home','⌂'],['Garden','▦'],['Plants','♧'],['Planner','▤'],['Inbox','▥']];
+
+function navFor(active){
+  return '<div class="bottom">'+NAV.map(function(p){
+    return '<div class="navitem '+(p[0]===active?'active':'')+'" onclick="show(\''+p[0]+'\')"><b>'+p[1]+'</b>'+p[0]+'</div>';
+  }).join('')+'</div>';
+}
+function base(active,body,fab){
+  return '<div class="scroll"><div class="status"><span>9:41</span><span>● ● ▰</span></div>'+body+'</div>'+navFor(active)+(fab===false?'':'<button class="fab">+</button>');
+}
+
+// Render a set of vocabulary chips.
+// Each entry is a string like "data_origin = user_observed" or "planning_status"
+// We classify by prefix for subtle colour grouping.
+function vids(list){
+  if(!list||!list.length) return '';
+  return '<div class="vids">'+list.map(function(v){
+    const k=v.split(/[ =]/)[0];
+    let cls='vid';
+    if(/^(planning_status|recommendation_status|recommendation_factor_result|suitability_dimension|recommendation_reason_type|planning_priority|experiment_status)$/.test(k)) cls+=' plan';
+    else if(/^(data_origin|evidence_type|information_state|confidence|source_status|knowledge_maturity|source_relationship|applicability)$/.test(k)) cls+=' prov';
+    else if(/^(activity_type|status|planting_method|watering_method|harvest_classification|harvest_size_category|harvest_loss_cause|quantity_unit)$/.test(k)) cls+=' act';
+    else if(/^(problem_category|problem_status|severity|symptom_category|diagnostic_reasoning_state|evidence_direction|outcome)$/.test(k)) cls+=' prob';
+    else if(/^(drainage|soil_texture|moisture_status|compaction|soil_test_method|soil_observation_method|amendment_category)$/.test(k)) cls+=' soil';
+    const [key,val]=v.split(' = ');
+    return '<span class="'+cls+'">'+key+(val?' <b>=</b> '+val:'')+'</span>';
+  }).join('')+'</div>';
+}
+
+const SCREENS={
+
+Home:{tab:'Home',fab:true,
+purpose:'Answer: “What matters in my garden right now?”',
+feel:'“I immediately know what is worth my attention.”',
+rules:[
+ 'Prioritise a small number of genuinely useful items.',
+ 'Every card shows the semantic layer it belongs to — recorded, planned, observed, inferred, or recommended.',
+ 'General guidance is marked with data_origin = built_in and evidence_type = curated_guidance. Never disguised as garden-specific advice.',
+ 'Recent activity provides context, not a social feed.',
+ 'The + button is the fastest route to recording something.'
+],
+flow:'Open → understand → decide → act → record',
+vocab:[
+ 'problem_category = water_stress','problem_status = suspected','severity = moderate','confidence = low',
+ 'planning_status = planned',
+ 'activity_type = watering','status = completed','data_origin = user_created',
+ 'data_origin = built_in','evidence_type = curated_guidance','applicability = general'
+],
+html:'<div class="bar"><div class="logo">🌱 myTUIN</div><span>⚙</span></div><div class="content">'
++'<p style="font-size:12px;color:#6d7973;margin:2px 0 14px">Good morning. Here’s what’s happening in your garden.</p>'
++'<div class="card alert"><div class="row"><div class="icon">⚠️</div><div><h3>Tomato plants in Bed 2</h3><p class="sub">Possible water stress · leaves yellowing</p><p class="sub" style="opacity:.75">Observed by you · 2 related items in Inbox</p>'+vids(['problem_category = water_stress','problem_status = suspected','confidence = low','data_origin = user_observed'])+'</div><span class="arrow">›</span></div></div>'
++'<div class="section">Upcoming</div>'
++'<div class="card"><div class="row"><div class="icon">🌱</div><div><h3>Plant carrots in Bed 3</h3><p class="sub">Due in 4 days</p>'+vids(['planning_status = planned','target = bed_3'])+'</div><span class="arrow">›</span></div></div>'
++'<div class="card"><div class="row"><div class="icon">🥬</div><div><h3>Harvest lettuce</h3><p class="sub">Due in 6 days</p>'+vids(['planning_status = planned'])+'</div><span class="arrow">›</span></div></div>'
++'<div class="section">Recent activity</div>'
++'<div class="card"><div class="row"><div class="icon">💧</div><div><h3>Watered Bed 2</h3><p class="sub">Today, 09:14</p>'+vids(['activity_type = watering','status = completed','data_origin = user_created'])+'</div></div></div>'
++'<div class="card yellow"><div class="row"><div class="icon">☀️</div><div><h3>Seasonal tip</h3><p class="sub">Now is a good time to sow beans and plant warm-weather crops.</p><p class="sub" style="opacity:.7">General guidance · not based on your garden</p>'+vids(['data_origin = built_in','evidence_type = curated_guidance','applicability = general'])+'</div></div></div>'
++'</div>'},
+
+Garden:{tab:'Garden',fab:true,
+purpose:'Answer: “What is happening where?”',
+feel:'“I can see my real garden and understand what is happening in each place.”',
+rules:[
+ 'The map is the primary spatial view.',
+ 'Selecting a space reveals what is there, what happened there, and its history.',
+ 'Spatial editing must never erase historical information.',
+ 'Use a list or zone view when the map is not the best way to find something.',
+ '“Not placed” is a legitimate state — not every plant has a location yet.'
+],
+flow:'Garden → space → plant / activity / history',
+vocab:[
+ 'space_type = raised_bed | garden_bed | container | …',
+ 'planning_status = planned','information_state = not_recorded'
+],
+html:'<div class="bar"><h2>Garden</h2><span>⌕</span></div><div class="content">'
++'<div class="tabs2"><span class="sel">Map</span><span>List</span><span>Zones</span></div>'
++'<div class="screenmap"><span class="tree t1">🌳</span><span class="tree t2">🌳</span><div class="plot p1"></div><div class="plot p2"></div><div class="plot p3"></div><div class="plot p4"></div><div class="plot p5"></div><span style="position:absolute;left:28%;top:32%">②</span><span style="position:absolute;left:52%;top:27%">③</span><span style="position:absolute;left:72%;top:67%">①</span></div>'
++'<div class="section">Garden areas</div>'
++'<div class="card"><div class="row"><div class="icon">🌿</div><div><h3>Bed 1</h3><p class="sub">2.4 × 1.2 m · Vegetables · 3 plants</p>'+vids(['space_type = raised_bed'])+'</div><span class="arrow">›</span></div></div>'
++'<div class="card"><div class="row"><div class="icon">🍅</div><div><h3>Bed 2</h3><p class="sub">2.4 × 1.2 m · Tomatoes (2 plants)</p>'+vids(['space_type = raised_bed'])+'</div><span class="arrow">›</span></div></div>'
++'<div class="card"><div class="row"><div class="icon">🥕</div><div><h3>Bed 3</h3><p class="sub">2.4 × 1.2 m · Carrots · planned, not planted</p>'+vids(['space_type = raised_bed','planning_status = planned'])+'</div><span class="arrow">›</span></div></div>'
++'<div class="section">Not placed</div>'
++'<div class="card"><div class="row"><div class="icon">🪴</div><div><h3>2 plants without a location</h3><p class="sub">Assign a space to see them on the map</p>'+vids(['growing_space_id = null'])+'</div><span class="arrow">›</span></div></div>'
++'</div>'},
+
+Plants:{tab:'Plants',fab:true,
+purpose:'Answer: “What do I know, and what do I actually have?”',
+feel:'“I can move between plant knowledge and the plants I actually grow.”',
+rules:[
+ 'Plant Library is general knowledge; My Plants is the gardener’s actual plants.',
+ 'The library must not feel like a shopping catalogue — no prices, no “buy”, no marketing.',
+ 'Knowledge items carry provenance: source, version, status.',
+ 'A library plant and your plant are different records that link to each other.'
+],
+flow:'Find plant → understand → add to garden → record',
+vocab:[
+ 'data_origin = built_in','evidence_type = curated_guidance',
+ 'lifecycle = annual | biennial | perennial','status = active'
+],
+html:'<div class="bar"><h2>Plants</h2><span>⌕</span></div><div class="content">'
++'<div class="tabs2"><span class="sel">Plant Library</span><span>My Plants</span></div>'
++'<div class="search">⌕ &nbsp; Search plants…</div>'
++'<div style="margin:12px 0"><span class="pill on">Vegetables</span><span class="pill">Herbs</span><span class="pill">Fruit</span><span class="pill">Flowers</span><span class="pill">All</span></div>'
++'<div class="section">Plant knowledge</div>'
++'<div class="card"><div class="row"><div class="smallphoto">🍅</div><div><h3>Tomato</h3><p class="sub">Solanum lycopersicum · Sun · Well-drained soil · 70–120 days</p>'+vids(['data_origin = built_in','lifecycle = annual'])+'</div><span class="arrow">›</span></div></div>'
++'<div class="card"><div class="row"><div class="smallphoto">🥕</div><div><h3>Carrot</h3><p class="sub">Daucus carota · Sun · Loose soil · 70–80 days</p>'+vids(['data_origin = built_in','lifecycle = biennial'])+'</div><span class="arrow">›</span></div></div>'
++'<div class="card"><div class="row"><div class="smallphoto">🥬</div><div><h3>Lettuce</h3><p class="sub">Lactuca sativa · Partial shade · Moist soil · 45–70 days</p>'+vids(['data_origin = built_in','lifecycle = annual'])+'</div><span class="arrow">›</span></div></div>'
++'</div>'},
+
+'Plant detail':{tab:'Plants',fab:false,
+purpose:'Show knowledge, your own plants, and other gardeners’ experience side by side — visibly separate.',
+feel:'“I can see what is known, what is mine, and what other people observed — and I can tell them apart.”',
+rules:[
+ 'Plant knowledge is shown with its source, version and status.',
+ 'Your own plants and their history sit alongside, never merged into, library knowledge.',
+ 'Imported gardener experience is a third, clearly-labelled layer.',
+ 'A recommendation states its status and its confidence separately, and names the reasons.',
+ 'Administrative provenance (source, version, verification) lives in Settings, not the everyday library.'
+],
+flow:'Know → understand → add to my garden → plan → record',
+vocab:[
+ 'recommendation_status = recommended','confidence = moderate',
+ 'suitability_dimension: light|water|soil|rotation','recommendation_factor_result = excellent|good|marginal|poor',
+ 'recommendation_reason_type = soil_match | timing_match | rotation_compatible',
+ 'data_origin = built_in','source_status = verified','evidence_type = curated_guidance',
+ 'evidence_type = community_observation (future)','knowledge_maturity = aggregated_observations (future)'
+],
+html:'<div class="bar"><h2>← Tomato</h2><span>⌄</span></div><div class="content">'
++'<div class="detailHero"><div><strong>Tomato</strong><span class="latin">Solanum lycopersicum · Warm season · Annual</span></div></div>'
++'<div class="tabs2"><span class="sel">Overview</span><span>My Plants</span><span>Growing</span><span>Experience</span></div>'
++'<div class="section">About</div>'
++'<div class="card"><p class="sub" style="margin-top:0">Warm-weather plants that thrive in full sun and well-drained soil. They benefit from regular watering, feeding and support.</p>'+vids(['evidence_type = curated_guidance','data_origin = built_in'])+'</div>'
++'<div class="section">Growing tips</div>'
++'<div class="card"><div class="row"><div class="icon">☀️</div><div><h3>Sun</h3><p class="sub">Full sun (6+ hours)</p>'+vids(['suitability_dimension = light'])+'</div></div></div>'
++'<div class="card"><div class="row"><div class="icon">🪴</div><div><h3>Soil</h3><p class="sub">Well-drained, rich</p>'+vids(['suitability_dimension = soil'])+'</div></div></div>'
++'<div class="card"><p class="sub" style="margin:0">ⓘ General growing knowledge · built-in library v2026.1 · source, version and status are managed in <b>Settings → Knowledge &amp; Data</b>.</p>'+vids(['data_origin = built_in','source_status = verified','source_relationship = direct'])+'</div>'
++'<div class="section">Your plants of this variety</div>'
++'<div class="card"><div class="row"><div class="icon">🍅</div><div><h3>2 plants · Bed 2</h3><p class="sub">Cherry variety · planted 12 Apr 2025 · growing</p>'+vids(['plant_instance status = planted','growing_space_id = bed_2'])+'</div><span class="arrow">›</span></div></div>'
++'<div class="section">Other gardeners’ experience <span class="pill">Future — not V1</span></div>'
++'<div class="card" style="opacity:.6"><div class="row" style="align-items:flex-start"><div class="icon">👥</div><div><h3>14 gardeners reported good results</h3><p class="sub">Target state only. V1 models the package format; it does not exchange it.</p>'+vids(['evidence_type = community_observation','data_origin = user_imported','knowledge_maturity = aggregated_observations'])+'</div></div></div>'
++'<div class="section">Recommendation</div>'
++'<div class="card why"><h3>Good suitability for Bed 3</h3>'
++'<p class="sub" style="margin-top:6px!important">Why: your soil is suitable · current season is suitable · planting time is suitable · rotation is suitable.</p>'
++'<p class="sub"><b>Based on:</b> your garden records · general growing knowledge.</p>'
++vids(['recommendation_status = recommended','confidence = moderate','recommendation_reason_type = soil_match','recommendation_reason_type = timing_match','recommendation_reason_type = rotation_compatible'])
++'<p class="sub" style="opacity:.75">Doing nothing is also a valid decision.</p></div>'
++'<div class="btnrow"><button class="btn">Add to my garden</button></div>'
++'</div>'},
+
+Planner:{tab:'Planner',fab:true,
+purpose:'Answer: “What am I intending to do?”',
+feel:'“I can see what I intend to do without confusing plans with history.”',
+rules:[
+ 'Planner deals with the gardener’s own intentions and future work.',
+ 'The Ideas tab holds loose intentions (planning_status = idea) — the gardener’s own notes to self, not system recommendations.',
+ 'A plan is not proof that an activity happened.',
+ 'Completing a plan leads naturally to recording what actually happened — as a separate activity record.',
+ 'System recommendations belong in Inbox and in the space-planning flow, not in Planner.'
+],
+flow:'Decide → plan → act → record actual activity',
+vocab:[
+ 'planning_status = idea | planned | scheduled | in_progress | partially_completed | completed | skipped | cancelled | expired | superseded'
+],
+html:'<div class="bar"><h2>Planner</h2><span>☷</span></div><div class="content">'
++'<div class="tabs2"><span class="sel">Ideas</span><span>My Plans</span><span>Completed</span></div>'
++'<div class="section">This week</div>'
++'<div class="card"><div class="row"><div class="icon">🥕</div><div><h3>Plant carrots in Bed 3</h3><p class="sub">Due in 4 days</p>'+vids(['planning_status = planned'])+'</div><span class="arrow">›</span></div></div>'
++'<div class="card"><div class="row"><div class="icon">🥬</div><div><h3>Harvest lettuce</h3><p class="sub">Due in 6 days</p>'+vids(['planning_status = planned'])+'</div><span class="arrow">›</span></div></div>'
++'<div class="card"><div class="row"><div class="icon">⚠️</div><div><h3>Check for pests (tomatoes)</h3><p class="sub">Due in 7 days</p>'+vids(['planning_status = planned'])+'</div><span class="arrow">›</span></div></div>'
++'<div class="section">Later</div>'
++'<div class="card"><div class="row"><div class="icon">🏡</div><div><h3>Prepare greenhouse</h3><p class="sub">In 2 weeks</p>'+vids(['planning_status = planned'])+'</div><span class="arrow">›</span></div></div>'
++'<div class="card"><div class="row"><div class="icon">🌱</div><div><h3>Sow beans</h3><p class="sub">In 3 weeks</p>'+vids(['planning_status = planned'])+'</div><span class="arrow">›</span></div></div>'
++'<div class="section">Considering</div>'
++'<div class="card"><div class="row"><div class="icon">💭</div><div><h3>Try a second tomato variety</h3><p class="sub">No date yet</p>'+vids(['planning_status = idea'])+'</div><span class="arrow">›</span></div></div>'
++'</div>'},
+
+Inbox:{tab:'Inbox',fab:true,
+purpose:'Answer: “What has my garden brought to my attention?”',
+feel:'“The garden is giving me useful things to consider, without nagging me.”',
+rules:[
+ 'Inbox is a gentle attention surface, not a task dump.',
+ 'Every item shows where it came from: your observation, myTUIN inference, external data, or general knowledge.',
+ 'Dismiss means “not relevant”; mute means “don’t keep reminding me”.',
+ 'Every item carries enough context to understand why it is here.',
+ 'Nothing in Inbox is silently turned into a task.'
+],
+flow:'Notice → understand → act / dismiss / mute',
+vocab:[
+ 'data_origin = user_observed | system_inferred | system_derived | external_dataset',
+ 'evidence_type = user_observation | curated_guidance | institutional_guidance',
+ 'information_state = inferred | estimated','problem_category = …','recommendation_status = possible'
+],
+html:'<div class="bar"><h2>Inbox</h2><span>⚙</span></div><div class="content">'
++'<div class="tabs2"><span class="sel">All</span><span>Actions</span><span>Warnings</span><span>Info</span></div>'
++'<div class="card alert"><div class="row"><div class="icon">⚠️</div><div><h3>Check tomato leaves</h3><p class="sub">Possible disease signs · your observation</p><p class="sub" style="opacity:.75">Today, 09:12</p>'+vids(['data_origin = user_observed','evidence_type = user_observation','problem_category = disease','problem_status = suspected'])+'</div><span class="arrow">›</span></div></div>'
++'<div class="card info"><div class="row"><div class="icon">💧</div><div><h3>Water Bed 2</h3><p class="sub">Soil moisture low · inferred from weather and your last watering</p><p class="sub" style="opacity:.75">Today, 08:45</p>'+vids(['data_origin = system_inferred','information_state = inferred','recommendation_status = possible'])+'</div><span class="arrow">›</span></div></div>'
++'<div class="card"><div class="row"><div class="icon">🌿</div><div><h3>Recommended: companion plants</h3><p class="sub">Good options for tomatoes · based on plant knowledge</p><p class="sub" style="opacity:.75">Yesterday, 16:32</p>'+vids(['evidence_type = curated_guidance','recommendation_status = possible'])+'</div><span class="arrow">›</span></div></div>'
++'<div class="card info"><div class="row"><div class="icon">❄️</div><div><h3>Frost warning</h3><p class="sub">Cold night expected (2 °C) · weather, not your records</p><p class="sub" style="opacity:.75">Yesterday, 10:21</p>'+vids(['data_origin = external_dataset','evidence_type = institutional_guidance','applicability = applicable'])+'</div><span class="arrow">›</span></div></div>'
++'<div class="card"><div class="row"><div class="icon">🌱</div><div><h3>Harvest window</h3><p class="sub">Ready in 3–5 days · estimated from your planting date</p><p class="sub" style="opacity:.75">Apr 24, 14:03</p>'+vids(['data_origin = system_derived','information_state = estimated'])+'</div><span class="arrow">›</span></div></div>'
++'<p class="sub" style="text-align:center;margin-top:16px">Swipe an item to dismiss · long-press to mute</p>'
++'</div>'},
+
+'Knowledge & Data':{tab:null,fab:false,
+purpose:'Give advanced users a proper place to manage sources, imports and provenance.',
+feel:'“This exists if I want it, and it never gets in my way.”',
+rules:[
+ 'Lives in Settings, not in the everyday Plants experience.',
+ 'The ordinary gardener should never have to care about sources, versions or provenance.',
+ 'Each source shows what it is, where it came from and when it was updated.',
+ 'Imports are reversible and recorded in an import history.',
+ 'Export produces portable data the gardener owns.'
+],
+flow:'Settings → Knowledge & Data → sources / imports / exports',
+vocab:[
+ 'data_origin = built_in | user_imported | external_dataset',
+ 'source_status = verified | partially_verified | unverified | outdated | superseded',
+ 'evidence_type = curated_guidance | institutional_guidance | published_research',
+ 'knowledge_maturity = personal_observation | emerging_pattern | reviewed_guidance | established_knowledge'
+],
+html:'<div class="bar"><h2>Knowledge &amp; Data</h2><span>←</span></div><div class="content">'
++'<p style="font-size:12px;color:#6d7973;margin:2px 0 14px">Advanced settings. The everyday app never asks you to think about any of this.</p>'
++'<div class="section">Plant knowledge</div>'
++'<div class="card"><div class="row"><div class="icon">📚</div><div><h3>Plant knowledge</h3><p class="sub">Built-in library v2026.1 · 412 plants</p>'+vids(['data_origin = built_in','evidence_type = curated_guidance'])+'</div><span class="arrow">›</span></div></div>'
++'<div class="card"><div class="row"><div class="icon">🔗</div><div><h3>Knowledge sources</h3><p class="sub">1 external source installed · verified</p>'+vids(['source_status = verified','evidence_type = institutional_guidance'])+'</div><span class="arrow">›</span></div></div>'
++'<div class="section">Shared experience <span class="pill">Future — not V1</span></div>'
++'<div class="card" style="opacity:.6"><div class="row"><div class="icon">👥</div><div><h3>Shared experiences</h3><p class="sub">Not available in V1. The package format is modelled; the exchange is not.</p>'+vids(['evidence_type = community_observation','knowledge_maturity = aggregated_observations'])+'</div></div></div>'
++'<div class="section">Data</div>'
++'<div class="card"><div class="row"><div class="icon">⬇️</div><div><h3>Import data</h3></div><span class="arrow">›</span></div></div>'
++'<div class="card"><div class="row"><div class="icon">⬆️</div><div><h3>Export data</h3></div><span class="arrow">›</span></div></div>'
++'<div class="card"><div class="row"><div class="icon">🕘</div><div><h3>Import history</h3></div><span class="arrow">›</span></div></div>'
++'<div class="card"><div class="row"><div class="icon">🛟</div><div><h3>Data backups</h3></div><span class="arrow">›</span></div></div>'
++'</div>'},
+
+Import:{tab:null,fab:false,
+purpose:'Bring your own exported garden data back in — for restore or migration.',
+feel:'“I understand exactly what I am bringing in, and that it is mine.”',
+rules:[
+ 'This imports the gardener’s own data. It is a restore, not an acquisition.',
+ 'Stable IDs and relationships are preserved; conflicts are surfaced, never silently resolved.',
+ 'Validation runs before anything is written.',
+ 'Importing someone else’s garden experience is a separate, later capability.'
+],
+flow:'Review package → validate → resolve conflicts → restore',
+vocab:[
+ 'import_validation_severity = information | warning | error | critical',
+ 'import_record_status = pending | validated | warning | rejected | imported | updated | skipped | conflict',
+ 'data_origin = user_exported'
+],
+html:'<div class="bar"><h2>Import data</h2><span>✕</span></div><div class="content">'
++'<div class="card"><div class="row"><div class="icon">🗂️</div><div><h3>mytuin-export-2026-09-10.json</h3><p class="sub">Your own garden data · 1,204 records · 2 spaces conflict</p>'+vids(['import_record_status = conflict'])+'</div></div></div>'
++'<div class="section">Contents</div>'
++'<div class="card"><div class="checkrow"><span>☑</span><span>Spaces &amp; beds</span></div><div class="checkrow"><span>☑</span><span>Plants &amp; plantings</span></div><div class="checkrow"><span>☑</span><span>Activities &amp; observations</span></div><div class="checkrow"><span>☑</span><span>Plans &amp; completed history</span></div><div class="checkrow"><span>☑</span><span>Harvests &amp; problems</span></div></div>'
++'<div class="card info"><p class="sub" style="margin:0">2 records conflict with your current garden. You will be asked which to keep. Nothing is overwritten automatically.</p>'+vids(['import_validation_severity = warning'])+'</div>'
++'<div class="btnrow"><button class="btn ghost">Cancel</button><button class="btn">Validate &amp; import</button></div>'
++'<div class="section">Later</div>'
++'<div class="card" style="opacity:.6"><div class="row"><div class="icon">👥</div><div><h3>Shared experience packages</h3><p class="sub">Not available in V1. The data model supports them from the start; the exchange does not exist yet.</p>'+vids(['knowledge_maturity = aggregated_observations'])+'</div></div></div>'
++'</div>'}
+
+};
+
+function show(name){
+  const s=SCREENS[name];
+  document.getElementById('screen').innerHTML=base(s.tab,s.html,s.fab);
+  document.getElementById('notes').innerHTML=
+    '<div class="eyebrow">'+(s.tab?s.tab+' screen':'Settings / reference')+'</div>'
+    +'<h2>'+name+'</h2>'
+    +'<div class="purpose">'+s.purpose+'</div>'
+    +'<h3>What the user should feel</h3><p>'+s.feel+'</p>'
+    +'<h3>Important behaviour</h3><ul>'+s.rules.map(function(r){return '<li>'+r+'</li>'}).join('')+'</ul>'
+    +'<h3>Canonical vocabulary used</h3>'
+    +'<div class="vocablist">'+s.vocab.join('<br>')+'</div>'
+    +'<h3>Typical flow</h3><p><b>'+s.flow+'</b></p>'
+    +'<div class="docrefs"><b>Vocabulary sources:</b> '
+    +'<code>CORE_VOCABULARIES.md</code> <code>PROVENANCE_VOCABULARIES.md</code> '
+    +'<code>PLANNING_VOCABULARIES.md</code> <code>ACTIVITY_VOCABULARIES.md</code> '
+    +'<code>PLANT_VOCABULARIES.md</code> <code>SOIL_VOCABULARIES.md</code> '
+    +'<code>PROBLEM_VOCABULARIES.md</code> <code>GARDEN_VOCABULARIES.md</code>'
+    +'</div>';
+  document.querySelectorAll('#tabs button').forEach(function(b){b.classList.toggle('active',b.textContent===name)});
+  window.scrollTo({top:document.getElementById('screens').offsetTop-80,behavior:'smooth'});
+}
+
+const tab=document.getElementById('tabs');
+Object.keys(SCREENS).forEach(function(x){
+  const b=document.createElement('button');
+  b.textContent=x;
+  b.onclick=function(){show(x)};
+  tab.appendChild(b);
+});
+show('Home');
+</script>
+</body></html>

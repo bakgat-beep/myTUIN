@@ -15,20 +15,22 @@ import javax.inject.Inject
  *
  * Only geometry is changed (A66=a). Dimensions arrive in a later step.
  */
-class UpdateGrowingSpaceGeometry @Inject constructor(
-    private val repository: GrowingSpaceRepository,
-    private val clock: Clock,
-) {
-    suspend operator fun invoke(
-        growingSpaceId: String,
-        newGeometry: Geometry?,
-        reason: String? = null,
+class UpdateGrowingSpaceGeometry
+    @Inject
+    constructor(
+        private val repository: GrowingSpaceRepository,
+        private val clock: Clock,
     ) {
-        repository.updateGeometry(
-            id = growingSpaceId,
-            newGeometry = newGeometry,
-            effectiveAt = clock.nowMillis(),
-            reason = reason,
-        )
+        suspend operator fun invoke(
+            growingSpaceId: String,
+            newGeometry: Geometry?,
+            reason: String? = null,
+        ) {
+            repository.updateGeometry(
+                id = growingSpaceId,
+                newGeometry = newGeometry,
+                effectiveAt = clock.nowMillis(),
+                reason = reason,
+            )
+        }
     }
-}

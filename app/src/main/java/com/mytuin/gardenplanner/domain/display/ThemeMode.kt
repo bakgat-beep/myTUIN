@@ -17,7 +17,9 @@ import com.mytuin.gardenplanner.domain.vocabulary.VocabularyValue
  * domain/vocabulary/, because they are not shared across the garden
  * domain. They are still VocabularyValue-shaped for consistency.
  */
-enum class ThemeMode(override val id: String) : VocabularyValue {
+enum class ThemeMode(
+    override val id: String,
+) : VocabularyValue {
     SYSTEM("system"),
     LIGHT("light"),
     DARK("dark"),
@@ -26,7 +28,6 @@ enum class ThemeMode(override val id: String) : VocabularyValue {
     companion object {
         val DEFAULT: ThemeMode = SYSTEM
 
-        fun fromId(id: String): ThemeMode? =
-            entries.firstOrNull { it.id == id }
+        fun fromId(id: String): ThemeMode? = entries.firstOrNull { it.id == id }
     }
 }

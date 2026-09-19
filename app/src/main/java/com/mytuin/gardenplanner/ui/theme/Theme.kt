@@ -11,43 +11,45 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
-private val LightColorScheme = lightColorScheme(
-    primary = Forest,
-    onPrimary = Color.White,
-    primaryContainer = Sage,
-    onPrimaryContainer = DeepForest,
-    secondary = Sage,
-    onSecondary = Color.White,
-    background = WarmWhite,
-    onBackground = Charcoal,
-    surface = WarmWhite,
-    onSurface = Charcoal,
-    surfaceVariant = Paper,
-    onSurfaceVariant = Charcoal,
-    outline = Stone,
-    outlineVariant = Stone,
-    error = Clay,
-    onError = Color.White,
-)
+private val LightColorScheme =
+    lightColorScheme(
+        primary = Forest,
+        onPrimary = Color.White,
+        primaryContainer = Sage,
+        onPrimaryContainer = DeepForest,
+        secondary = Sage,
+        onSecondary = Color.White,
+        background = WarmWhite,
+        onBackground = Charcoal,
+        surface = WarmWhite,
+        onSurface = Charcoal,
+        surfaceVariant = Paper,
+        onSurfaceVariant = Charcoal,
+        outline = Stone,
+        outlineVariant = Stone,
+        error = Clay,
+        onError = Color.White,
+    )
 
-private val DarkColorScheme = darkColorScheme(
-    primary = Sage,
-    onPrimary = DeepForest,
-    primaryContainer = DeepForest,
-    onPrimaryContainer = Sage,
-    secondary = Sage,
-    onSecondary = DeepForest,
-    background = DarkSurface,
-    onBackground = WarmWhite,
-    surface = DarkSurface,
-    onSurface = WarmWhite,
-    surfaceVariant = DarkSurfaceVariant,
-    onSurfaceVariant = WarmWhite,
-    outline = MidStone,
-    outlineVariant = MidStone,
-    error = Clay,
-    onError = Color.White,
-)
+private val DarkColorScheme =
+    darkColorScheme(
+        primary = Sage,
+        onPrimary = DeepForest,
+        primaryContainer = DeepForest,
+        onPrimaryContainer = Sage,
+        secondary = Sage,
+        onSecondary = DeepForest,
+        background = DarkSurface,
+        onBackground = WarmWhite,
+        surface = DarkSurface,
+        onSurface = WarmWhite,
+        surfaceVariant = DarkSurfaceVariant,
+        onSurfaceVariant = WarmWhite,
+        outline = MidStone,
+        outlineVariant = MidStone,
+        error = Clay,
+        onError = Color.White,
+    )
 
 /**
  * V1_VISUAL_DESIGN_SPECIFICATION §53–§55: both themes supported.
@@ -56,7 +58,7 @@ private val DarkColorScheme = darkColorScheme(
 @Composable
 fun MyTuinTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
 
@@ -73,6 +75,6 @@ fun MyTuinTheme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = MyTuinTypography,
-        content = content
+        content = content,
     )
 }

@@ -18,7 +18,6 @@ import org.junit.Test
  * BuildConfig.DEBUG is true and the footer is rendered.
  */
 class DiagnosticsOnHomeTest {
-
     @get:Rule
     val composeRule = createComposeRule()
 

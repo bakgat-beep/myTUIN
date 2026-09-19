@@ -3,7 +3,6 @@ package com.mytuin.gardenplanner.ui.home
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.onRoot
 import com.mytuin.gardenplanner.ui.theme.MyTuinTheme
 import org.junit.Rule
 import org.junit.Test
@@ -22,7 +21,6 @@ import org.junit.Test
  *      so BuildConfig.DEBUG is true.
  */
 class DiagnosticsFooterTest {
-
     @get:Rule
     val composeRule = createComposeRule()
 

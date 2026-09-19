@@ -36,16 +36,18 @@ fun DiagnosticsFooter(
     modifier: Modifier = Modifier,
 ) {
     Text(
-        text = stringResource(
-            R.string.diagnostics_format,
-            appVersion,
-            schemaVersion,
-        ),
+        text =
+            stringResource(
+                R.string.diagnostics_format,
+                appVersion,
+                schemaVersion,
+            ),
         style = MaterialTheme.typography.labelSmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         textAlign = TextAlign.Center,
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(Spacing.l),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .padding(Spacing.l),
     )
 }

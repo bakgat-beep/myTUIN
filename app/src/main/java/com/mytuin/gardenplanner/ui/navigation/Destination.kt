@@ -20,12 +20,16 @@ import com.mytuin.gardenplanner.R
 sealed class Destination(
     val route: String,
     @StringRes val labelRes: Int,
-    val icon: ImageVector
+    val icon: ImageVector,
 ) {
     data object Home : Destination("home", R.string.nav_home, Icons.Filled.Home)
+
     data object Garden : Destination("garden", R.string.nav_garden, Icons.Filled.Yard)
+
     data object Plants : Destination("plants", R.string.nav_plants, Icons.Filled.Eco)
+
     data object Planner : Destination("planner", R.string.nav_planner, Icons.Filled.EditCalendar)
+
     data object Inbox : Destination("inbox", R.string.nav_inbox, Icons.Filled.Inbox)
 
     companion object {

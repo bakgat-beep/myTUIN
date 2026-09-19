@@ -4,13 +4,13 @@ import android.content.Context
 import android.net.Uri
 import com.mytuin.gardenplanner.domain.files.FileAccess
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /**
  * Android implementation of FileAccess.
@@ -28,30 +28,36 @@ import javax.inject.Inject
  * requirement needs a different encoding, that is a different method
  * on the interface, not a hidden default on this one.
  */
-class AndroidFileAccess @Inject constructor(
-    @ApplicationContext private val context: Context,
-) : FileAccess {
+class AndroidFileAccess
+    @Inject
+    constructor(
+        @ApplicationContext private val context: Context,
+    ) : FileAccess {
+        override suspend fun readText(uri: String): String =
+            withContext(Dispatchers.IO) {
+                val parsed = Uri.parse(uri)
+                val stream =
+                    when (parsed.scheme) {
+                        "content" -> context.contentResolver.openInputStream(parsed)
+                        "file" -> parsed.path?.let { FileInputStream(File(it)) }
+                        else -> null
+                    } ?: throw IOException("Cannot open URI for reading: $uri")
 
-    override suspend fun readText(uri: String): String = withContext(Dispatchers.IO) {
-        val parsed = Uri.parse(uri)
-        val stream = when (parsed.scheme) {
-            "content" -> context.contentResolver.openInputStream(parsed)
-            "file" -> parsed.path?.let { FileInputStream(File(it)) }
-            else -> null
-        } ?: throw IOException("Cannot open URI for reading: $uri")
+                stream.use { it.readBytes().toString(Charsets.UTF_8) }
+            }
 
-        stream.use { it.readBytes().toString(Charsets.UTF_8) }
-    }
-
-    override suspend fun writeText(uri: String, content: String) =
-        withContext(Dispatchers.IO) {
+        override suspend fun writeText(
+            uri: String,
+            content: String,
+        ) = withContext(Dispatchers.IO) {
             val parsed = Uri.parse(uri)
-            val stream = when (parsed.scheme) {
-                "content" -> context.contentResolver.openOutputStream(parsed)
-                "file" -> parsed.path?.let { FileOutputStream(File(it)) }
-                else -> null
-            } ?: throw IOException("Cannot open URI for writing: $uri")
+            val stream =
+                when (parsed.scheme) {
+                    "content" -> context.contentResolver.openOutputStream(parsed)
+                    "file" -> parsed.path?.let { FileOutputStream(File(it)) }
+                    else -> null
+                } ?: throw IOException("Cannot open URI for writing: $uri")
 
             stream.use { it.write(content.toByteArray(Charsets.UTF_8)) }
         }
-}
+    }

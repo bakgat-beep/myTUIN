@@ -10,7 +10,6 @@ import androidx.datastore.preferences.core.stringPreferencesKey
  * migration is required — the same discipline as a Room column rename.
  */
 internal object DisplayPreferencesKeys {
-
     val THEME_MODE = stringPreferencesKey("theme_mode")
     val UNIT_SYSTEM = stringPreferencesKey("unit_system")
     val LANGUAGE_CODE = stringPreferencesKey("language_code")

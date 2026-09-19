@@ -38,7 +38,6 @@ import org.junit.runner.RunWith
  */
 @RunWith(AndroidJUnit4::class)
 class PlantRoundTripTest {
-
     private lateinit var db: GardenDatabase
     private lateinit var plantDao: PlantDao
     private lateinit var aliasDao: PlantAliasDao
@@ -47,9 +46,11 @@ class PlantRoundTripTest {
     @Before
     fun setUp() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        db = Room.inMemoryDatabaseBuilder(context, GardenDatabase::class.java)
-            .addCallback(GardenDatabaseFactory.foreignKeysCallback)
-            .build()
+        db =
+            Room
+                .inMemoryDatabaseBuilder(context, GardenDatabase::class.java)
+                .addCallback(GardenDatabaseFactory.foreignKeysCallback)
+                .build()
         plantDao = db.plantDao()
         aliasDao = db.plantAliasDao()
         cultivarDao = db.cultivarDao()
@@ -61,119 +62,129 @@ class PlantRoundTripTest {
     }
 
     @Test
-    fun plant_with_alias_and_cultivar_round_trips() = runBlocking {
-        val plant = samplePlant()
-        plantDao.insert(plant)
+    fun plant_with_alias_and_cultivar_round_trips() =
+        runBlocking {
+            val plant = samplePlant()
+            plantDao.insert(plant)
 
-        val alias = sampleAlias(plantId = plant.id)
-        aliasDao.insert(alias)
+            val alias = sampleAlias(plantId = plant.id)
+            aliasDao.insert(alias)
 
-        val cultivar = sampleCultivar(plantId = plant.id)
-        cultivarDao.insert(cultivar)
+            val cultivar = sampleCultivar(plantId = plant.id)
+            cultivarDao.insert(cultivar)
 
-        assertEquals(plant, plantDao.getById(plant.id))
+            assertEquals(plant, plantDao.getById(plant.id))
 
-        val aliases = aliasDao.getForPlant(plant.id)
-        assertEquals(1, aliases.size)
-        assertEquals(alias, aliases.first())
+            val aliases = aliasDao.getForPlant(plant.id)
+            assertEquals(1, aliases.size)
+            assertEquals(alias, aliases.first())
 
-        val cultivars = cultivarDao.getForPlant(plant.id)
-        assertEquals(1, cultivars.size)
-        assertEquals(cultivar, cultivars.first())
-    }
-
-    @Test
-    fun plant_lifecycle_is_stored_as_canonical_id_not_enum_name() = runBlocking {
-        val plant = samplePlant()
-        plantDao.insert(plant)
-
-        db.openHelper.readableDatabase
-            .query("SELECT lifecycle FROM plant WHERE id = ?", arrayOf(plant.id))
-            .use { cursor ->
-                assertTrue(cursor.moveToFirst())
-                assertEquals("perennial", cursor.getString(0))
-            }
-    }
-
-    @Test
-    fun plant_alias_type_is_stored_as_canonical_id_not_enum_name() = runBlocking {
-        val plant = samplePlant()
-        plantDao.insert(plant)
-        val alias = sampleAlias(plantId = plant.id)
-        aliasDao.insert(alias)
-
-        db.openHelper.readableDatabase
-            .query("SELECT alias_type FROM plant_alias WHERE id = ?", arrayOf(alias.id))
-            .use { cursor ->
-                assertTrue(cursor.moveToFirst())
-                assertEquals("common_name", cursor.getString(0))
-            }
-    }
-
-    @Test
-    fun plant_alias_requires_existing_plant() = runBlocking {
-        val orphan = sampleAlias(plantId = "plant_does_not_exist")
-        try {
-            aliasDao.insert(orphan)
-            fail("Expected foreign-key violation; insert succeeded")
-        } catch (expected: android.database.sqlite.SQLiteConstraintException) {
-            // V1_DATABASE_SCHEMA §67: foreign keys enforced.
+            val cultivars = cultivarDao.getForPlant(plant.id)
+            assertEquals(1, cultivars.size)
+            assertEquals(cultivar, cultivars.first())
         }
-    }
 
     @Test
-    fun cultivar_requires_existing_plant() = runBlocking {
-        val orphan = sampleCultivar(plantId = "plant_does_not_exist")
-        try {
-            cultivarDao.insert(orphan)
-            fail("Expected foreign-key violation; insert succeeded")
-        } catch (expected: android.database.sqlite.SQLiteConstraintException) {
-            // V1_DATABASE_SCHEMA §67: foreign keys enforced.
+    fun plant_lifecycle_is_stored_as_canonical_id_not_enum_name() =
+        runBlocking {
+            val plant = samplePlant()
+            plantDao.insert(plant)
+
+            db.openHelper.readableDatabase
+                .query("SELECT lifecycle FROM plant WHERE id = ?", arrayOf(plant.id))
+                .use { cursor ->
+                    assertTrue(cursor.moveToFirst())
+                    assertEquals("perennial", cursor.getString(0))
+                }
         }
-    }
 
     @Test
-    fun plant_with_unknown_lifecycle_round_trips_with_null() = runBlocking {
-        val plant = samplePlant().copy(
-            id = "plant_00000000-0000-0000-0000-000000000099",
-            lifecycle = null,
+    fun plant_alias_type_is_stored_as_canonical_id_not_enum_name() =
+        runBlocking {
+            val plant = samplePlant()
+            plantDao.insert(plant)
+            val alias = sampleAlias(plantId = plant.id)
+            aliasDao.insert(alias)
+
+            db.openHelper.readableDatabase
+                .query("SELECT alias_type FROM plant_alias WHERE id = ?", arrayOf(alias.id))
+                .use { cursor ->
+                    assertTrue(cursor.moveToFirst())
+                    assertEquals("common_name", cursor.getString(0))
+                }
+        }
+
+    @Test
+    fun plant_alias_requires_existing_plant() =
+        runBlocking {
+            val orphan = sampleAlias(plantId = "plant_does_not_exist")
+            try {
+                aliasDao.insert(orphan)
+                fail("Expected foreign-key violation; insert succeeded")
+            } catch (expected: android.database.sqlite.SQLiteConstraintException) {
+                // V1_DATABASE_SCHEMA §67: foreign keys enforced.
+            }
+        }
+
+    @Test
+    fun cultivar_requires_existing_plant() =
+        runBlocking {
+            val orphan = sampleCultivar(plantId = "plant_does_not_exist")
+            try {
+                cultivarDao.insert(orphan)
+                fail("Expected foreign-key violation; insert succeeded")
+            } catch (expected: android.database.sqlite.SQLiteConstraintException) {
+                // V1_DATABASE_SCHEMA §67: foreign keys enforced.
+            }
+        }
+
+    @Test
+    fun plant_with_unknown_lifecycle_round_trips_with_null() =
+        runBlocking {
+            val plant =
+                samplePlant().copy(
+                    id = "plant_00000000-0000-0000-0000-000000000099",
+                    lifecycle = null,
+                )
+            plantDao.insert(plant)
+            val retrieved = plantDao.getById(plant.id)
+            assertNotNull(retrieved)
+            assertEquals(null, retrieved!!.lifecycle)
+        }
+
+    private fun samplePlant(): PlantEntity =
+        PlantEntity(
+            id = "plant_00000000-0000-0000-0000-000000000001",
+            canonical_name = "Test plant",
+            scientific_name = "Testus plantus",
+            genus = "Testus",
+            species = "plantus",
+            family = "Testaceae",
+            lifecycle = PlantLifecycle.PERENNIAL,
+            description = "Synthetic reference data for round-trip testing.",
+            created_at = 1_700_000_000_000L,
+            updated_at = 1_700_000_000_000L,
+            status = RecordStatus.ACTIVE,
         )
-        plantDao.insert(plant)
-        val retrieved = plantDao.getById(plant.id)
-        assertNotNull(retrieved)
-        assertEquals(null, retrieved!!.lifecycle)
-    }
 
-    private fun samplePlant(): PlantEntity = PlantEntity(
-        id = "plant_00000000-0000-0000-0000-000000000001",
-        canonical_name = "Test plant",
-        scientific_name = "Testus plantus",
-        genus = "Testus",
-        species = "plantus",
-        family = "Testaceae",
-        lifecycle = PlantLifecycle.PERENNIAL,
-        description = "Synthetic reference data for round-trip testing.",
-        created_at = 1_700_000_000_000L,
-        updated_at = 1_700_000_000_000L,
-        status = RecordStatus.ACTIVE,
-    )
+    private fun sampleAlias(plantId: String): PlantAliasEntity =
+        PlantAliasEntity(
+            id = "plantalias_00000000-0000-0000-0000-000000000001",
+            plant_id = plantId,
+            alias = "Test plant alias",
+            alias_type = PlantAliasType.COMMON_NAME,
+            language = "en",
+        )
 
-    private fun sampleAlias(plantId: String): PlantAliasEntity = PlantAliasEntity(
-        id = "plantalias_00000000-0000-0000-0000-000000000001",
-        plant_id = plantId,
-        alias = "Test plant alias",
-        alias_type = PlantAliasType.COMMON_NAME,
-        language = "en",
-    )
-
-    private fun sampleCultivar(plantId: String): CultivarEntity = CultivarEntity(
-        id = "cultivar_00000000-0000-0000-0000-000000000001",
-        plant_id = plantId,
-        name = "Test cultivar",
-        description = "Synthetic cultivar for round-trip testing.",
-        notes = null,
-        created_at = 1_700_000_000_000L,
-        updated_at = 1_700_000_000_000L,
-        status = RecordStatus.ACTIVE,
-    )
+    private fun sampleCultivar(plantId: String): CultivarEntity =
+        CultivarEntity(
+            id = "cultivar_00000000-0000-0000-0000-000000000001",
+            plant_id = plantId,
+            name = "Test cultivar",
+            description = "Synthetic cultivar for round-trip testing.",
+            notes = null,
+            created_at = 1_700_000_000_000L,
+            updated_at = 1_700_000_000_000L,
+            status = RecordStatus.ACTIVE,
+        )
 }

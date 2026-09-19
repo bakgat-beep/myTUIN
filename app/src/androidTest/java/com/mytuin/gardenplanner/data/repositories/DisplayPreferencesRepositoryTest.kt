@@ -11,6 +11,7 @@ import com.mytuin.gardenplanner.domain.display.DisplayPreferences
 import com.mytuin.gardenplanner.domain.display.ThemeMode
 import com.mytuin.gardenplanner.domain.display.UnitSystem
 import com.mytuin.gardenplanner.domain.repository.DisplayPreferencesRepository
+import java.io.File
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -23,7 +24,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.io.File
 
 /**
  * Tests for DisplayPreferencesRepositoryImpl.
@@ -44,7 +44,6 @@ import java.io.File
  */
 @RunWith(AndroidJUnit4::class)
 class DisplayPreferencesRepositoryTest {
-
     private lateinit var context: Context
     private lateinit var scope: CoroutineScope
     private lateinit var dataStore: DataStore<Preferences>
@@ -55,9 +54,10 @@ class DisplayPreferencesRepositoryTest {
     fun setUp() {
         context = ApplicationProvider.getApplicationContext()
         scope = CoroutineScope(Dispatchers.IO + SupervisorJob() + Job())
-        storeFile = context.preferencesDataStoreFile(
-            "display-preferences-test-${System.nanoTime()}"
-        )
+        storeFile =
+            context.preferencesDataStoreFile(
+                "display-preferences-test-${System.nanoTime()}",
+            )
         dataStore = PreferenceDataStoreFactory.create(scope = scope) { storeFile }
         repository = DisplayPreferencesRepositoryImpl(dataStore)
     }
@@ -69,62 +69,69 @@ class DisplayPreferencesRepositoryTest {
     }
 
     @Test
-    fun preferences_default_when_nothing_has_been_written() = runBlocking {
-        val prefs = repository.preferences.first()
+    fun preferences_default_when_nothing_has_been_written() =
+        runBlocking {
+            val prefs = repository.preferences.first()
 
-        assertEquals(ThemeMode.SYSTEM, prefs.themeMode)
-        assertEquals(UnitSystem.METRIC, prefs.unitSystem)
-        assertEquals(DisplayPreferences.DEFAULT_LANGUAGE_CODE, prefs.languageCode)
-    }
-
-    @Test
-    fun setThemeMode_round_trips() = runBlocking {
-        repository.setThemeMode(ThemeMode.DARK)
-
-        assertEquals(ThemeMode.DARK, repository.preferences.first().themeMode)
-    }
+            assertEquals(ThemeMode.SYSTEM, prefs.themeMode)
+            assertEquals(UnitSystem.METRIC, prefs.unitSystem)
+            assertEquals(DisplayPreferences.DEFAULT_LANGUAGE_CODE, prefs.languageCode)
+        }
 
     @Test
-    fun setUnitSystem_round_trips() = runBlocking {
-        repository.setUnitSystem(UnitSystem.IMPERIAL)
+    fun setThemeMode_round_trips() =
+        runBlocking {
+            repository.setThemeMode(ThemeMode.DARK)
 
-        assertEquals(UnitSystem.IMPERIAL, repository.preferences.first().unitSystem)
-    }
-
-    @Test
-    fun setLanguageCode_round_trips() = runBlocking {
-        repository.setLanguageCode("af")
-
-        assertEquals("af", repository.preferences.first().languageCode)
-    }
+            assertEquals(ThemeMode.DARK, repository.preferences.first().themeMode)
+        }
 
     @Test
-    fun setting_one_preference_leaves_others_at_default() = runBlocking {
-        repository.setThemeMode(ThemeMode.LIGHT)
+    fun setUnitSystem_round_trips() =
+        runBlocking {
+            repository.setUnitSystem(UnitSystem.IMPERIAL)
 
-        val prefs = repository.preferences.first()
-        assertEquals(ThemeMode.LIGHT, prefs.themeMode)
-        assertEquals(UnitSystem.METRIC, prefs.unitSystem)
-        assertEquals(DisplayPreferences.DEFAULT_LANGUAGE_CODE, prefs.languageCode)
-    }
+            assertEquals(UnitSystem.IMPERIAL, repository.preferences.first().unitSystem)
+        }
 
     @Test
-    fun setting_the_same_preference_twice_overwrites() = runBlocking {
-        repository.setThemeMode(ThemeMode.LIGHT)
-        repository.setThemeMode(ThemeMode.DARK)
+    fun setLanguageCode_round_trips() =
+        runBlocking {
+            repository.setLanguageCode("af")
 
-        assertEquals(ThemeMode.DARK, repository.preferences.first().themeMode)
-    }
+            assertEquals("af", repository.preferences.first().languageCode)
+        }
 
     @Test
-    fun all_three_preferences_persist_together() = runBlocking {
-        repository.setThemeMode(ThemeMode.DARK)
-        repository.setUnitSystem(UnitSystem.IMPERIAL)
-        repository.setLanguageCode("af")
+    fun setting_one_preference_leaves_others_at_default() =
+        runBlocking {
+            repository.setThemeMode(ThemeMode.LIGHT)
 
-        val prefs = repository.preferences.first()
-        assertEquals(ThemeMode.DARK, prefs.themeMode)
-        assertEquals(UnitSystem.IMPERIAL, prefs.unitSystem)
-        assertEquals("af", prefs.languageCode)
-    }
+            val prefs = repository.preferences.first()
+            assertEquals(ThemeMode.LIGHT, prefs.themeMode)
+            assertEquals(UnitSystem.METRIC, prefs.unitSystem)
+            assertEquals(DisplayPreferences.DEFAULT_LANGUAGE_CODE, prefs.languageCode)
+        }
+
+    @Test
+    fun setting_the_same_preference_twice_overwrites() =
+        runBlocking {
+            repository.setThemeMode(ThemeMode.LIGHT)
+            repository.setThemeMode(ThemeMode.DARK)
+
+            assertEquals(ThemeMode.DARK, repository.preferences.first().themeMode)
+        }
+
+    @Test
+    fun all_three_preferences_persist_together() =
+        runBlocking {
+            repository.setThemeMode(ThemeMode.DARK)
+            repository.setUnitSystem(UnitSystem.IMPERIAL)
+            repository.setLanguageCode("af")
+
+            val prefs = repository.preferences.first()
+            assertEquals(ThemeMode.DARK, prefs.themeMode)
+            assertEquals(UnitSystem.IMPERIAL, prefs.unitSystem)
+            assertEquals("af", prefs.languageCode)
+        }
 }

@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface GrowingSpaceHistoryDao {
-
     @Insert
     suspend fun insert(history: GrowingSpaceHistoryEntity)
 
@@ -17,7 +16,7 @@ interface GrowingSpaceHistoryDao {
         SELECT * FROM growing_space_history
         WHERE growing_space_id = :growingSpaceId
         ORDER BY valid_from DESC
-        """
+        """,
     )
     fun observeForSpace(growingSpaceId: String): Flow<List<GrowingSpaceHistoryEntity>>
 
@@ -26,7 +25,7 @@ interface GrowingSpaceHistoryDao {
         SELECT * FROM growing_space_history
         WHERE growing_space_id = :growingSpaceId
         ORDER BY valid_from DESC
-        """
+        """,
     )
     suspend fun getForSpace(growingSpaceId: String): List<GrowingSpaceHistoryEntity>
 
@@ -36,7 +35,7 @@ interface GrowingSpaceHistoryDao {
         WHERE growing_space_id = :growingSpaceId
         ORDER BY valid_from DESC
         LIMIT 1
-        """
+        """,
     )
     suspend fun getLatestForSpace(growingSpaceId: String): GrowingSpaceHistoryEntity?
 
@@ -47,7 +46,10 @@ interface GrowingSpaceHistoryDao {
           AND valid_from <= :atMillis
           AND valid_to > :atMillis
         LIMIT 1
-        """
+        """,
     )
-    suspend fun getAsOf(growingSpaceId: String, atMillis: Long): GrowingSpaceHistoryEntity?
+    suspend fun getAsOf(
+        growingSpaceId: String,
+        atMillis: Long,
+    ): GrowingSpaceHistoryEntity?
 }

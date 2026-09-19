@@ -25,7 +25,6 @@ import org.junit.runner.RunWith
  */
 @RunWith(AndroidJUnit4::class)
 class MapLibrePocTest {
-
     @get:Rule
     val composeRule = createComposeRule()
 
@@ -53,7 +52,8 @@ class MapLibrePocTest {
         // device-state dependency, not a PoC defect. The MapLibrePocTest
         // does not create gardens and the app's production database is
         // not touched by tests.
-        composeRule.onNodeWithText("Create a garden to see it on the map.")
+        composeRule
+            .onNodeWithText("Create a garden to see it on the map.")
             .assertExists()
     }
 }

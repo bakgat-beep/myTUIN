@@ -39,7 +39,6 @@ import org.junit.Test
  * call-site changes, in this file only.
  */
 class ShellAccessibilityTest {
-
     @get:Rule
     val composeRule = createComposeRule()
 
@@ -54,7 +53,8 @@ class ShellAccessibilityTest {
     @Test
     fun fab_meets_minimum_size() {
         setShell()
-        composeRule.onNodeWithContentDescription("Add")
+        composeRule
+            .onNodeWithContentDescription("Add")
             .assertHeightIsAtLeast(48.dp)
             .assertWidthIsAtLeast(48.dp)
     }
@@ -63,7 +63,8 @@ class ShellAccessibilityTest {
     fun each_navigation_destination_meets_minimum_size() {
         setShell()
         listOf("Home", "Garden", "Plants", "Planner", "Inbox").forEach { label ->
-            composeRule.onAllNodesWithText(label)
+            composeRule
+                .onAllNodesWithText(label)
                 .onFirst()
                 .assertHeightIsAtLeast(48.dp)
                 .assertWidthIsAtLeast(48.dp)

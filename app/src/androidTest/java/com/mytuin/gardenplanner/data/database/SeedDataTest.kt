@@ -26,7 +26,6 @@ import org.junit.runner.RunWith
  */
 @RunWith(AndroidJUnit4::class)
 class SeedDataTest {
-
     private val dbName = "seed-data-test.db"
 
     private lateinit var context: Context
@@ -46,45 +45,49 @@ class SeedDataTest {
     }
 
     @Test
-    fun first_database_creation_seeds_two_plants() = runBlocking {
-        val plants = db.plantDao().observeAll().first()
-        assertEquals(2, plants.size)
-    }
-
-    @Test
-    fun seed_rows_have_the_expected_ids_and_names() = runBlocking {
-        val plants = db.plantDao().observeAll().first()
-
-        assertEquals(
-            setOf("plant_example_0001", "plant_example_0002"),
-            plants.map { it.id }.toSet(),
-        )
-        assertEquals(
-            setOf("Example Plant A", "Example Plant B"),
-            plants.map { it.canonical_name }.toSet(),
-        )
-    }
-
-    @Test
-    fun seed_rows_are_active_and_have_null_lifecycle() = runBlocking {
-        val plants = db.plantDao().observeAll().first()
-        plants.forEach { plant ->
-            assertEquals(RecordStatus.ACTIVE, plant.status)
-            assertNull(plant.lifecycle)
-            assertNull(plant.scientific_name)
+    fun first_database_creation_seeds_two_plants() =
+        runBlocking {
+            val plants = db.plantDao().observeAll().first()
+            assertEquals(2, plants.size)
         }
-    }
 
     @Test
-    fun seeding_runs_only_once_per_database_file() = runBlocking {
-        // Force first access so onCreate fires.
-        db.plantDao().observeAll().first()
+    fun seed_rows_have_the_expected_ids_and_names() =
+        runBlocking {
+            val plants = db.plantDao().observeAll().first()
 
-        // Close and reopen the same file. onCreate must not fire again.
-        db.close()
-        db = GardenDatabaseFactory.create(context, dbName)
+            assertEquals(
+                setOf("plant_example_0001", "plant_example_0002"),
+                plants.map { it.id }.toSet(),
+            )
+            assertEquals(
+                setOf("Example Plant A", "Example Plant B"),
+                plants.map { it.canonical_name }.toSet(),
+            )
+        }
 
-        val plants = db.plantDao().observeAll().first()
-        assertEquals("seeding must not double-apply", 2, plants.size)
-    }
+    @Test
+    fun seed_rows_are_active_and_have_null_lifecycle() =
+        runBlocking {
+            val plants = db.plantDao().observeAll().first()
+            plants.forEach { plant ->
+                assertEquals(RecordStatus.ACTIVE, plant.status)
+                assertNull(plant.lifecycle)
+                assertNull(plant.scientific_name)
+            }
+        }
+
+    @Test
+    fun seeding_runs_only_once_per_database_file() =
+        runBlocking {
+            // Force first access so onCreate fires.
+            db.plantDao().observeAll().first()
+
+            // Close and reopen the same file. onCreate must not fire again.
+            db.close()
+            db = GardenDatabaseFactory.create(context, dbName)
+
+            val plants = db.plantDao().observeAll().first()
+            assertEquals("seeding must not double-apply", 2, plants.size)
+        }
 }

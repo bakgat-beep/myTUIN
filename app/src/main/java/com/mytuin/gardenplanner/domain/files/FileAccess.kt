@@ -33,7 +33,6 @@ package com.mytuin.gardenplanner.domain.files
  * Domain layer: no Android, Compose, Room or Hilt dependencies.
  */
 interface FileAccess {
-
     /**
      * Reads the full contents of [uri] as UTF-8 text.
      *
@@ -49,5 +48,8 @@ interface FileAccess {
      * @throws java.io.IOException if the URI cannot be opened or the
      *         stream fails while writing.
      */
-    suspend fun writeText(uri: String, content: String)
+    suspend fun writeText(
+        uri: String,
+        content: String,
+    )
 }

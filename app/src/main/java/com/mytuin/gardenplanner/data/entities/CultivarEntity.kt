@@ -45,18 +45,11 @@ import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
 data class CultivarEntity(
     @PrimaryKey
     val id: String,
-
     val plant_id: String,
-
     val name: String,
-
     val created_at: Long,
-
     val updated_at: Long,
-
     val status: RecordStatus,
-
     val description: String? = null,
-
     val notes: String? = null,
 )

@@ -11,14 +11,15 @@ package com.mytuin.gardenplanner.domain.vocabulary
  * DEC-039: the domain stays independent of the map library's
  * naming.
  */
-enum class GeometryType(override val id: String) : VocabularyValue {
+enum class GeometryType(
+    override val id: String,
+) : VocabularyValue {
     POINT("point"),
     LINE("line"),
     POLYGON("polygon"),
     ;
 
     companion object {
-        fun fromId(id: String): GeometryType? =
-            entries.firstOrNull { it.id == id }
+        fun fromId(id: String): GeometryType? = entries.firstOrNull { it.id == id }
     }
 }

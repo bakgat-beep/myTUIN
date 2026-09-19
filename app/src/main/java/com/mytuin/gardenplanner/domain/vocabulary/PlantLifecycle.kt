@@ -8,7 +8,9 @@ package com.mytuin.gardenplanner.domain.vocabulary
  *
  * Domain layer: no Android, Compose, Room or Hilt dependencies.
  */
-enum class PlantLifecycle(override val id: String) : VocabularyValue {
+enum class PlantLifecycle(
+    override val id: String,
+) : VocabularyValue {
     ANNUAL("annual"),
     BIENNIAL("biennial"),
     PERENNIAL("perennial"),
@@ -18,7 +20,6 @@ enum class PlantLifecycle(override val id: String) : VocabularyValue {
     ;
 
     companion object {
-        fun fromId(id: String): PlantLifecycle? =
-            entries.firstOrNull { it.id == id }
+        fun fromId(id: String): PlantLifecycle? = entries.firstOrNull { it.id == id }
     }
 }

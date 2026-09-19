@@ -9,13 +9,14 @@ package com.mytuin.gardenplanner.domain.vocabulary
  *
  * Canonical ids only (DEC-040).
  */
-enum class GardenPlantPreferenceKind(override val id: String) : VocabularyValue {
+enum class GardenPlantPreferenceKind(
+    override val id: String,
+) : VocabularyValue {
     FAVOURITE("favourite"),
     AVOID("avoid"),
     ;
 
     companion object {
-        fun fromId(id: String): GardenPlantPreferenceKind? =
-            entries.firstOrNull { it.id == id }
+        fun fromId(id: String): GardenPlantPreferenceKind? = entries.firstOrNull { it.id == id }
     }
 }

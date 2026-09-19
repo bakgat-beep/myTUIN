@@ -10,10 +10,7 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class DisplayPreferencesRepositoryModule {
-
     @Binds
     @Singleton
-    abstract fun bindDisplayPreferencesRepository(
-        impl: DisplayPreferencesRepositoryImpl,
-    ): DisplayPreferencesRepository
+    abstract fun bindDisplayPreferencesRepository(impl: DisplayPreferencesRepositoryImpl): DisplayPreferencesRepository
 }

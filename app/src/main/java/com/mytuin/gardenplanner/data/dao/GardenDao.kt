@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface GardenDao {
-
     @Insert
     suspend fun insert(garden: GardenEntity)
 
@@ -42,7 +41,7 @@ interface GardenDao {
             hemisphere = :hemisphere,
             updated_at = :updatedAt
         WHERE id = :id
-        """
+        """,
     )
     suspend fun updateLocation(
         id: String,

@@ -1,10 +1,10 @@
 package com.mytuin.gardenplanner.domain.vocabulary
 
+import com.mytuin.gardenplanner.domain.display.ThemeMode
+import com.mytuin.gardenplanner.domain.display.UnitSystem
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import com.mytuin.gardenplanner.domain.display.ThemeMode
-import com.mytuin.gardenplanner.domain.display.UnitSystem
 
 /**
  * Tests for VocabularyValidator.
@@ -14,20 +14,20 @@ import com.mytuin.gardenplanner.domain.display.UnitSystem
  * on JUnit 4, running under the vintage engine.
  */
 class VocabularyValidatorTest {
-
-    private val allVocabularies: List<Collection<VocabularyValue>> = listOf(
-        Hemisphere.entries,
-        RecordStatus.entries,
-        PlantLifecycle.entries,
-        PlantAliasType.entries,
-        GrowingSpaceType.entries,
-        GeometryType.entries,
-        GardenPriority.entries,
-        GardenPreferenceKey.entries,
-        GardenPlantPreferenceKind.entries,
-        ThemeMode.entries,
-        UnitSystem.entries,
-    )
+    private val allVocabularies: List<Collection<VocabularyValue>> =
+        listOf(
+            Hemisphere.entries,
+            RecordStatus.entries,
+            PlantLifecycle.entries,
+            PlantAliasType.entries,
+            GrowingSpaceType.entries,
+            GeometryType.entries,
+            GardenPriority.entries,
+            GardenPreferenceKey.entries,
+            GardenPlantPreferenceKind.entries,
+            ThemeMode.entries,
+            UnitSystem.entries,
+        )
 
     @Test
     fun every_id_of_every_vocabulary_is_accepted() {
@@ -49,7 +49,7 @@ class VocabularyValidatorTest {
             assertTrue(
                 ids.size == unique.size,
                 "vocabulary #$index contains duplicate ids: " +
-                        ids.groupBy { it }.filterValues { it.size > 1 }.keys,
+                    ids.groupBy { it }.filterValues { it.size > 1 }.keys,
             )
         }
     }

@@ -48,30 +48,17 @@ import com.mytuin.gardenplanner.domain.vocabulary.GeometryType
 data class GrowingSpaceHistoryEntity(
     @PrimaryKey
     val id: String,
-
     val growing_space_id: String,
-
     val geometry_type: GeometryType? = null,
-
     val geometry_data: String? = null,
-
     val length: Double? = null,
-
     val width: Double? = null,
-
     val height: Double? = null,
-
     val diameter: Double? = null,
-
     val area: Double? = null,
-
     val volume: Double? = null,
-
     val valid_from: Long,
-
     val valid_to: Long,
-
     val recorded_at: Long,
-
     val reason: String? = null,
 )

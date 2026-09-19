@@ -31,75 +31,78 @@ import org.junit.jupiter.api.Test
  * recorded here.
  */
 class GardenRepositoryImplMockkTest {
-
     private val gardenDao = mockk<GardenDao>()
     private val repository = GardenRepositoryImpl(gardenDao)
 
     @Test
-    fun getGarden_returns_null_when_dao_returns_null() = runTest {
-        coEvery { gardenDao.getById("garden_missing") } returns null
+    fun getGarden_returns_null_when_dao_returns_null() =
+        runTest {
+            coEvery { gardenDao.getById("garden_missing") } returns null
 
-        assertNull(repository.getGarden("garden_missing"))
-    }
-
-    @Test
-    fun getGarden_maps_entity_to_domain() = runTest {
-        coEvery { gardenDao.getById("garden_x") } returns sampleEntity("garden_x")
-
-        val garden = repository.getGarden("garden_x")
-
-        assertNotNull(garden)
-        assertEquals("garden_x", garden?.id)
-        assertEquals("Test Garden", garden?.name)
-        assertEquals(RecordStatus.DRAFT, garden?.status)
-        assertEquals(Hemisphere.SOUTHERN, garden?.hemisphere)
-    }
-
-    @Test
-    fun updateLocation_throws_NotFoundError_when_dao_reports_zero_rows() = runTest {
-        coEvery {
-            gardenDao.updateLocation(
-                id = any(),
-                countryCode = any(),
-                region = any(),
-                locality = any(),
-                latitude = any(),
-                longitude = any(),
-                timezone = any(),
-                hemisphere = any(),
-                updatedAt = any(),
-            )
-        } returns 0
-
-        var caught: NotFoundError? = null
-        try {
-            repository.updateLocation(
-                id = "garden_missing",
-                location = NewGardenLocation(),
-                updatedAt = 1_700_000_000_000L,
-            )
-        } catch (e: NotFoundError) {
-            caught = e
+            assertNull(repository.getGarden("garden_missing"))
         }
 
-        assertNotNull(caught)
-        assertEquals("Garden", caught?.entityType)
-        assertEquals("garden_missing", caught?.id)
-    }
+    @Test
+    fun getGarden_maps_entity_to_domain() =
+        runTest {
+            coEvery { gardenDao.getById("garden_x") } returns sampleEntity("garden_x")
 
-    private fun sampleEntity(id: String): GardenEntity = GardenEntity(
-        id = id,
-        name = "Test Garden",
-        description = null,
-        country_code = "NZ",
-        region = null,
-        locality = null,
-        latitude = null,
-        longitude = null,
-        timezone = null,
-        hemisphere = Hemisphere.SOUTHERN,
-        status = RecordStatus.DRAFT,
-        created_at = 1_700_000_000_000L,
-        updated_at = 1_700_000_000_000L,
-    )
+            val garden = repository.getGarden("garden_x")
+
+            assertNotNull(garden)
+            assertEquals("garden_x", garden?.id)
+            assertEquals("Test Garden", garden?.name)
+            assertEquals(RecordStatus.DRAFT, garden?.status)
+            assertEquals(Hemisphere.SOUTHERN, garden?.hemisphere)
+        }
+
+    @Test
+    fun updateLocation_throws_NotFoundError_when_dao_reports_zero_rows() =
+        runTest {
+            coEvery {
+                gardenDao.updateLocation(
+                    id = any(),
+                    countryCode = any(),
+                    region = any(),
+                    locality = any(),
+                    latitude = any(),
+                    longitude = any(),
+                    timezone = any(),
+                    hemisphere = any(),
+                    updatedAt = any(),
+                )
+            } returns 0
+
+            var caught: NotFoundError? = null
+            try {
+                repository.updateLocation(
+                    id = "garden_missing",
+                    location = NewGardenLocation(),
+                    updatedAt = 1_700_000_000_000L,
+                )
+            } catch (e: NotFoundError) {
+                caught = e
+            }
+
+            assertNotNull(caught)
+            assertEquals("Garden", caught?.entityType)
+            assertEquals("garden_missing", caught?.id)
+        }
+
+    private fun sampleEntity(id: String): GardenEntity =
+        GardenEntity(
+            id = id,
+            name = "Test Garden",
+            description = null,
+            country_code = "NZ",
+            region = null,
+            locality = null,
+            latitude = null,
+            longitude = null,
+            timezone = null,
+            hemisphere = Hemisphere.SOUTHERN,
+            status = RecordStatus.DRAFT,
+            created_at = 1_700_000_000_000L,
+            updated_at = 1_700_000_000_000L,
+        )
 }

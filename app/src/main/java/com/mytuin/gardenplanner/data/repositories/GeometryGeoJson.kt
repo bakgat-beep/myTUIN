@@ -24,58 +24,61 @@ import org.json.JSONObject
  * not model holes (step 5c notes).
  */
 object GeometryGeoJson {
+    fun encode(geometry: Geometry): String =
+        when (geometry) {
+            is Geometry.Point ->
+                JSONObject()
+                    .put("type", "Point")
+                    .put("coordinates", encodeCoordinate(geometry.at))
+                    .toString()
 
-    fun encode(geometry: Geometry): String = when (geometry) {
-        is Geometry.Point -> JSONObject()
-            .put("type", "Point")
-            .put("coordinates", encodeCoordinate(geometry.at))
-            .toString()
-
-        is Geometry.LineString -> JSONObject()
-            .put("type", "LineString")
-            .put(
-                "coordinates",
-                JSONArray().apply {
-                    geometry.vertices.forEach { put(encodeCoordinate(it)) }
-                },
-            )
-            .toString()
-
-        is Geometry.Polygon -> JSONObject()
-            .put("type", "Polygon")
-            .put(
-                "coordinates",
-                JSONArray().apply {
-                    put(
+            is Geometry.LineString ->
+                JSONObject()
+                    .put("type", "LineString")
+                    .put(
+                        "coordinates",
                         JSONArray().apply {
-                            geometry.ring.forEach { put(encodeCoordinate(it)) }
+                            geometry.vertices.forEach { put(encodeCoordinate(it)) }
                         },
-                    )
-                },
-            )
-            .toString()
-    }
+                    ).toString()
+
+            is Geometry.Polygon ->
+                JSONObject()
+                    .put("type", "Polygon")
+                    .put(
+                        "coordinates",
+                        JSONArray().apply {
+                            put(
+                                JSONArray().apply {
+                                    geometry.ring.forEach { put(encodeCoordinate(it)) }
+                                },
+                            )
+                        },
+                    ).toString()
+        }
 
     fun decode(json: String): Geometry {
         val root = JSONObject(json)
         return when (val geoType = root.getString("type")) {
-            "Point" -> Geometry.Point(
-                decodeCoordinate(root.getJSONArray("coordinates")),
-            )
+            "Point" ->
+                Geometry.Point(
+                    decodeCoordinate(root.getJSONArray("coordinates")),
+                )
 
-            "LineString" -> Geometry.LineString(
-                root.getJSONArray("coordinates").let { arr ->
-                    (0 until arr.length()).map { i ->
-                        decodeCoordinate(arr.getJSONArray(i))
-                    }
-                },
-            )
+            "LineString" ->
+                Geometry.LineString(
+                    root.getJSONArray("coordinates").let { arr ->
+                        (0 until arr.length()).map { i ->
+                            decodeCoordinate(arr.getJSONArray(i))
+                        }
+                    },
+                )
 
             "Polygon" -> {
                 val rings = root.getJSONArray("coordinates")
                 require(rings.length() == 1) {
                     "V1 does not support polygons with holes; " +
-                            "found ${rings.length()} rings"
+                        "found ${rings.length()} rings"
                 }
                 val outer = rings.getJSONArray(0)
                 Geometry.Polygon(
@@ -89,9 +92,7 @@ object GeometryGeoJson {
         }
     }
 
-    private fun encodeCoordinate(c: Coordinate): JSONArray =
-        JSONArray().put(c.x).put(c.y)
+    private fun encodeCoordinate(c: Coordinate): JSONArray = JSONArray().put(c.x).put(c.y)
 
-    private fun decodeCoordinate(arr: JSONArray): Coordinate =
-        Coordinate(x = arr.getDouble(0), y = arr.getDouble(1))
+    private fun decodeCoordinate(arr: JSONArray): Coordinate = Coordinate(x = arr.getDouble(0), y = arr.getDouble(1))
 }

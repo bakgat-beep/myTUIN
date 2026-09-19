@@ -18,7 +18,6 @@ import kotlinx.coroutines.flow.Flow
  * Step 5a is read-only. Write methods arrive with the write path.
  */
 interface PlantRepository {
-
     fun observePlants(): Flow<List<Plant>>
 
     suspend fun getPlant(id: String): Plant?

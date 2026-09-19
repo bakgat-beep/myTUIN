@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface GrowingSpaceDao {
-
     @Insert
     suspend fun insert(growingSpace: GrowingSpaceEntity)
 
@@ -29,7 +28,7 @@ interface GrowingSpaceDao {
             geometry_data = :geometryData,
             updated_at = :updatedAt
         WHERE id = :id
-        """
+        """,
     )
     suspend fun updateGeometry(
         id: String,

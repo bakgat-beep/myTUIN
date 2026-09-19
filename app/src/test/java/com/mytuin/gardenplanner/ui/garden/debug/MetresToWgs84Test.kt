@@ -1,9 +1,9 @@
 package com.mytuin.gardenplanner.ui.garden.debug
 
 import com.mytuin.gardenplanner.domain.model.garden.Coordinate
+import kotlin.math.abs
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import kotlin.math.abs
 
 /**
  * Tests for MetresToWgs84 (A159=b).
@@ -14,18 +14,18 @@ import kotlin.math.abs
  * round-trip identity and known-value correctness at garden scale.
  */
 class MetresToWgs84Test {
-
     private val origin = Wgs84(latitude = -43.5321, longitude = 172.6362)
 
     @Test
     fun round_trip_is_identity_within_floating_point_tolerance() {
-        val coordinates = listOf(
-            Coordinate(0.0, 0.0),
-            Coordinate(1.0, 0.0),
-            Coordinate(0.0, 1.0),
-            Coordinate(10.0, 10.0),
-            Coordinate(-5.0, 3.5),
-        )
+        val coordinates =
+            listOf(
+                Coordinate(0.0, 0.0),
+                Coordinate(1.0, 0.0),
+                Coordinate(0.0, 1.0),
+                Coordinate(10.0, 10.0),
+                Coordinate(-5.0, 3.5),
+            )
         coordinates.forEach { coordinate ->
             val wgs = MetresToWgs84.toWgs84(origin, coordinate)
             val back = MetresToWgs84.toCoordinate(origin, wgs)

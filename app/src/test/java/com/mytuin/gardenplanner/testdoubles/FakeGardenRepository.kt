@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 
 class FakeGardenRepository : GardenRepository {
-
     data class UpdateLocationCall(
         val id: String,
         val location: NewGardenLocation,
@@ -21,11 +20,9 @@ class FakeGardenRepository : GardenRepository {
 
     override fun observeGardens(): Flow<List<Garden>> = store
 
-    override fun observeGarden(id: String): Flow<Garden?> =
-        store.map { rows -> rows.firstOrNull { it.id == id } }
+    override fun observeGarden(id: String): Flow<Garden?> = store.map { rows -> rows.firstOrNull { it.id == id } }
 
-    override suspend fun getGarden(id: String): Garden? =
-        store.value.firstOrNull { it.id == id }
+    override suspend fun getGarden(id: String): Garden? = store.value.firstOrNull { it.id == id }
 
     override suspend fun insert(garden: Garden) {
         store.value = store.value + garden
@@ -40,26 +37,26 @@ class FakeGardenRepository : GardenRepository {
             throw NotFoundError("Garden", id)
         }
         updateLocationCalls.add(UpdateLocationCall(id, location, updatedAt))
-        store.value = store.value.map { garden ->
-            if (garden.id == id) {
-                garden.copy(
-                    countryCode = location.countryCode,
-                    region = location.region,
-                    locality = location.locality,
-                    latitude = location.latitude,
-                    longitude = location.longitude,
-                    timezone = location.timezone,
-                    hemisphere = location.hemisphere,
-                    updatedAt = updatedAt,
-                )
-            } else {
-                garden
+        store.value =
+            store.value.map { garden ->
+                if (garden.id == id) {
+                    garden.copy(
+                        countryCode = location.countryCode,
+                        region = location.region,
+                        locality = location.locality,
+                        latitude = location.latitude,
+                        longitude = location.longitude,
+                        timezone = location.timezone,
+                        hemisphere = location.hemisphere,
+                        updatedAt = updatedAt,
+                    )
+                } else {
+                    garden
+                }
             }
-        }
     }
 
     fun snapshot(): List<Garden> = store.value
 
-    fun updateLocationCalls(): List<UpdateLocationCall> =
-        updateLocationCalls.toList()
+    fun updateLocationCalls(): List<UpdateLocationCall> = updateLocationCalls.toList()
 }

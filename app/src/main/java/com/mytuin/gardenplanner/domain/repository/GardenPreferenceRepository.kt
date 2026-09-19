@@ -20,7 +20,6 @@ import kotlinx.coroutines.flow.Flow
  * No production consumer yet. Recommendation engine arrives later.
  */
 interface GardenPreferenceRepository {
-
     fun observePreferences(gardenId: String): Flow<List<GardenPreference>>
 
     suspend fun getPreferences(gardenId: String): List<GardenPreference>
@@ -32,7 +31,10 @@ interface GardenPreferenceRepository {
 
     suspend fun setPreference(preference: GardenPreference)
 
-    suspend fun clearPreference(gardenId: String, key: GardenPreferenceKey)
+    suspend fun clearPreference(
+        gardenId: String,
+        key: GardenPreferenceKey,
+    )
 
     fun observePlantPreferences(
         gardenId: String,

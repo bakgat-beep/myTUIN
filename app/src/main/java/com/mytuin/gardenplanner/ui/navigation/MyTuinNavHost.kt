@@ -48,9 +48,10 @@ fun MyTuinNavHost(modifier: Modifier = Modifier) {
         bottomBar = {
             NavigationBar {
                 Destination.all.forEach { destination ->
-                    val selected = currentDestination
-                        ?.hierarchy
-                        ?.any { it.route == destination.route } == true
+                    val selected =
+                        currentDestination
+                            ?.hierarchy
+                            ?.any { it.route == destination.route } == true
 
                     NavigationBarItem(
                         selected = selected,
@@ -66,20 +67,20 @@ fun MyTuinNavHost(modifier: Modifier = Modifier) {
                         icon = {
                             Icon(
                                 imageVector = destination.icon,
-                                contentDescription = null
+                                contentDescription = null,
                             )
                         },
-                        label = { Text(stringResource(destination.labelRes)) }
+                        label = { Text(stringResource(destination.labelRes)) },
                     )
                 }
             }
         },
-        floatingActionButton = { AddActionFab() }
+        floatingActionButton = { AddActionFab() },
     ) { innerPadding ->
         NavHost(
             navController = navController,
             startDestination = Destination.Home.route,
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier.padding(innerPadding),
         ) {
             composable(Destination.Home.route) { HomeScreen() }
             composable(Destination.Garden.route) { GardenScreen() }
@@ -99,14 +100,14 @@ private fun AddActionFab() {
     FloatingActionButton(onClick = { showSheet = true }) {
         Icon(
             imageVector = Icons.Filled.Add,
-            contentDescription = stringResource(R.string.add_action_content_description)
+            contentDescription = stringResource(R.string.add_action_content_description),
         )
     }
 
     if (showSheet) {
         ModalBottomSheet(
             onDismissRequest = { showSheet = false },
-            sheetState = sheetState
+            sheetState = sheetState,
         ) {
             AddActionSheet(onDismiss = { showSheet = false })
         }
@@ -117,38 +118,41 @@ private fun AddActionFab() {
 private fun AddActionSheet(onDismiss: () -> Unit) {
     // V1_SCREEN_SPECIFICATION §4.1 — seven primary options plus More.
     // Step 1: inert. Each row dismisses the sheet.
-    val options = listOf(
-        R.string.add_option_plant,
-        R.string.add_option_water,
-        R.string.add_option_harvest,
-        R.string.add_option_observe,
-        R.string.add_option_feed,
-        R.string.add_option_prune,
-        R.string.add_option_intervention,
-        R.string.add_option_more,
-    )
+    val options =
+        listOf(
+            R.string.add_option_plant,
+            R.string.add_option_water,
+            R.string.add_option_harvest,
+            R.string.add_option_observe,
+            R.string.add_option_feed,
+            R.string.add_option_prune,
+            R.string.add_option_intervention,
+            R.string.add_option_more,
+        )
 
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = Spacing.screenMargin)
-            .padding(bottom = Spacing.xl)
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = Spacing.screenMargin)
+                .padding(bottom = Spacing.xl),
     ) {
         Text(
             text = stringResource(R.string.add_sheet_title),
             style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(bottom = Spacing.m)
+            modifier = Modifier.padding(bottom = Spacing.m),
         )
         options.forEach { labelRes ->
             TextButton(
                 onClick = onDismiss,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = Spacing.xs)
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = Spacing.xs),
             ) {
                 Text(
                     text = stringResource(labelRes),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
         }

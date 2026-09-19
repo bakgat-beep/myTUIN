@@ -8,6 +8,5 @@ import com.mytuin.gardenplanner.domain.time.Clock
 class FakeClock(
     var nowMillisValue: Long = 1_700_000_000_000L,
 ) : Clock {
-
     override fun nowMillis(): Long = nowMillisValue
 }

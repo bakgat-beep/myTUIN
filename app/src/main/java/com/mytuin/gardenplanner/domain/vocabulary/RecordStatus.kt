@@ -1,6 +1,8 @@
 package com.mytuin.gardenplanner.domain.vocabulary
 
-enum class RecordStatus(override val id: String) : VocabularyValue {
+enum class RecordStatus(
+    override val id: String,
+) : VocabularyValue {
     DRAFT("draft"),
     ACTIVE("active"),
     INACTIVE("inactive"),
@@ -9,7 +11,6 @@ enum class RecordStatus(override val id: String) : VocabularyValue {
     ;
 
     companion object {
-        fun fromId(id: String): RecordStatus? =
-            entries.firstOrNull { it.id == id }
+        fun fromId(id: String): RecordStatus? = entries.firstOrNull { it.id == id }
     }
 }

@@ -13,7 +13,9 @@ package com.mytuin.gardenplanner.domain.vocabulary
  *
  * Canonical ids only (DEC-040).
  */
-enum class GardenPriority(override val id: String) : VocabularyValue {
+enum class GardenPriority(
+    override val id: String,
+) : VocabularyValue {
     LOW("low"),
     NORMAL("normal"),
     HIGH("high"),
@@ -21,7 +23,6 @@ enum class GardenPriority(override val id: String) : VocabularyValue {
     ;
 
     companion object {
-        fun fromId(id: String): GardenPriority? =
-            entries.firstOrNull { it.id == id }
+        fun fromId(id: String): GardenPriority? = entries.firstOrNull { it.id == id }
     }
 }

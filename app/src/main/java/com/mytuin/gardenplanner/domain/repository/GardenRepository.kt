@@ -15,7 +15,6 @@ import kotlinx.coroutines.flow.Flow
  * A127=a: throws NotFoundError if no Garden with [id] exists.
  */
 interface GardenRepository {
-
     fun observeGardens(): Flow<List<Garden>>
 
     fun observeGarden(id: String): Flow<Garden?>

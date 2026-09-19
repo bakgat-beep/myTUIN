@@ -10,10 +10,7 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class GardenRepositoryModule {
-
     @Binds
     @Singleton
-    abstract fun bindGardenRepository(
-        impl: GardenRepositoryImpl,
-    ): GardenRepository
+    abstract fun bindGardenRepository(impl: GardenRepositoryImpl): GardenRepository
 }

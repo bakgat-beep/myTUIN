@@ -9,34 +9,36 @@ import com.mytuin.gardenplanner.domain.model.garden.Garden
  * write path now exists.
  */
 
-fun GardenEntity.toDomain(): Garden = Garden(
-    id = id,
-    name = name,
-    description = description,
-    countryCode = country_code,
-    region = region,
-    locality = locality,
-    latitude = latitude,
-    longitude = longitude,
-    timezone = timezone,
-    hemisphere = hemisphere,
-    status = status,
-    createdAt = created_at,
-    updatedAt = updated_at,
-)
+fun GardenEntity.toDomain(): Garden =
+    Garden(
+        id = id,
+        name = name,
+        description = description,
+        countryCode = country_code,
+        region = region,
+        locality = locality,
+        latitude = latitude,
+        longitude = longitude,
+        timezone = timezone,
+        hemisphere = hemisphere,
+        status = status,
+        createdAt = created_at,
+        updatedAt = updated_at,
+    )
 
-fun Garden.toEntity(): GardenEntity = GardenEntity(
-    id = id,
-    name = name,
-    description = description,
-    country_code = countryCode,
-    region = region,
-    locality = locality,
-    latitude = latitude,
-    longitude = longitude,
-    timezone = timezone,
-    hemisphere = hemisphere,
-    status = status,
-    created_at = createdAt,
-    updated_at = updatedAt,
-)
+fun Garden.toEntity(): GardenEntity =
+    GardenEntity(
+        id = id,
+        name = name,
+        description = description,
+        country_code = countryCode,
+        region = region,
+        locality = locality,
+        latitude = latitude,
+        longitude = longitude,
+        timezone = timezone,
+        hemisphere = hemisphere,
+        status = status,
+        created_at = createdAt,
+        updated_at = updatedAt,
+    )

@@ -9,7 +9,9 @@ package com.mytuin.gardenplanner.domain.vocabulary
  *
  * Domain layer: no Android, Compose, Room or Hilt dependencies.
  */
-enum class Hemisphere(override val id: String) : VocabularyValue {
+enum class Hemisphere(
+    override val id: String,
+) : VocabularyValue {
     NORTHERN("northern"),
     SOUTHERN("southern"),
     EQUATORIAL("equatorial"),
@@ -18,7 +20,6 @@ enum class Hemisphere(override val id: String) : VocabularyValue {
     ;
 
     companion object {
-        fun fromId(id: String): Hemisphere? =
-            entries.firstOrNull { it.id == id }
+        fun fromId(id: String): Hemisphere? = entries.firstOrNull { it.id == id }
     }
 }

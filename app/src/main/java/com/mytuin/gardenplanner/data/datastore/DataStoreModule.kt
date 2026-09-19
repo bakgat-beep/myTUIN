@@ -30,7 +30,7 @@ private const val DISPLAY_PREFERENCES_FILE = "display_preferences"
  * and matches the official guidance.
  */
 private val Context.displayPreferencesDataStore: DataStore<Preferences> by
-preferencesDataStore(name = DISPLAY_PREFERENCES_FILE)
+    preferencesDataStore(name = DISPLAY_PREFERENCES_FILE)
 
 /**
  * Provides the display DataStore.
@@ -42,7 +42,6 @@ preferencesDataStore(name = DISPLAY_PREFERENCES_FILE)
 @Module
 @InstallIn(SingletonComponent::class)
 object DataStoreModule {
-
     @Provides
     @Singleton
     fun provideDisplayPreferencesDataStore(

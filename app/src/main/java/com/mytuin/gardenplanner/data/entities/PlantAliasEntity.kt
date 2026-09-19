@@ -43,12 +43,8 @@ import com.mytuin.gardenplanner.domain.vocabulary.PlantAliasType
 data class PlantAliasEntity(
     @PrimaryKey
     val id: String,
-
     val plant_id: String,
-
     val alias: String,
-
     val alias_type: PlantAliasType,
-
     val language: String? = null,
 )

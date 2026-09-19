@@ -5,14 +5,14 @@ import android.net.Uri
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.mytuin.gardenplanner.domain.files.FileAccess
+import java.io.File
+import java.io.IOException
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.io.File
-import java.io.IOException
 
 /**
  * Tests for AndroidFileAccess.
@@ -25,7 +25,6 @@ import java.io.IOException
  */
 @RunWith(AndroidJUnit4::class)
 class AndroidFileAccessTest {
-
     private lateinit var context: Context
     private lateinit var fileAccess: FileAccess
     private lateinit var tempFile: File
@@ -43,45 +42,49 @@ class AndroidFileAccessTest {
     }
 
     @Test
-    fun write_then_read_round_trips_utf8_text() = runBlocking {
-        val content = "Hello, myTUIN — garden data.\nLine two.\n"
-        val uri = Uri.fromFile(tempFile).toString()
+    fun write_then_read_round_trips_utf8_text() =
+        runBlocking {
+            val content = "Hello, myTUIN — garden data.\nLine two.\n"
+            val uri = Uri.fromFile(tempFile).toString()
 
-        fileAccess.writeText(uri, content)
+            fileAccess.writeText(uri, content)
 
-        assertEquals(content, fileAccess.readText(uri))
-    }
-
-    @Test
-    fun write_replaces_existing_contents() = runBlocking {
-        val uri = Uri.fromFile(tempFile).toString()
-
-        fileAccess.writeText(uri, "first")
-        fileAccess.writeText(uri, "second")
-
-        assertEquals("second", fileAccess.readText(uri))
-    }
-
-    @Test
-    fun read_missing_file_throws_ioexception() = runBlocking {
-        val missing = File(context.cacheDir, "does-not-exist-${System.nanoTime()}.txt")
-        val uri = Uri.fromFile(missing).toString()
-
-        try {
-            fileAccess.readText(uri)
-            error("Expected IOException")
-        } catch (expected: IOException) {
-            // expected
+            assertEquals(content, fileAccess.readText(uri))
         }
-    }
 
     @Test
-    fun unsupported_scheme_throws_ioexception() = runBlocking {
-        try {
-            fileAccess.readText("android.resource://com.mytuin.gardenplanner/1")
-            error("Expected IOException")
-        } catch (expected: IOException) {
-            // expected
+    fun write_replaces_existing_contents() =
+        runBlocking {
+            val uri = Uri.fromFile(tempFile).toString()
+
+            fileAccess.writeText(uri, "first")
+            fileAccess.writeText(uri, "second")
+
+            assertEquals("second", fileAccess.readText(uri))
         }
-    }
+
+    @Test
+    fun read_missing_file_throws_ioexception() =
+        runBlocking {
+            val missing = File(context.cacheDir, "does-not-exist-${System.nanoTime()}.txt")
+            val uri = Uri.fromFile(missing).toString()
+
+            try {
+                fileAccess.readText(uri)
+                error("Expected IOException")
+            } catch (expected: IOException) {
+                // expected
+            }
+        }
+
+    @Test
+    fun unsupported_scheme_throws_ioexception() =
+        runBlocking {
+            try {
+                fileAccess.readText("android.resource://com.mytuin.gardenplanner/1")
+                error("Expected IOException")
+            } catch (expected: IOException) {
+                // expected
+            }
+        }
 }

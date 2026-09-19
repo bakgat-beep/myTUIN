@@ -20,7 +20,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class PlatformModule {
-
     @Binds
     @Singleton
     abstract fun bindIdGenerator(impl: UuidIdGenerator): IdGenerator

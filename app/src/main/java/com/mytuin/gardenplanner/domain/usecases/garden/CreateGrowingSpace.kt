@@ -24,32 +24,35 @@ import javax.inject.Inject
  * exceptions; callers above this layer never see
  * SQLiteConstraintException.
  */
-class CreateGrowingSpace @Inject constructor(
-    private val repository: GrowingSpaceRepository,
-    private val idGenerator: IdGenerator,
-    private val clock: Clock,
-) {
-    suspend operator fun invoke(input: NewGrowingSpace): String {
-        val now = clock.nowMillis()
-        val growingSpace = GrowingSpace(
-            id = idGenerator.newGrowingSpaceId(),
-            gardenId = input.gardenId,
-            name = input.name,
-            spaceType = input.spaceType,
-            status = RecordStatus.ACTIVE,
-            geometry = input.geometry,
-            lengthMetres = input.lengthMetres,
-            widthMetres = input.widthMetres,
-            heightMetres = input.heightMetres,
-            diameterMetres = input.diameterMetres,
-            areaSquareMetres = input.areaSquareMetres,
-            volumeCubicMetres = input.volumeCubicMetres,
-            description = input.description,
-            notes = input.notes,
-            createdAt = now,
-            updatedAt = now,
-        )
-        repository.insert(growingSpace)
-        return growingSpace.id
+class CreateGrowingSpace
+    @Inject
+    constructor(
+        private val repository: GrowingSpaceRepository,
+        private val idGenerator: IdGenerator,
+        private val clock: Clock,
+    ) {
+        suspend operator fun invoke(input: NewGrowingSpace): String {
+            val now = clock.nowMillis()
+            val growingSpace =
+                GrowingSpace(
+                    id = idGenerator.newGrowingSpaceId(),
+                    gardenId = input.gardenId,
+                    name = input.name,
+                    spaceType = input.spaceType,
+                    status = RecordStatus.ACTIVE,
+                    geometry = input.geometry,
+                    lengthMetres = input.lengthMetres,
+                    widthMetres = input.widthMetres,
+                    heightMetres = input.heightMetres,
+                    diameterMetres = input.diameterMetres,
+                    areaSquareMetres = input.areaSquareMetres,
+                    volumeCubicMetres = input.volumeCubicMetres,
+                    description = input.description,
+                    notes = input.notes,
+                    createdAt = now,
+                    updatedAt = now,
+                )
+            repository.insert(growingSpace)
+            return growingSpace.id
+        }
     }
-}

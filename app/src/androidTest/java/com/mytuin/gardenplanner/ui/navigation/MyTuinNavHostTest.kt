@@ -11,7 +11,6 @@ import org.junit.Rule
 import org.junit.Test
 
 class MyTuinNavHostTest {
-
     @get:Rule
     val composeRule = createComposeRule()
 

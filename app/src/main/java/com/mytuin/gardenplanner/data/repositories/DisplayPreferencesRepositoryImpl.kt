@@ -8,9 +8,9 @@ import com.mytuin.gardenplanner.domain.display.DisplayPreferences
 import com.mytuin.gardenplanner.domain.display.ThemeMode
 import com.mytuin.gardenplanner.domain.display.UnitSystem
 import com.mytuin.gardenplanner.domain.repository.DisplayPreferencesRepository
+import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import javax.inject.Inject
 
 /**
  * DataStore-backed display preferences.
@@ -29,40 +29,44 @@ import javax.inject.Inject
  * error(...) on unknown ids. The Room converters guard garden data;
  * this guards a per-device UI setting.
  */
-class DisplayPreferencesRepositoryImpl @Inject constructor(
-    private val dataStore: DataStore<Preferences>,
-) : DisplayPreferencesRepository {
+class DisplayPreferencesRepositoryImpl
+    @Inject
+    constructor(
+        private val dataStore: DataStore<Preferences>,
+    ) : DisplayPreferencesRepository {
+        override val preferences: Flow<DisplayPreferences> =
+            dataStore.data.map { prefs -> prefs.toDisplayPreferences() }
 
-    override val preferences: Flow<DisplayPreferences> =
-        dataStore.data.map { prefs -> prefs.toDisplayPreferences() }
+        override suspend fun setThemeMode(mode: ThemeMode) {
+            dataStore.edit { prefs ->
+                prefs[DisplayPreferencesKeys.THEME_MODE] = mode.id
+            }
+        }
 
-    override suspend fun setThemeMode(mode: ThemeMode) {
-        dataStore.edit { prefs ->
-            prefs[DisplayPreferencesKeys.THEME_MODE] = mode.id
+        override suspend fun setUnitSystem(system: UnitSystem) {
+            dataStore.edit { prefs ->
+                prefs[DisplayPreferencesKeys.UNIT_SYSTEM] = system.id
+            }
+        }
+
+        override suspend fun setLanguageCode(code: String) {
+            dataStore.edit { prefs ->
+                prefs[DisplayPreferencesKeys.LANGUAGE_CODE] = code
+            }
         }
     }
-
-    override suspend fun setUnitSystem(system: UnitSystem) {
-        dataStore.edit { prefs ->
-            prefs[DisplayPreferencesKeys.UNIT_SYSTEM] = system.id
-        }
-    }
-
-    override suspend fun setLanguageCode(code: String) {
-        dataStore.edit { prefs ->
-            prefs[DisplayPreferencesKeys.LANGUAGE_CODE] = code
-        }
-    }
-}
 
 private fun Preferences.toDisplayPreferences(): DisplayPreferences =
     DisplayPreferences(
-        themeMode = this[DisplayPreferencesKeys.THEME_MODE]
-            ?.let { ThemeMode.fromId(it) }
-            ?: ThemeMode.DEFAULT,
-        unitSystem = this[DisplayPreferencesKeys.UNIT_SYSTEM]
-            ?.let { UnitSystem.fromId(it) }
-            ?: UnitSystem.DEFAULT,
-        languageCode = this[DisplayPreferencesKeys.LANGUAGE_CODE]
-            ?: DisplayPreferences.DEFAULT_LANGUAGE_CODE,
+        themeMode =
+            this[DisplayPreferencesKeys.THEME_MODE]
+                ?.let { ThemeMode.fromId(it) }
+                ?: ThemeMode.DEFAULT,
+        unitSystem =
+            this[DisplayPreferencesKeys.UNIT_SYSTEM]
+                ?.let { UnitSystem.fromId(it) }
+                ?: UnitSystem.DEFAULT,
+        languageCode =
+            this[DisplayPreferencesKeys.LANGUAGE_CODE]
+                ?: DisplayPreferences.DEFAULT_LANGUAGE_CODE,
     )

@@ -40,15 +40,16 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [30])
 class RoomOnJvmTest {
-
     private lateinit var db: GardenDatabase
 
     @Before
     fun setUp() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        db = Room.inMemoryDatabaseBuilder(context, GardenDatabase::class.java)
-            .addCallback(GardenDatabaseFactory.foreignKeysCallback)
-            .build()
+        db =
+            Room
+                .inMemoryDatabaseBuilder(context, GardenDatabase::class.java)
+                .addCallback(GardenDatabaseFactory.foreignKeysCallback)
+                .build()
     }
 
     @After
@@ -57,33 +58,36 @@ class RoomOnJvmTest {
     }
 
     @Test
-    fun insert_and_read_garden_on_jvm() = runBlocking {
-        val entity = sampleGarden()
-        db.gardenDao().insert(entity)
+    fun insert_and_read_garden_on_jvm() =
+        runBlocking {
+            val entity = sampleGarden()
+            db.gardenDao().insert(entity)
 
-        val retrieved = db.gardenDao().getById(entity.id)
+            val retrieved = db.gardenDao().getById(entity.id)
 
-        assertEquals(entity, retrieved)
-    }
+            assertEquals(entity, retrieved)
+        }
 
     @Test
-    fun get_by_id_returns_null_for_missing_on_jvm() = runBlocking {
-        assertNull(db.gardenDao().getById("garden_does_not_exist"))
-    }
+    fun get_by_id_returns_null_for_missing_on_jvm() =
+        runBlocking {
+            assertNull(db.gardenDao().getById("garden_does_not_exist"))
+        }
 
-    private fun sampleGarden(): GardenEntity = GardenEntity(
-        id = "garden_robolectric_0001",
-        name = "Robolectric Garden",
-        description = null,
-        country_code = null,
-        region = null,
-        locality = null,
-        latitude = null,
-        longitude = null,
-        timezone = null,
-        hemisphere = Hemisphere.UNKNOWN,
-        status = RecordStatus.DRAFT,
-        created_at = 1_700_000_000_000L,
-        updated_at = 1_700_000_000_000L,
-    )
+    private fun sampleGarden(): GardenEntity =
+        GardenEntity(
+            id = "garden_robolectric_0001",
+            name = "Robolectric Garden",
+            description = null,
+            country_code = null,
+            region = null,
+            locality = null,
+            latitude = null,
+            longitude = null,
+            timezone = null,
+            hemisphere = Hemisphere.UNKNOWN,
+            status = RecordStatus.DRAFT,
+            created_at = 1_700_000_000_000L,
+            updated_at = 1_700_000_000_000L,
+        )
 }

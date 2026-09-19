@@ -58,12 +58,17 @@ const val GARDEN_DATABASE_VERSION: Int = 4
 )
 @TypeConverters(VocabularyConverters::class)
 abstract class GardenDatabase : RoomDatabase() {
-
     abstract fun gardenDao(): GardenDao
+
     abstract fun gardenPreferenceDao(): GardenPreferenceDao
+
     abstract fun growingSpaceDao(): GrowingSpaceDao
+
     abstract fun growingSpaceHistoryDao(): GrowingSpaceHistoryDao
+
     abstract fun plantDao(): PlantDao
+
     abstract fun plantAliasDao(): PlantAliasDao
+
     abstract fun cultivarDao(): CultivarDao
 }

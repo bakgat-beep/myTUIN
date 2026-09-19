@@ -23,8 +23,8 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.mytuin.gardenplanner.R
 import com.mytuin.gardenplanner.domain.model.garden.Coordinate
-import com.mytuin.gardenplanner.domain.model.garden.Geometry
 import com.mytuin.gardenplanner.domain.model.garden.Garden
+import com.mytuin.gardenplanner.domain.model.garden.Geometry
 import com.mytuin.gardenplanner.domain.model.garden.GrowingSpace
 import com.mytuin.gardenplanner.domain.repository.GardenRepository
 import com.mytuin.gardenplanner.domain.repository.GrowingSpaceRepository
@@ -33,6 +33,7 @@ import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
+import kotlin.math.sqrt
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.maplibre.android.camera.CameraPosition
@@ -49,12 +50,12 @@ import org.maplibre.geojson.Feature
 import org.maplibre.geojson.FeatureCollection
 import org.maplibre.geojson.Point
 import org.maplibre.geojson.Polygon
-import kotlin.math.sqrt
 
 @EntryPoint
 @InstallIn(SingletonComponent::class)
 interface PocEntryPoint {
     fun gardenRepository(): GardenRepository
+
     fun growingSpaceRepository(): GrowingSpaceRepository
 }
 
@@ -87,14 +88,22 @@ fun MapLibrePoc(modifier: Modifier = Modifier) {
     val garden: Garden?
     val spaces: List<GrowingSpace>
     runBlocking {
-        val entryPoint = EntryPointAccessors.fromApplication(
-            context.applicationContext,
-            PocEntryPoint::class.java,
-        )
-        garden = entryPoint.gardenRepository().observeGardens().first().firstOrNull()
+        val entryPoint =
+            EntryPointAccessors.fromApplication(
+                context.applicationContext,
+                PocEntryPoint::class.java,
+            )
+        garden =
+            entryPoint
+                .gardenRepository()
+                .observeGardens()
+                .first()
+                .firstOrNull()
         spaces = garden?.let {
-            entryPoint.growingSpaceRepository()
-                .observeGrowingSpacesInGarden(it.id).first()
+            entryPoint
+                .growingSpaceRepository()
+                .observeGrowingSpacesInGarden(it.id)
+                .first()
         } ?: emptyList()
     }
 
@@ -103,10 +112,11 @@ fun MapLibrePoc(modifier: Modifier = Modifier) {
         return
     }
 
-    val origin: Wgs84 = Wgs84(
-        latitude = garden.latitude ?: FALLBACK_LATITUDE,
-        longitude = garden.longitude ?: FALLBACK_LONGITUDE,
-    )
+    val origin: Wgs84 =
+        Wgs84(
+            latitude = garden.latitude ?: FALLBACK_LATITUDE,
+            longitude = garden.longitude ?: FALLBACK_LONGITUDE,
+        )
 
     var mapRef by remember { mutableStateOf<MapLibreMap?>(null) }
     var selectedSpaceId by remember { mutableStateOf<String?>(null) }
@@ -127,16 +137,16 @@ fun MapLibrePoc(modifier: Modifier = Modifier) {
                         mapRef = map
                         map.setStyle(STYLE_URL) { style ->
                             style.addSource(
-                                GeoJsonSource(SOURCE_BOUNDARY, boundaryFeature(boundary, origin))
+                                GeoJsonSource(SOURCE_BOUNDARY, boundaryFeature(boundary, origin)),
                             )
                             style.addSource(
-                                GeoJsonSource(SOURCE_SPACES, spacesFeatureCollection(spaces, origin))
+                                GeoJsonSource(SOURCE_SPACES, spacesFeatureCollection(spaces, origin)),
                             )
                             style.addSource(
-                                GeoJsonSource(SOURCE_SELECTED, emptyCollection())
+                                GeoJsonSource(SOURCE_SELECTED, emptyCollection()),
                             )
                             style.addSource(
-                                GeoJsonSource(SOURCE_VERTICES, emptyCollection())
+                                GeoJsonSource(SOURCE_VERTICES, emptyCollection()),
                             )
 
                             style.addLayer(
@@ -145,14 +155,14 @@ fun MapLibrePoc(modifier: Modifier = Modifier) {
                                         PropertyFactory.fillColor("#F2F0E9"),
                                         PropertyFactory.fillOpacity(0.4f),
                                         PropertyFactory.fillOutlineColor("#DDD9CE"),
-                                    )
+                                    ),
                             )
                             style.addLayer(
                                 LineLayer(LAYER_BOUNDARY_LINE, SOURCE_BOUNDARY)
                                     .withProperties(
                                         PropertyFactory.lineColor("#DDD9CE"),
                                         PropertyFactory.lineWidth(2f),
-                                    )
+                                    ),
                             )
                             style.addLayer(
                                 FillLayer(LAYER_SPACES_FILL, SOURCE_SPACES)
@@ -160,28 +170,28 @@ fun MapLibrePoc(modifier: Modifier = Modifier) {
                                         PropertyFactory.fillColor("#7D9A82"),
                                         PropertyFactory.fillOpacity(0.5f),
                                         PropertyFactory.fillOutlineColor("#356859"),
-                                    )
+                                    ),
                             )
                             style.addLayer(
                                 LineLayer(LAYER_SPACES_LINE, SOURCE_SPACES)
                                     .withProperties(
                                         PropertyFactory.lineColor("#356859"),
                                         PropertyFactory.lineWidth(2.5f),
-                                    )
+                                    ),
                             )
                             style.addLayer(
                                 FillLayer(LAYER_SELECTED_FILL, SOURCE_SELECTED)
                                     .withProperties(
                                         PropertyFactory.fillColor("#B4863A"),
                                         PropertyFactory.fillOpacity(0.35f),
-                                    )
+                                    ),
                             )
                             style.addLayer(
                                 LineLayer(LAYER_SELECTED_LINE, SOURCE_SELECTED)
                                     .withProperties(
                                         PropertyFactory.lineColor("#B4863A"),
                                         PropertyFactory.lineWidth(3f),
-                                    )
+                                    ),
                             )
                             style.addLayer(
                                 CircleLayer(LAYER_VERTICES, SOURCE_VERTICES)
@@ -190,14 +200,16 @@ fun MapLibrePoc(modifier: Modifier = Modifier) {
                                         PropertyFactory.circleRadius(7f),
                                         PropertyFactory.circleStrokeColor("#FAF9F5"),
                                         PropertyFactory.circleStrokeWidth(2f),
-                                    )
+                                    ),
                             )
                         }
 
-                        map.cameraPosition = CameraPosition.Builder()
-                            .target(LatLng(origin.latitude, origin.longitude))
-                            .zoom(18.5)
-                            .build()
+                        map.cameraPosition =
+                            CameraPosition
+                                .Builder()
+                                .target(LatLng(origin.latitude, origin.longitude))
+                                .zoom(18.5)
+                                .build()
 
                         map.addOnMapClickListener { latLng ->
                             handleMapClick(
@@ -228,10 +240,11 @@ fun MapLibrePoc(modifier: Modifier = Modifier) {
 
                         map.addOnMapLongClickListener { latLng ->
                             if (editedGeometry != null) {
-                                val coordinate = MetresToWgs84.toCoordinate(
-                                    origin,
-                                    Wgs84(latLng.latitude, latLng.longitude),
-                                )
+                                val coordinate =
+                                    MetresToWgs84.toCoordinate(
+                                        origin,
+                                        Wgs84(latLng.latitude, latLng.longitude),
+                                    )
                                 editedGeometry = appendVertex(editedGeometry!!, coordinate)
                                 styleVersion += 1
                                 true
@@ -260,9 +273,10 @@ fun MapLibrePoc(modifier: Modifier = Modifier) {
         }
 
         PocControls(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(Spacing.l),
+            modifier =
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(Spacing.l),
             selectedName = spaces.firstOrNull { it.id == selectedSpaceId }?.name,
             isEditing = editedGeometry != null,
             onStartEditing = {
@@ -362,31 +376,38 @@ private fun computeBoundary(spaces: List<GrowingSpace>): List<Coordinate> {
     )
 }
 
-private fun boundaryFeature(boundary: List<Coordinate>, origin: Wgs84): Feature =
-    Feature.fromGeometry(polygonGeometry(boundary, origin))
+private fun boundaryFeature(
+    boundary: List<Coordinate>,
+    origin: Wgs84,
+): Feature = Feature.fromGeometry(polygonGeometry(boundary, origin))
 
 private fun spacesFeatureCollection(
     spaces: List<GrowingSpace>,
     origin: Wgs84,
 ): FeatureCollection {
-    val features = spaces.mapNotNull { space ->
-        val polygon = space.geometry as? Geometry.Polygon ?: return@mapNotNull null
-        Feature.fromGeometry(polygonGeometry(polygon.ring, origin))
-            .apply { addStringProperty("spaceId", space.id) }
-    }
+    val features =
+        spaces.mapNotNull { space ->
+            val polygon = space.geometry as? Geometry.Polygon ?: return@mapNotNull null
+            Feature
+                .fromGeometry(polygonGeometry(polygon.ring, origin))
+                .apply { addStringProperty("spaceId", space.id) }
+        }
     return FeatureCollection.fromFeatures(features)
 }
 
-private fun polygonGeometry(ring: List<Coordinate>, origin: Wgs84): Polygon {
-    val points = ring.map { coordinate ->
-        val wgs = MetresToWgs84.toWgs84(origin, coordinate)
-        Point.fromLngLat(wgs.longitude, wgs.latitude)
-    }
+private fun polygonGeometry(
+    ring: List<Coordinate>,
+    origin: Wgs84,
+): Polygon {
+    val points =
+        ring.map { coordinate ->
+            val wgs = MetresToWgs84.toWgs84(origin, coordinate)
+            Point.fromLngLat(wgs.longitude, wgs.latitude)
+        }
     return Polygon.fromLngLats(listOf(points))
 }
 
-private fun emptyCollection(): FeatureCollection =
-    FeatureCollection.fromFeatures(emptyList<Feature>())
+private fun emptyCollection(): FeatureCollection = FeatureCollection.fromFeatures(emptyList<Feature>())
 
 private fun updateSources(
     style: Style,
@@ -402,25 +423,30 @@ private fun updateSources(
     (style.getSourceAs<GeoJsonSource>(SOURCE_SPACES))
         ?.setGeoJson(spacesFeatureCollection(spaces, origin))
 
-    val selected = if (editedGeometry != null) {
-        editedGeometry
-    } else {
-        (spaces.firstOrNull { it.id == selectedSpaceId }?.geometry as? Geometry.Polygon)
-    }
+    val selected =
+        if (editedGeometry != null) {
+            editedGeometry
+        } else {
+            (spaces.firstOrNull { it.id == selectedSpaceId }?.geometry as? Geometry.Polygon)
+        }
 
     if (selected != null) {
         val feature = Feature.fromGeometry(polygonGeometry(selected.ring, origin))
-        style.getSourceAs<GeoJsonSource>(SOURCE_SELECTED)
+        style
+            .getSourceAs<GeoJsonSource>(SOURCE_SELECTED)
             ?.setGeoJson(FeatureCollection.fromFeatures(listOf(feature)))
-        style.getSourceAs<GeoJsonSource>(SOURCE_VERTICES)
-            ?.setGeoJson(FeatureCollection.fromFeatures(
-                selected.ring.map { coordinate ->
-                    val wgs = MetresToWgs84.toWgs84(origin, coordinate)
-                    Feature.fromGeometry(
-                        Point.fromLngLat(wgs.longitude, wgs.latitude)
-                    )
-                }
-            ))
+        style
+            .getSourceAs<GeoJsonSource>(SOURCE_VERTICES)
+            ?.setGeoJson(
+                FeatureCollection.fromFeatures(
+                    selected.ring.map { coordinate ->
+                        val wgs = MetresToWgs84.toWgs84(origin, coordinate)
+                        Feature.fromGeometry(
+                            Point.fromLngLat(wgs.longitude, wgs.latitude),
+                        )
+                    },
+                ),
+            )
     } else {
         style.getSourceAs<GeoJsonSource>(SOURCE_SELECTED)?.setGeoJson(emptyCollection())
         style.getSourceAs<GeoJsonSource>(SOURCE_VERTICES)?.setGeoJson(emptyCollection())
@@ -448,10 +474,11 @@ private fun handleMapClick(
     }
 
     if (editedGeometry != null) {
-        val coordinate = MetresToWgs84.toCoordinate(
-            origin,
-            Wgs84(latLng.latitude, latLng.longitude),
-        )
+        val coordinate =
+            MetresToWgs84.toCoordinate(
+                origin,
+                Wgs84(latLng.latitude, latLng.longitude),
+            )
         onAddVertex(coordinate)
         return true
     }
@@ -484,9 +511,10 @@ private fun nearestVertexIndex(
     var bestDistance = thresholdPx
     ring.forEachIndexed { index, coordinate ->
         val wgs = MetresToWgs84.toWgs84(origin, coordinate)
-        val vertexScreen = map.projection.toScreenLocation(
-            LatLng(wgs.latitude, wgs.longitude)
-        )
+        val vertexScreen =
+            map.projection.toScreenLocation(
+                LatLng(wgs.latitude, wgs.longitude),
+            )
         val dx = vertexScreen.x - screenPoint.x
         val dy = vertexScreen.y - screenPoint.y
         val distance = sqrt(dx * dx + dy * dy)

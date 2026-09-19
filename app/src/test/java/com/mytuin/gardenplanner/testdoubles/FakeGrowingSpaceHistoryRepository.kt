@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 
 class FakeGrowingSpaceHistoryRepository : GrowingSpaceHistoryRepository {
-
     private val store = MutableStateFlow<List<GrowingSpaceHistory>>(emptyList())
 
     override fun observeHistoryForSpace(growingSpaceId: String): Flow<List<GrowingSpaceHistory>> =
@@ -22,8 +21,8 @@ class FakeGrowingSpaceHistoryRepository : GrowingSpaceHistoryRepository {
     ): GrowingSpaceHistory? =
         store.value.firstOrNull {
             it.growingSpaceId == growingSpaceId &&
-                    it.validFrom <= atMillis &&
-                    it.validTo > atMillis
+                it.validFrom <= atMillis &&
+                it.validTo > atMillis
         }
 
     fun snapshot(): List<GrowingSpaceHistory> = store.value

@@ -20,7 +20,6 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  * database can build its own RoomDatabase without this callback.
  */
 object SeedCallback : RoomDatabase.Callback() {
-
     override fun onCreate(db: SupportSQLiteDatabase) {
         super.onCreate(db)
         SeedData.insertStatements.forEach { db.execSQL(it) }

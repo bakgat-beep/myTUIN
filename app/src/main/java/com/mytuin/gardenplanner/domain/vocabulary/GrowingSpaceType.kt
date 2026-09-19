@@ -10,7 +10,9 @@ package com.mytuin.gardenplanner.domain.vocabulary
  * Canonical ids only (DEC-040). Domain layer: no Android, Compose,
  * Room or Hilt dependencies.
  */
-enum class GrowingSpaceType(override val id: String) : VocabularyValue {
+enum class GrowingSpaceType(
+    override val id: String,
+) : VocabularyValue {
     GARDEN_BED("garden_bed"),
     RAISED_BED("raised_bed"),
     IN_GROUND_BED("in_ground_bed"),
@@ -30,7 +32,6 @@ enum class GrowingSpaceType(override val id: String) : VocabularyValue {
     ;
 
     companion object {
-        fun fromId(id: String): GrowingSpaceType? =
-            entries.firstOrNull { it.id == id }
+        fun fromId(id: String): GrowingSpaceType? = entries.firstOrNull { it.id == id }
     }
 }

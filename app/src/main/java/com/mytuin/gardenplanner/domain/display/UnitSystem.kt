@@ -15,7 +15,9 @@ import com.mytuin.gardenplanner.domain.vocabulary.VocabularyValue
  *
  * A185: id-carrying enum per DEC-040, for consistency.
  */
-enum class UnitSystem(override val id: String) : VocabularyValue {
+enum class UnitSystem(
+    override val id: String,
+) : VocabularyValue {
     METRIC("metric"),
     IMPERIAL("imperial"),
     ;
@@ -23,7 +25,6 @@ enum class UnitSystem(override val id: String) : VocabularyValue {
     companion object {
         val DEFAULT: UnitSystem = METRIC
 
-        fun fromId(id: String): UnitSystem? =
-            entries.firstOrNull { it.id == id }
+        fun fromId(id: String): UnitSystem? = entries.firstOrNull { it.id == id }
     }
 }

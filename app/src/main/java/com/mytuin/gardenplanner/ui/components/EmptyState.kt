@@ -48,9 +48,10 @@ fun EmptyState(
     onAction: (() -> Unit)? = null,
 ) {
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(Spacing.screenMargin),
+        modifier =
+            modifier
+                .fillMaxSize()
+                .padding(Spacing.screenMargin),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {

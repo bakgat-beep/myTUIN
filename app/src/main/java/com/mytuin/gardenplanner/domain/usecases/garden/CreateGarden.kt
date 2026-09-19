@@ -20,29 +20,32 @@ import javax.inject.Inject
  * No transaction: a single-row insert does not need one (A42). The
  * transaction pattern arrives with the first multi-row write.
  */
-class CreateGarden @Inject constructor(
-    private val repository: GardenRepository,
-    private val idGenerator: IdGenerator,
-    private val clock: Clock,
-) {
-    suspend operator fun invoke(newGarden: NewGarden): String {
-        val now = clock.nowMillis()
-        val garden = Garden(
-            id = idGenerator.newGardenId(),
-            name = newGarden.name,
-            description = newGarden.description,
-            countryCode = newGarden.countryCode,
-            region = newGarden.region,
-            locality = newGarden.locality,
-            latitude = newGarden.latitude,
-            longitude = newGarden.longitude,
-            timezone = newGarden.timezone,
-            hemisphere = newGarden.hemisphere,
-            status = RecordStatus.DRAFT,
-            createdAt = now,
-            updatedAt = now,
-        )
-        repository.insert(garden)
-        return garden.id
+class CreateGarden
+    @Inject
+    constructor(
+        private val repository: GardenRepository,
+        private val idGenerator: IdGenerator,
+        private val clock: Clock,
+    ) {
+        suspend operator fun invoke(newGarden: NewGarden): String {
+            val now = clock.nowMillis()
+            val garden =
+                Garden(
+                    id = idGenerator.newGardenId(),
+                    name = newGarden.name,
+                    description = newGarden.description,
+                    countryCode = newGarden.countryCode,
+                    region = newGarden.region,
+                    locality = newGarden.locality,
+                    latitude = newGarden.latitude,
+                    longitude = newGarden.longitude,
+                    timezone = newGarden.timezone,
+                    hemisphere = newGarden.hemisphere,
+                    status = RecordStatus.DRAFT,
+                    createdAt = now,
+                    updatedAt = now,
+                )
+            repository.insert(garden)
+            return garden.id
+        }
     }
-}

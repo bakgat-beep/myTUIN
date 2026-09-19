@@ -18,10 +18,11 @@ data class DisplayPreferences(
     companion object {
         const val DEFAULT_LANGUAGE_CODE: String = "en"
 
-        val DEFAULTS: DisplayPreferences = DisplayPreferences(
-            themeMode = ThemeMode.DEFAULT,
-            unitSystem = UnitSystem.DEFAULT,
-            languageCode = DEFAULT_LANGUAGE_CODE,
-        )
+        val DEFAULTS: DisplayPreferences =
+            DisplayPreferences(
+                themeMode = ThemeMode.DEFAULT,
+                unitSystem = UnitSystem.DEFAULT,
+                languageCode = DEFAULT_LANGUAGE_CODE,
+            )
     }
 }

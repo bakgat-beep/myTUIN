@@ -12,9 +12,9 @@ import com.mytuin.gardenplanner.domain.identifiers.IdGenerator
 import com.mytuin.gardenplanner.domain.model.garden.Geometry
 import com.mytuin.gardenplanner.domain.model.garden.GrowingSpace
 import com.mytuin.gardenplanner.domain.repository.GrowingSpaceRepository
+import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import javax.inject.Inject
 
 /**
  * Room-backed GrowingSpace repository.
@@ -31,77 +31,78 @@ import javax.inject.Inject
  * GardenDatabase is injected directly because Room's withTransaction
  * is a method on RoomDatabase, not on a DAO.
  */
-class GrowingSpaceRepositoryImpl @Inject constructor(
-    private val db: GardenDatabase,
-    private val growingSpaceDao: GrowingSpaceDao,
-    private val growingSpaceHistoryDao: GrowingSpaceHistoryDao,
-    private val idGenerator: IdGenerator,
-) : GrowingSpaceRepository {
+class GrowingSpaceRepositoryImpl
+    @Inject
+    constructor(
+        private val db: GardenDatabase,
+        private val growingSpaceDao: GrowingSpaceDao,
+        private val growingSpaceHistoryDao: GrowingSpaceHistoryDao,
+        private val idGenerator: IdGenerator,
+    ) : GrowingSpaceRepository {
+        override fun observeGrowingSpacesInGarden(gardenId: String): Flow<List<GrowingSpace>> =
+            growingSpaceDao
+                .observeForGarden(gardenId)
+                .map { rows -> rows.map { it.toDomain() } }
 
-    override fun observeGrowingSpacesInGarden(gardenId: String): Flow<List<GrowingSpace>> =
-        growingSpaceDao.observeForGarden(gardenId)
-            .map { rows -> rows.map { it.toDomain() } }
+        override fun observeGrowingSpace(id: String): Flow<GrowingSpace?> = growingSpaceDao.observeById(id).map { it?.toDomain() }
 
-    override fun observeGrowingSpace(id: String): Flow<GrowingSpace?> =
-        growingSpaceDao.observeById(id).map { it?.toDomain() }
+        override suspend fun getGrowingSpace(id: String): GrowingSpace? = growingSpaceDao.getById(id)?.toDomain()
 
-    override suspend fun getGrowingSpace(id: String): GrowingSpace? =
-        growingSpaceDao.getById(id)?.toDomain()
-
-    override suspend fun insert(growingSpace: GrowingSpace) {
-        try {
-            growingSpaceDao.insert(growingSpace.toEntity())
-        } catch (e: SQLiteConstraintException) {
-            // The GrowingSpace table has exactly one foreign key
-            // (garden_id) and no unique constraint today. A constraint
-            // failure on insert therefore means the referenced garden
-            // does not exist. When additional constraints are added,
-            // this attribution needs refining — inspect e.message.
-            throw ValidationError(
-                field = "garden_id",
-                reason = e.message ?: "constraint violation",
-            )
-        }
-    }
-
-    override suspend fun updateGeometry(
-        id: String,
-        newGeometry: Geometry?,
-        effectiveAt: Long,
-        reason: String?,
-    ) {
-        db.withTransaction {
-            val current = growingSpaceDao.getById(id)
-                ?: throw NotFoundError("GrowingSpace", id)
-
-            val previousHistory = growingSpaceHistoryDao.getLatestForSpace(id)
-            val validFrom = previousHistory?.valid_to ?: current.created_at
-
-            growingSpaceHistoryDao.insert(
-                GrowingSpaceHistoryEntity(
-                    id = idGenerator.newGrowingSpaceHistoryId(),
-                    growing_space_id = current.id,
-                    geometry_type = current.geometry_type,
-                    geometry_data = current.geometry_data,
-                    length = current.length,
-                    width = current.width,
-                    height = current.height,
-                    diameter = current.diameter,
-                    area = current.area,
-                    volume = current.volume,
-                    valid_from = validFrom,
-                    valid_to = effectiveAt,
-                    recorded_at = effectiveAt,
-                    reason = reason,
+        override suspend fun insert(growingSpace: GrowingSpace) {
+            try {
+                growingSpaceDao.insert(growingSpace.toEntity())
+            } catch (e: SQLiteConstraintException) {
+                // The GrowingSpace table has exactly one foreign key
+                // (garden_id) and no unique constraint today. A constraint
+                // failure on insert therefore means the referenced garden
+                // does not exist. When additional constraints are added,
+                // this attribution needs refining — inspect e.message.
+                throw ValidationError(
+                    field = "garden_id",
+                    reason = e.message ?: "constraint violation",
                 )
-            )
+            }
+        }
 
-            growingSpaceDao.updateGeometry(
-                id = id,
-                geometryType = newGeometry?.geometryType,
-                geometryData = newGeometry?.let { GeometryGeoJson.encode(it) },
-                updatedAt = effectiveAt,
-            )
+        override suspend fun updateGeometry(
+            id: String,
+            newGeometry: Geometry?,
+            effectiveAt: Long,
+            reason: String?,
+        ) {
+            db.withTransaction {
+                val current =
+                    growingSpaceDao.getById(id)
+                        ?: throw NotFoundError("GrowingSpace", id)
+
+                val previousHistory = growingSpaceHistoryDao.getLatestForSpace(id)
+                val validFrom = previousHistory?.valid_to ?: current.created_at
+
+                growingSpaceHistoryDao.insert(
+                    GrowingSpaceHistoryEntity(
+                        id = idGenerator.newGrowingSpaceHistoryId(),
+                        growing_space_id = current.id,
+                        geometry_type = current.geometry_type,
+                        geometry_data = current.geometry_data,
+                        length = current.length,
+                        width = current.width,
+                        height = current.height,
+                        diameter = current.diameter,
+                        area = current.area,
+                        volume = current.volume,
+                        valid_from = validFrom,
+                        valid_to = effectiveAt,
+                        recorded_at = effectiveAt,
+                        reason = reason,
+                    ),
+                )
+
+                growingSpaceDao.updateGeometry(
+                    id = id,
+                    geometryType = newGeometry?.geometryType,
+                    geometryData = newGeometry?.let { GeometryGeoJson.encode(it) },
+                    updatedAt = effectiveAt,
+                )
+            }
         }
     }
-}

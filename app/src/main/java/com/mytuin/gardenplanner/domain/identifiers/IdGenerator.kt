@@ -11,6 +11,8 @@ package com.mytuin.gardenplanner.domain.identifiers
  */
 interface IdGenerator {
     fun newGardenId(): String
+
     fun newGrowingSpaceId(): String
+
     fun newGrowingSpaceHistoryId(): String
 }
