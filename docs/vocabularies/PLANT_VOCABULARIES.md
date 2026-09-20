@@ -1,131 +1,77 @@
-Garden Planner & Manager — Plant Controlled Vocabularies
+# Garden Planner & Manager — Plant Controlled Vocabularies
 
-Document: docs/vocabularies/PLANT_VOCABULARIES.md
-Version: 0.3
-Status: Working specification
-Last updated: August 2026
-
+**Document:** `docs/vocabularies/PLANT_VOCABULARIES.md`
+**Version:** 0.4
+**Status:** Working specification
+**Last updated:** September 2026
 
 ---
 
-1. Purpose
+## 1. Purpose
 
 This document defines controlled vocabularies used specifically for plant-related information in the Garden Planner & Manager.
 
-It covers classifications such as:
+Plant vocabularies classify plant characteristics. They do not contain detailed plant knowledge.
 
-plant lifecycle;
-
-plant roles;
-
-growth stages;
-
-growth habits;
-
-growing methods;
-
-propagation methods;
-
-maturity;
-
-frost sensitivity;
-
-selected plant tolerance characteristics.
-
-
-It does not define the identity or general knowledge of individual plants.
-
-Plant identity, cultivars, pests, diseases and other substantive horticultural knowledge are reference data or knowledge entities.
-
-The vocabulary system should remain deliberately small. Where information is better represented as a measurement, range, relationship or knowledge record, it should not be converted into a vocabulary merely for convenience.
-
+Use structured data, relationships, ranges, dates or knowledge records where those provide a better representation.
 
 ---
 
-2. Relationship to other vocabularies
+## 2. Relationship to other vocabularies
 
 Plant vocabularies operate alongside:
 
-CORE_VOCABULARIES
-    Shared application concepts
+* **CORE_VOCABULARIES** — shared application concepts
+* **SOIL_VOCABULARIES** — soil classifications
+* **ACTIVITY_VOCABULARIES** — garden activity classifications
+* **PROBLEM_VOCABULARIES** — problems, symptoms and diagnostic classifications
+* **PLANNING_VOCABULARIES** — planning and recommendation classifications
+* **PROVENANCE_VOCABULARIES** — evidence and source classifications
 
-PLANT_VOCABULARIES
-    Plant-specific classifications
-
-SOIL_VOCABULARIES
-    Soil classifications
-
-ACTIVITY_VOCABULARIES
-    Garden activity classifications
-
-PROBLEM_VOCABULARIES
-    Problems, symptoms and diagnostic classifications
-
-PLANNING_VOCABULARIES
-    Planning and recommendation classifications
-
-PROVENANCE_VOCABULARIES
-    Evidence and source classifications
-
-Plant-specific concepts should remain here unless they are genuinely shared across multiple domains.
-
+Plant-specific concepts belong here only where they are genuinely plant classifications.
 
 ---
 
-3. Plant lifecycle
+## 3. Plant lifecycle
 
 Lifecycle describes the broad biological persistence of a plant.
 
-Values
+### Values
 
+```text
 annual
 biennial
 perennial
-short_lived_perennial
-woody_perennial
 unknown
+```
 
-Definitions
+### Definitions
 
-annual
-
+**annual**
 Normally completes its biological lifecycle within one growing season or year.
 
-biennial
-
+**biennial**
 Normally requires two growing seasons to complete its lifecycle.
 
-perennial
-
+**perennial**
 Normally survives for multiple growing seasons.
 
-short_lived_perennial
-
-A perennial that normally persists for only a relatively limited number of years.
-
-This distinction should only be used where the underlying plant knowledge supports it.
-
-woody_perennial
-
-A perennial with persistent woody growth.
-
-This may be useful for planning and spatial behaviour but should not replace more detailed plant growth-form information where that is required.
-
-unknown
-
+**unknown**
 Lifecycle is not currently known.
 
+Lifespan beyond this broad classification remains plant knowledge or structured data.
 
 ---
 
-4. Plant role
+## 4. Plant role
 
-Plant role describes the principal purpose or functional role assigned to a plant in the garden.
+Plant role describes a plant's principal functional or garden purpose.
 
-A plant may have more than one role.
+A plant may have multiple roles.
 
-Potential values:
+### Values
 
+```text
 food_crop
 fruit_crop
 herb
@@ -138,7 +84,6 @@ grain_crop
 cover_crop
 green_manure
 ornamental
-flowering
 pollinator_support
 wildlife_support
 medicinal
@@ -152,20 +97,19 @@ windbreak
 ground_cover
 soil_improvement
 unknown
+```
 
-These values describe roles rather than plant identity.
-
-Not every plant role needs to be assigned to every plant.
-
-Where several roles apply, the underlying data should support multiple values rather than forcing one primary classification.
-
+`herb` is a garden/culinary role here, not a botanical growth-form classification.
 
 ---
 
-5. Food-production category
+## 5. Food-production category
 
-Where a plant is being classified specifically for food production, the application may use:
+Describes the edible part harvested from the plant.
 
+### Values
+
+```text
 fruit
 leaf
 stem
@@ -180,22 +124,21 @@ shoot
 whole_plant
 multiple
 unknown
+```
 
-This classification should describe the harvested edible part rather than the botanical classification of the plant.
+Multiple values may apply.
 
-For example, a plant producing an edible root should not be classified as a root merely because its entire plant is commonly called a root vegetable.
-
-Multiple edible parts may be recorded where appropriate.
-
+This describes the harvested edible part, not botanical classification.
 
 ---
 
-6. Growth stage
+## 6. Growth stage
 
-Growth stage describes a plant's current or relevant developmental stage.
+Describes a plant's developmental stage where stage-specific information is relevant.
 
-Core values:
+### Values
 
+```text
 seed
 germination
 seedling
@@ -210,22 +153,19 @@ dormancy
 senescence
 harvestable
 unknown
+```
 
-Not every plant uses every stage.
-
-The application should not force a plant into a growth stage when the available information does not support it.
-
-Where timing or requirements vary substantially by growth stage, the stage should be represented explicitly rather than inferred solely from the calendar.
-
+Not every plant uses every stage. Stage-specific timing and requirements should remain separate structured information where appropriate.
 
 ---
 
-7. Growth habit
+## 7. Growth habit
 
-Growth habit describes the general physical form and growth behaviour of a plant.
+Describes general physical growth form and behaviour.
 
-Core values:
+### Values
 
+```text
 upright
 spreading
 bushy
@@ -243,22 +183,39 @@ tree
 shrub
 subshrub
 unknown
+```
 
-A plant may have more than one applicable characteristic where necessary.
+Multiple values may apply.
 
-These classifications should not be used as a substitute for measured dimensions.
-
-For example, a plant's growth habit may be spreading, while its mature width remains a structured range.
-
+Growth habit does not replace measured mature dimensions.
 
 ---
 
-8. Growing method
+## 8. Growth rate
 
-Growing method describes the general method by which the plant is established or grown.
+Describes broad growth rate toward mature size under suitable conditions.
 
-Core values:
+### Values
 
+```text
+slow
+moderate
+fast
+variable
+unknown
+```
+
+This is a planning classification only. It does not replace measured growth rates, mature dimensions or cultivar-specific information.
+
+---
+
+## 9. Growing method
+
+Describes broad cultivation methods.
+
+### Values
+
+```text
 direct_sow
 transplant
 container
@@ -272,22 +229,21 @@ hydroponic
 aquaponic
 vertical
 unknown
+```
 
-These values may be used in knowledge and planning contexts.
+Multiple values may apply.
 
-Where a plant can be grown using multiple methods, the data should support multiple applicable values.
-
-Specific infrastructure should remain represented through garden/spatial data rather than being embedded into the plant vocabulary.
-
+Specific garden infrastructure belongs to garden/planning data.
 
 ---
 
-9. Propagation method
+## 10. Propagation method
 
-Propagation method describes how a plant can be propagated.
+Describes how a plant can be propagated.
 
-Core values:
+### Values
 
+```text
 seed
 division
 cutting
@@ -296,373 +252,331 @@ grafting
 budding
 offset
 runner
-root_division
 tissue_culture
 unknown
+```
 
-Where seed is used, it means propagation from seed rather than merely the fact that the plant produces seeds.
+Multiple values may apply.
 
-A plant may support multiple propagation methods.
-
-Detailed propagation instructions belong to plant knowledge rather than this vocabulary.
-
+Detailed propagation instructions belong to plant knowledge.
 
 ---
 
-10. Maturity classification
+## 11. Maturity classification
 
-Maturity classifications provide broad qualitative categories where a categorical distinction is useful.
+Provides a broad qualitative maturity category where useful.
 
+### Values
+
+```text
 early
 mid_season
 late
 unknown
+```
 
-These values must not replace actual maturity dates, days-to-maturity estimates or other structured timing information.
+This must not replace actual days-to-maturity, dates or ranges.
 
-Where cultivar-specific maturity differs substantially, the relevant value should be associated with the cultivar rather than incorrectly assigned to the entire species.
-
+Where maturity differs substantially by cultivar, store it at cultivar level.
 
 ---
 
-11. Frost sensitivity
+## 12. Frost sensitivity
 
-Frost sensitivity describes a plant's general sensitivity to frost conditions.
+Describes relative sensitivity to frost.
 
-Core values:
+### Values
 
+```text
 very_sensitive
 sensitive
 moderately_sensitive
 tolerant
 very_tolerant
 unknown
+```
 
-This is a qualitative classification.
-
-Actual temperature thresholds should be stored as structured knowledge or ranges where available.
-
-The classification must not be interpreted as a universal temperature threshold.
-
-For example:
-
-frost_sensitivity = sensitive
-
-does not itself mean:
-
-minimum_temperature = 0 °C
-
+This is qualitative. Actual temperature thresholds remain structured data.
 
 ---
 
-12. Heat tolerance
+## 13. Heat tolerance
 
-Where heat tolerance is sufficiently useful and supported by reliable knowledge:
+Describes relative tolerance of high temperatures.
 
+### Values
+
+```text
 very_sensitive
 sensitive
 moderate
 tolerant
 very_tolerant
 unknown
+```
 
-This vocabulary is context-dependent.
-
-Actual temperature requirements or limits should remain structured values or ranges.
-
-Heat tolerance may vary with:
-
-cultivar;
-
-growth stage;
-
-water availability;
-
-humidity;
-
-growing method;
-
-acclimatisation.
-
-
-The application should not present the classification as an absolute threshold.
-
+Actual temperature requirements and limits remain structured data.
 
 ---
 
-13. Drought tolerance
+## 14. Drought tolerance
 
-Broad drought tolerance may be classified as:
+Describes relative tolerance of dry conditions.
 
+### Values
+
+```text
 very_low
 low
 moderate
 high
 very_high
 unknown
+```
 
-This classification describes relative tolerance, not recommended irrigation quantity.
-
-Water requirements remain separate knowledge and recommendation data.
-
-Drought tolerance should not be interpreted as meaning a plant requires little water under all circumstances.
-
+This does not define irrigation requirements.
 
 ---
 
-14. Waterlogging tolerance
+## 15. Waterlogging tolerance
 
-Where useful:
+Describes relative tolerance of prolonged saturated conditions.
 
+### Values
+
+```text
 very_low
 low
 moderate
 high
 very_high
 unknown
+```
 
-This describes tolerance of prolonged saturated conditions.
-
-It does not describe soil drainage itself.
-
-Soil drainage belongs to the soil domain.
-
+This does not describe soil drainage itself.
 
 ---
 
-15. Salinity tolerance
+## 16. Salinity tolerance
 
-Where supported by appropriate knowledge:
+Describes relative tolerance of saline conditions.
 
+### Values
+
+```text
 very_sensitive
 sensitive
 moderate
 tolerant
 very_tolerant
 unknown
+```
 
-Actual salinity thresholds should be represented as structured knowledge or measurements where available.
-
-This classification should not be treated as evidence that a particular garden has suitable salinity conditions.
-
+Actual salinity thresholds remain structured data.
 
 ---
 
-16. Shade tolerance
+## 17. Light requirement
 
-Shade tolerance may be represented using:
+Describes the preferred growing light level.
 
+### Values
+
+```text
+full_sun
+partial_shade
+full_shade
+variable
+unknown
+```
+
+### Definitions
+
+**full_sun**
+Normally performs best with substantial direct sunlight.
+
+**partial_shade**
+Normally performs best with some direct sunlight and/or significant periods of shade.
+
+**full_shade**
+Can perform satisfactorily with little or no direct sunlight.
+
+**variable**
+Acceptable conditions vary substantially by cultivar, climate, growth stage or other context.
+
+**unknown**
+Preferred light requirement is not currently known.
+
+This describes preferred light, not tolerance. `shade_tolerance` remains a separate classification.
+
+Actual garden light conditions belong to environmental/garden data.
+
+---
+
+## 18. Shade tolerance
+
+Describes relative tolerance of reduced light.
+
+### Values
+
+```text
 very_low
 low
 moderate
 high
 very_high
 unknown
+```
 
-This describes tolerance rather than the plant's preferred light requirement.
-
-The application's light-requirement vocabulary and recommendation system should distinguish:
-
-preferred_light
-
-from:
-
-shade_tolerance
-
-where the distinction is materially important.
-
-Actual light conditions in the garden remain garden/environment data.
-
+A plant may prefer full sun while still having some shade tolerance.
 
 ---
 
-17. Plant temperature classification
+## 19. Plant temperature classification
 
-Where a broad temperature preference is required, use:
+Provides a broad seasonal temperature preference.
 
+### Values
+
+```text
 cool_season
 warm_season
 intermediate
 variable
 unknown
+```
 
-This should be used only as a broad planning classification.
+This is a broad planning classification only.
 
-Actual temperature requirements and ranges remain structured knowledge.
-
-A plant may have different temperature requirements during:
-
-germination;
-
-establishment;
-
-vegetative growth;
-
-flowering;
-
-fruiting.
-
-
-Those requirements should not be flattened into a single classification where doing so would materially reduce accuracy.
-
+Actual temperature requirements remain structured data and may vary by growth stage.
 
 ---
 
-18. Plant establishment difficulty
+## 20. Plant establishment difficulty
 
-Where a broad user-facing classification is genuinely useful:
+Describes broad difficulty of establishing the plant.
 
+### Values
+
+```text
 easy
 moderate
 difficult
 unknown
+```
 
-This is intended for general planning and user guidance.
-
-It should not be used as a substitute for specific propagation, germination or cultivation requirements.
-
+This is a user-facing summary, not a substitute for propagation or cultivation requirements.
 
 ---
 
-19. Maintenance demand
+## 21. Maintenance demand
 
-A broad qualitative classification may be used for user preference and planning:
+Describes broad overall maintenance demand.
 
+### Values
+
+```text
 low
 moderate
 high
 unknown
+```
 
-This is a summary classification only.
-
-The application should not infer specific maintenance activities from this value alone.
-
-Specific requirements should come from plant knowledge and applicable rules.
-
+This is a summary classification. Specific maintenance requirements remain plant knowledge and activity data.
 
 ---
 
-20. Plant size classification
+## 22. Root behaviour
 
-Broad size classifications may be useful for filtering and planning:
+Describes broad root-growth characteristics relevant to planning.
 
-very_small
-small
-medium
-large
-very_large
-unknown
+### Values
 
-This must not replace actual mature dimensions.
-
-Where available, mature:
-
-height;
-
-width;
-
-spread;
-
-root-zone dimensions;
-
-
-should remain structured values or ranges.
-
-
----
-
-21. Root behaviour
-
-Where root behaviour materially affects garden planning, a broad classification may be used:
-
+```text
 shallow
 moderate
 deep
 spreading
 unknown
+```
 
-This should only be used where the distinction is supported by meaningful horticultural information.
+Multiple values may apply where necessary.
 
-Specific root depth or spread should remain structured data where available.
-
+Specific root depth and spread remain structured data.
 
 ---
 
-22. Climbing support requirement
+## 23. Support requirement
 
-For plants whose growth habit may require physical support:
+Describes whether physical support is generally required or beneficial.
 
+### Values
+
+```text
 none
 optional
 recommended
 required
 unknown
+```
 
-This is useful to planning because it can interact with garden infrastructure.
+This applies to climbing, vining, sprawling or structurally weak plants as appropriate.
 
-It does not define the type of support required.
+The type of support is separate from this vocabulary. Examples include trellis, stake, cage, fence or frame.
 
-Support requirements may include relationships to:
-
-trellis;
-
-stakes;
-
-fences;
-
-frames;
-
-other structures.
-
-
-Those relationships belong in garden and infrastructure data.
-
+Specific support relationships belong to garden/planning data.
 
 ---
 
-23. Pollination requirement
+## 24. Pollination requirement
 
-Where relevant to plant planning:
+Describes the broad biological requirement for pollination.
 
+### Values
+
+```text
 self_fertile
 partially_self_fertile
 cross_pollination_required
-pollination_partner_recommended
-pollination_method_specific
 unknown
+```
 
-This is a biological/planning classification.
+Specific compatible pollination partners remain plant relationships/knowledge.
 
-The specific compatible pollination partners remain plant knowledge and relationship data.
-
+A plant that benefits from a partner despite being self-fertile should not receive a separate requirement value solely for that reason.
 
 ---
 
-24. Pollination method
+## 25. Pollination method
 
-Where relevant:
+Describes the broad pollination mechanism.
 
+### Values
+
+```text
 wind
 insect
-bee
 bird
 other_animal
 water
 self
 multiple
 unknown
+```
 
-This should not be used to imply that a particular pollinator is present in the user's garden.
+Specific pollinators remain plant knowledge or relationship data.
 
-Actual garden observations remain separate records.
-
+This does not imply that a particular pollinator is present in the user's garden.
 
 ---
 
-25. Planting stock type
+## 26. Planting stock type
 
-Where useful for recording planting material:
+Describes the planting material used when establishing a plant instance.
 
+### Values
+
+```text
 seed
 seedling
 plug
@@ -675,55 +589,27 @@ division
 grafted_plant
 established_plant
 unknown
+```
 
-This may be associated with planting activities or plant instances.
-
-It should not be confused with the plant's propagation methods.
-
+This is distinct from `propagation_method`: planting stock describes what is planted, while propagation method describes how the plant was propagated.
 
 ---
 
-26. Cultivar-specific classifications
+## 27. Resistance and susceptibility
 
-Cultivars may have values that differ from the species or broader plant record.
+Pest and disease response should be represented as a relationship between:
 
-Where a classification is known to be cultivar-specific, it should be stored at cultivar level rather than copied into the general plant record.
-
-Examples include:
-
-maturity
-frost_sensitivity
-heat_tolerance
-disease_resistance
-growth_habit
-size
-fruit_characteristics
-
-The application should preserve the distinction between:
-
-species/general knowledge
-
-and:
-
-cultivar-specific knowledge
-
-
----
-
-27. Resistance and susceptibility
-
-Disease and pest response should generally not be represented as a simple plant-wide vocabulary.
-
-Instead, relationships should connect:
-
+```text
 plant/cultivar
     ↓
 problem
     ↓
 response characteristic
+```
 
-Where a controlled classification is required for that relationship, potential values are:
+Where a controlled classification is required for that relationship:
 
+```text
 highly_susceptible
 susceptible
 moderately_susceptible
@@ -731,242 +617,196 @@ tolerant
 resistant
 highly_resistant
 unknown
+```
 
-resistant must not be interpreted as immune.
-
-The actual problem to which the classification applies must always be retained.
-
+`resistant` does not mean immune.
 
 ---
 
-28. Plant knowledge versus vocabulary
+## 28. Cultivar-specific classifications
 
-The following are not plant vocabulary values.
+A classification should be stored at cultivar level where it is known to differ materially between cultivars.
 
-They should be represented as plant knowledge/reference data:
+Examples include:
 
-plant species;
+```text
+maturity
+frost_sensitivity
+heat_tolerance
+growth_habit
+growth_rate
+size
+support_requirement
+resistance
+```
 
-accepted scientific names;
+General species-level knowledge should not be incorrectly copied into every cultivar.
 
-common names;
+---
 
-synonyms;
+## 29. Plant knowledge versus vocabulary
 
-cultivars;
+The following are plant knowledge, reference data, measurements, ranges or relationships rather than vocabulary values:
 
-botanical families;
-
-pests;
-
-diseases;
-
-companion relationships;
-
-antagonistic relationships;
-
-planting windows;
-
-maturity ranges;
-
-temperature ranges;
-
-light requirements;
-
-water requirements;
-
-soil requirements;
-
-nutrient requirements;
-
-spacing recommendations;
-
-harvest information;
-
-propagation instructions.
-
+* species and scientific names
+* common names and synonyms
+* cultivars
+* botanical families
+* pests and diseases
+* companion and antagonistic relationships
+* planting windows
+* maturity ranges
+* temperature ranges
+* light and water requirements
+* soil requirements
+* nutrient requirements
+* spacing recommendations
+* harvest information
+* propagation instructions
+* yield
+* storage and preservation
+* toxicity
+* regional information
 
 For example:
 
+```text
 Tomato
+```
 
-is reference data.
+is plant reference data, while:
 
+```text
 annual
+```
 
 is a vocabulary value.
 
+---
+
+## 30. Regional and seasonal information
+
+Plant vocabularies must not encode geographically universal assumptions where the characteristic depends on location.
+
+Regional attributes such as native status belong to regional plant data.
+
+Seasonal attributes such as:
+
+```text
+sowing_period
+transplanting_period
+planting_period
+flowering_period
+fruiting_period
+harvest_period
+```
+
+belong in structured temporal data.
+
+Planting recommendations should consider location, climate, hemisphere, season, plant requirements and cultivar where relevant.
 
 ---
 
-29. Avoiding duplicated classifications
+## 31. Context-dependent classifications
 
-Plant classifications should not duplicate concepts already defined in Core.
+Plant characteristics may depend on:
 
-For example, do not create another plant-specific version of:
+* cultivar
+* location
+* climate
+* season
+* growth stage
+* growing method
+* soil
+* water availability
 
-unknown
-high
-moderate
-low
-observed
-measured
-estimated
+Broad vocabulary values should therefore never override more precise contextual knowledge.
 
-unless the plant domain requires genuinely different semantics.
+For example:
 
-Where a Core vocabulary adequately represents the concept, use the Core value.
+```text
+drought_tolerance = high
+```
 
+does not imply:
+
+```text
+no_irrigation_required
+```
+
+during establishment.
 
 ---
 
-30. Multiple classifications
+## 32. Multiple values
 
-Plant records should support multiple applicable values where the real-world concept permits them.
+Where the real-world concept allows multiple classifications, the data should support multiple values.
 
 Examples:
 
-A plant may be:
+```text
+roles:
+    food_crop
+    culinary
+    pollinator_support
+```
 
-food_crop
-pollinator_support
-herb
+```text
+propagation_methods:
+    seed
+    cutting
+```
 
-A plant may support:
+```text
+growth_habit:
+    climbing
+    vining
+```
 
-seed
-cutting
-division
-
-A plant may be:
-
-climbing
-vining
-
-The system should not force users or knowledge curators to choose a single value when multiple values are valid.
-
+The system should not force an artificial single classification.
 
 ---
 
-31. Unknown information
+## 33. Unknown information
 
-Unknown plant information must remain explicit.
+Unknown information must remain explicit.
 
 Examples:
 
+```text
 lifecycle = unknown
 frost_sensitivity = unknown
+light_requirement = unknown
 pollination_requirement = unknown
-growth_habit = unknown
+```
 
-Unknown must not automatically mean:
+`unknown` must not be interpreted as average, moderate, suitable, safe or tolerant.
 
-average;
-
-moderate;
-
-unsuitable;
-
-safe;
-
-tolerant.
-
-
-The recommendation system decides how materially an unknown value affects a particular decision.
-
+How an unknown value affects a recommendation is determined by the recommendation logic.
 
 ---
 
-32. Context-dependent classifications
+## 34. Historical compatibility
 
-Plant characteristics may depend on context.
+Once a vocabulary identifier is used in stored data:
 
-Relevant context may include:
+* its meaning must remain stable;
+* it must not be renamed merely for UI purposes;
+* it must not be deleted while historical records depend on it.
 
-cultivar;
+Where a meaning must change materially, introduce a new identifier.
 
-climate;
-
-location;
-
-hemisphere;
-
-season;
-
-growth stage;
-
-growing method;
-
-soil;
-
-water availability.
-
-
-A broad vocabulary value should therefore not override more precise contextual knowledge.
-
-For example:
-
-drought_tolerance = high
-
-does not mean the plant can be grown without irrigation during establishment.
-
+Deprecated identifiers remain available for interpreting historical records.
 
 ---
 
-33. Geographic and seasonal interpretation
+## 35. Localisation
 
-Plant classifications must not encode assumptions that are geographically universal when they are not.
-
-For example:
-
-warm_season
-
-is a broad biological classification.
-
-It does not itself determine the planting month.
-
-Planting windows must be calculated using:
-
-location;
-
-climate;
-
-hemisphere;
-
-season;
-
-plant requirements;
-
-cultivar where relevant.
-
-
-
----
-
-34. Historical compatibility
-
-Once a plant vocabulary identifier is used in stored data:
-
-its meaning must remain stable;
-
-it must not be renamed merely for UI purposes;
-
-it must not be deleted while historical records depend on it;
-
-changes in meaning should result in a new identifier where necessary.
-
-
-Deprecated values remain available for interpreting historical records.
-
-
----
-
-35. Localisation
-
-Plant vocabulary identifiers are canonical English identifiers.
+Vocabulary identifiers are canonical English identifiers.
 
 Example:
 
+```text
 Stored:
 cool_season
 
@@ -975,181 +815,200 @@ Cool-season
 
 Afrikaans:
 Koelseisoen
+```
 
-The application logic uses:
-
-cool_season
-
-The UI uses the localisation layer.
-
-Vocabulary identifiers must never be replaced with translated text in stored data.
-
+Application logic uses the canonical identifier. The UI uses the localisation layer.
 
 ---
 
-36. User-facing simplification
+## 36. Recommendation use
 
-The application does not need to expose every plant classification.
+Plant vocabulary values may provide inputs to recommendations, including:
 
-For example, the underlying system may know:
-
-frost_sensitivity = moderately_sensitive
-
-while the primary interface may simply display:
-
-Frost: Sensitive
-
-An explanation or technical detail view may provide more context.
-
-This follows the progressive-disclosure principle established in the UX specification.
-
-
----
-
-37. Recommendation use
-
-Plant vocabulary values may provide inputs to recommendations.
-
-For example:
-
-frost_sensitivity
-drought_tolerance
-growth_habit
+```text
 lifecycle
+growth_habit
+growth_rate
+light_requirement
 shade_tolerance
-climbing_support_requirement
+frost_sensitivity
+heat_tolerance
+drought_tolerance
+support_requirement
+```
 
-However, vocabulary values should not be treated as complete recommendation rules.
+Vocabulary values are inputs, not complete recommendation rules.
 
-A recommendation should consider the relevant contextual information and explain material limitations.
-
+Recommendations should use relevant contextual information and account for material unknowns or limitations.
 
 ---
 
-38. No false precision
+## 37. No false precision
 
-A qualitative classification should not imply a precision that the underlying knowledge does not support.
+A qualitative value must not be converted into a precise measurement unless supported by separate evidence.
 
 For example:
 
+```text
 frost_sensitivity = sensitive
+```
 
-should not automatically become:
+must not automatically become:
 
-frost_limit = 0 °C
+```text
+minimum_temperature = 0 °C
+```
 
-unless a separate evidence-based rule or source actually provides that threshold.
-
-Where a precise range exists, preserve the range as structured knowledge.
-
+Precise thresholds belong in structured evidence-based data.
 
 ---
 
-39. Vocabulary review checklist
+## 38. Vocabulary review checklist
 
 Before adding a plant vocabulary value, ask:
 
-1. Is this genuinely a plant classification?
+1. Is it genuinely a plant classification?
+2. Does it already exist in Core or another appropriate vocabulary?
+3. Should it instead be structured data, a relationship or plant knowledge?
+4. Does it depend on cultivar, location, season, growth stage or other context?
+5. Can multiple values apply?
+6. Will it materially improve filtering, validation, planning or recommendations?
+7. Can its meaning remain stable over time?
 
-
-2. Does it already exist in Core?
-
-
-3. Should it instead be plant reference data?
-
-
-4. Should it instead be a measurement or range?
-
-
-5. Is it cultivar-specific?
-
-
-6. Does it depend on growth stage or context?
-
-
-7. Can more than one value apply?
-
-
-8. Will recommendations use it?
-
-
-9. Does the value remain meaningful historically?
-
-
-10. Does it improve the user's experience?
-
-
-
-If the answer to these questions is unclear, do not add the value until the underlying data model is resolved.
-
+If these questions do not establish a clear need, do not add the value.
 
 ---
 
-40. Summary of core plant vocabularies
+## 39. Summary of plant vocabularies
 
-Vocabulary	Purpose
-
-Lifecycle	How long the plant normally persists
-Plant role	Functional/garden roles
-Food-production category	Edible plant part
-Growth stage	Developmental stage
-Growth habit	General physical growth form
-Growing method	Broad cultivation method
-Propagation method	Propagation approach
-Maturity classification	Broad maturity timing
-Frost sensitivity	Relative frost sensitivity
-Heat tolerance	Relative heat tolerance
-Drought tolerance	Relative drought tolerance
-Waterlogging tolerance	Relative tolerance of saturated conditions
-Salinity tolerance	Relative salinity tolerance
-Shade tolerance	Relative tolerance of low light
-Temperature classification	Broad cool/warm season behaviour
-Establishment difficulty	Broad establishment difficulty
-Maintenance demand	Broad maintenance demand
-Plant size classification	Broad size category
-Root behaviour	Broad root-growth characteristic
-Climbing support requirement	Degree of support requirement
-Pollination requirement	Broad pollination requirement
-Pollination method	Broad pollination mechanism
-Planting stock type	Type of planting material
-Resistance/susceptibility	Relationship-specific response classification
-
-
----
-
-41. Guiding principle
-
-> Plant vocabularies classify plant characteristics; they do not attempt to contain plant knowledge.
-
-
-The plant vocabulary system should remain:
-
-small;
-
-stable;
-
-contextual;
-
-extensible;
-
-multilingual at the presentation layer;
-
-compatible with historical records;
-
-useful to recommendation and planning;
-
-separate from detailed horticultural knowledge;
-
-simple enough that the underlying application remains understandable.
-
+| Vocabulary                 | Purpose                                    |
+| -------------------------- | ------------------------------------------ |
+| Lifecycle                  | Broad biological persistence               |
+| Plant role                 | Functional/garden role                     |
+| Food-production category   | Edible plant part                          |
+| Growth stage               | Developmental stage                        |
+| Growth habit               | Physical growth form                       |
+| Growth rate                | Broad rate of growth                       |
+| Growing method             | Broad cultivation method                   |
+| Propagation method         | Propagation approach                       |
+| Maturity classification    | Broad maturity timing                      |
+| Frost sensitivity          | Relative frost sensitivity                 |
+| Heat tolerance             | Relative heat tolerance                    |
+| Drought tolerance          | Relative drought tolerance                 |
+| Waterlogging tolerance     | Relative tolerance of saturated conditions |
+| Salinity tolerance         | Relative salinity tolerance                |
+| Light requirement          | Preferred light level                      |
+| Shade tolerance            | Relative tolerance of reduced light        |
+| Temperature classification | Broad cool/warm season behaviour           |
+| Establishment difficulty   | Broad establishment difficulty             |
+| Maintenance demand         | Broad maintenance demand                   |
+| Root behaviour             | Broad root-growth characteristic           |
+| Support requirement        | Degree of physical support requirement     |
+| Pollination requirement    | Broad pollination requirement              |
+| Pollination method         | Broad pollination mechanism                |
+| Planting stock type        | Type of planting material                  |
+| Resistance/susceptibility  | Problem-specific response classification   |
 
 ---
 
-42 N. Plant alias type
+## 40. Guiding principle
 
-Values:
-common_name
-regional_name
-synonym
-plural
-search_term
+> **Plant vocabularies classify plant characteristics; they do not attempt to contain plant knowledge.**
+
+The vocabulary system should remain:
+
+* small;
+* stable;
+* contextual;
+* extensible;
+* presentation-localised;
+* compatible with historical records;
+* useful to planning and recommendations;
+* separate from detailed horticultural knowledge.
+
+## 41. Plant database field set
+
+| Field                     | Brief descriptor                                                                 |
+| ------------------------- | -------------------------------------------------------------------------------- |
+| `id`                      | Stable unique identifier for the plant record.                                   |
+| `common_name`             | Primary common name used by myTUIN.                                              |
+| `other_common_names`      | Other recognised common names.                                                   |
+| `scientific_name`         | Accepted scientific/botanical name.                                              |
+| `family`                  | Botanical family.                                                                |
+| `description`             | Concise general description of the plant.                                        |
+| `roles`                   | One or more plant roles from the controlled vocabulary.                          |
+| `lifecycle`               | Annual, biennial or perennial classification.                                    |
+| `growth_habit`            | General physical growth form/behaviour.                                          |
+| `growth_rate`             | Broad growth-rate classification.                                                |
+| `mature_height`           | Typical mature height, preferably as a structured range.                         |
+| `mature_width`            | Typical mature width/spread, preferably as a structured range.                   |
+| `root_behaviour`          | Broad root-growth classification.                                                |
+| `root_depth`              | Typical root depth/range where meaningful.                                       |
+| `support_requirement`     | Degree of physical support normally required or beneficial.                      |
+| `support_type`            | Types of support appropriate to the plant.                                       |
+| `light_requirement`       | Preferred light level.                                                           |
+| `shade_tolerance`         | Tolerance of reduced light.                                                      |
+| `temperature_class`       | Broad cool-/warm-season classification.                                          |
+| `minimum_temperature`     | Approximate minimum temperature tolerated where sufficiently established.        |
+| `maximum_temperature`     | Approximate upper temperature limit where sufficiently established.              |
+| `frost_sensitivity`       | Relative frost sensitivity.                                                      |
+| `heat_tolerance`          | Relative heat tolerance.                                                         |
+| `drought_tolerance`       | Relative drought tolerance.                                                      |
+| `waterlogging_tolerance`  | Relative tolerance of prolonged saturated conditions.                            |
+| `water_requirement`       | Typical water requirement, represented as structured knowledge.                  |
+| `preferred_soil`          | Suitable/preferred soil characteristics.                                         |
+| `soil_drainage`           | Preferred/tolerated drainage conditions.                                         |
+| `preferred_ph`            | Preferred soil pH range.                                                         |
+| `fertility_requirement`   | Broad fertility/nutrient requirement.                                            |
+| `growing_methods`         | Suitable cultivation methods.                                                    |
+| `propagation_methods`     | Supported propagation methods.                                                   |
+| `planting_stock`          | Common forms of planting material.                                               |
+| `seed_depth`              | Recommended sowing depth/range.                                                  |
+| `germination_temperature` | Suitable germination temperature/range.                                          |
+| `germination_time`        | Typical germination time/range.                                                  |
+| `transplanting_notes`     | Important transplanting considerations.                                          |
+| `spacing`                 | Recommended plant spacing/range.                                                 |
+| `row_spacing`             | Recommended row spacing/range where applicable.                                  |
+| `container_suitable`      | Whether container cultivation is suitable.                                       |
+| `container_size`          | Appropriate container size/range where relevant.                                 |
+| `sowing_period`           | Suitable sowing periods, expressed contextually by region/season.                |
+| `transplanting_period`    | Suitable transplanting periods.                                                  |
+| `planting_period`         | Suitable planting periods.                                                       |
+| `flowering_period`        | Typical flowering period.                                                        |
+| `fruiting_period`         | Typical fruiting period where applicable.                                        |
+| `harvest_period`          | Typical harvest period.                                                          |
+| `days_to_maturity`        | Typical time from the defined starting point to maturity, where meaningful.      |
+| `maturity`                | Broad early/mid-season/late classification.                                      |
+| `maintenance_demand`      | Broad overall maintenance demand.                                                |
+| `feeding`                 | Feeding/fertilisation requirements.                                              |
+| `watering`                | Practical watering requirements or guidance.                                     |
+| `pruning`                 | Pruning requirements and timing.                                                 |
+| `other_maintenance`       | Other significant maintenance requirements.                                      |
+| `harvestable_parts`       | Edible/harvested plant parts.                                                    |
+| `harvest_indicators`      | Signs that the crop is ready to harvest.                                         |
+| `harvest_method`          | How the harvest is normally performed.                                           |
+| `harvest_frequency`       | Typical frequency or repeat-harvest behaviour.                                   |
+| `yield`                   | Typical yield information/range where meaningful.                                |
+| `storage`                 | Storage requirements and characteristics.                                        |
+| `culinary_uses`           | Common culinary uses.                                                            |
+| `preservation_methods`    | Suitable preservation methods.                                                   |
+| `pollination_requirement` | Broad pollination requirement classification.                                    |
+| `pollination_method`      | Broad pollination mechanism.                                                     |
+| `pollination_partners`    | Plants/cultivars that provide useful compatible cross-pollination.               |
+| `pollination_notes`       | Additional relevant pollination information.                                     |
+| `common_pests`            | Common associated pests.                                                         |
+| `common_diseases`         | Common associated diseases.                                                      |
+| `common_problems`         | Other common cultivation problems.                                               |
+| `susceptibilities`        | Problem-specific susceptibility relationships.                                   |
+| `resistances`             | Problem-specific resistance/tolerance relationships.                             |
+| `companion_plants`        | Plants with a documented beneficial association.                                 |
+| `plants_to_avoid`         | Plants with a documented undesirable association.                                |
+| `rotation_group`          | Crop-rotation grouping where applicable.                                         |
+| `rotation_notes`          | Relevant rotation considerations.                                                |
+| `native_status`           | Regional native/introduced status, rather than a universal plant classification. |
+| `regional_notes`          | Region-specific plant information.                                               |
+| `climate_notes`           | Important climate-dependent considerations.                                      |
+| `toxicity`                | General toxicity/safety classification.                                          |
+| `toxic_parts`             | Plant parts associated with toxicity.                                            |
+| `safety_notes`            | Important safety information.                                                    |
+| `sources`                 | Sources supporting the plant record and its information.                         |

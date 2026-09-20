@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.spotless)
+    alias(libs.plugins.detekt)
 }
 
 android {
@@ -67,6 +68,52 @@ spotless {
         target("*.gradle.kts")
         ktlint(libs.versions.ktlint.get())
     }
+}
+
+/**
+ * Static analysis for the app module.
+ *
+ * source = all variants. detekt analyses src/main, src/test and
+ * src/androidTest (A214=b).
+ *
+ * buildUponDefaultConfig = true. Overrides live in
+ * config/detekt/detekt.yml at the repository root.
+ *
+ * maxIssues = 0. Findings are fixed or given a config exception with
+ * a stated reason.
+ */
+detekt {
+    buildUponDefaultConfig = true
+    source.setFrom(
+        files(
+            "src/main/java",
+            "src/test/java",
+            "src/androidTest/java",
+        )
+    )
+    config.setFrom(rootProject.files("config/detekt/detekt.yml"))
+    baseline = file("$rootDir/config/detekt/baseline.xml")
+    parallel = true
+}
+
+tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
+    jvmTarget = "17"
+    reports {
+        html.required.set(true)
+        xml.required.set(true)
+        txt.required.set(false)
+        sarif.required.set(false)
+        md.required.set(false)
+    }
+}
+
+/**
+ * detekt runs before spotlessCheck in check. Formatting the source
+ * before analysing it avoids reporting style findings the formatter
+ * would have removed anyway.
+ */
+tasks.named("check") {
+    dependsOn("detekt")
 }
 
 ksp {

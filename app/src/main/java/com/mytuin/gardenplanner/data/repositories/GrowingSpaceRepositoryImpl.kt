@@ -52,14 +52,10 @@ class GrowingSpaceRepositoryImpl
             try {
                 growingSpaceDao.insert(growingSpace.toEntity())
             } catch (e: SQLiteConstraintException) {
-                // The GrowingSpace table has exactly one foreign key
-                // (garden_id) and no unique constraint today. A constraint
-                // failure on insert therefore means the referenced garden
-                // does not exist. When additional constraints are added,
-                // this attribution needs refining — inspect e.message.
                 throw ValidationError(
                     field = "garden_id",
                     reason = e.message ?: "constraint violation",
+                    cause = e,
                 )
             }
         }

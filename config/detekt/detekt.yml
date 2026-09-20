@@ -1,0 +1,126 @@
+# detekt configuration for myTUIN.
+#
+# This file contains overrides only. The Gradle configuration sets
+# buildUponDefaultConfig = true, so any rule not listed here uses
+# detekt's default settings.
+#
+# Rationale for each override is given inline. When a rule is
+# disabled, the reason is that it conflicts with a documented project
+# idiom (A204=d).
+
+build:
+  # A219=a: any finding fails the build. Acceptable findings get an
+  # exception below, not a raised threshold.
+  maxIssues: 0
+
+naming:
+  FunctionNaming:
+    functionPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ignoreAnnotated:
+      - Composable
+
+  ClassNaming:
+    classPattern: '[A-Z][a-zA-Z0-9]*'
+
+  # Room entity properties use snake_case to match the schema export
+  # (V1_DATABASE_SCHEMA.md §6, D2).
+  ConstructorParameterNaming:
+    excludes: ['**/data/entities/**']
+
+  # Two naming conventions legitimately coexist at top level:
+  # SCREAMING_SNAKE_CASE for compile-time constants and PascalCase for
+  # top-level vals that are singletons.
+  TopLevelPropertyNaming:
+    constantPattern: '[A-Z][_A-Za-z0-9]*'
+    privatePropertyPattern: '(_)?[A-Za-z][_A-Za-z0-9]*|Companion'
+
+  # MapLibrePoc.kt has PocEntryPoint as its only non-private top-level
+  # declaration. The file is scheduled for deletion; renaming it to
+  # PocEntryPoint.kt would be throwaway work.
+  MatchingDeclarationName:
+    excludes: ['**/ui/garden/debug/**']
+
+complexity:
+  LongParameterList:
+    functionThreshold: 8
+    constructorThreshold: 8
+    ignoreDefaultParameters: true
+    ignoreDataClasses: true
+    # Room @Query methods take one parameter per :named placeholder.
+    # The count is dictated by the query, not by design choice.
+    excludes: ['**/data/dao/**', '**/ui/garden/debug/**']
+
+  TooManyFunctions:
+    thresholdInFiles: 20
+    thresholdInClasses: 20
+    thresholdInInterfaces: 20
+    thresholdInObjects: 20
+    thresholdInEnums: 20
+    ignoreDeprecated: true
+    ignorePrivate: true
+    ignoreOverridden: true
+    ignoreAnnotatedFunctions:
+      - Preview
+
+  # Test methods are deliberately long. Splitting them into helpers
+  # obscures what they test. The MapLibre proof of concept is a
+  # single exploratory function by design; it is scheduled for
+  # deletion when the real Garden screen lands.
+  LongMethod:
+    threshold: 60
+    excludes: ['**/src/test/**', '**/src/androidTest/**', '**/ui/garden/debug/**']
+
+style:
+  MagicNumber:
+    ignorePropertyDeclaration: true
+    ignoreCompanionObjectPropertyDeclaration: true
+    ignoreAnnotation: true
+    ignoreNamedArgument: true
+    ignoreEnums: true
+    ignoreRanges: true
+    ignoreExtensionFunctions: true
+    ignoreNumbers: ['-1', '0', '1', '2']
+    # Lists in detekt config are replaced, not merged. The detekt
+    # defaults for this rule exclude test source sets; restating them
+    # preserves that behaviour while adding the POC exclusion below.
+    excludes:
+      - '**/test/**'
+      - '**/androidTest/**'
+      - '**/commonTest/**'
+      - '**/jvmTest/**'
+      - '**/jsTest/**'
+      - '**/iosTest/**'
+      - '**/ui/garden/debug/**'
+
+  UnusedPrivateMember:
+    ignoreAnnotated:
+      - Preview
+
+  WildcardImport:
+    active: true
+
+  MaxLineLength:
+    maxLineLength: 140
+    excludeCommentStatements: false
+
+  ThrowsCount:
+    max: 3
+
+  ReturnCount:
+    max: 4
+
+coroutines:
+  GlobalCoroutineUsage:
+    active: true
+
+potential-bugs:
+  ElseCaseInsteadOfExhaustiveWhen:
+    active: true
+
+  UnsafeCallOnNullableType:
+    active: true
+
+# The 'formatting' ruleset is deliberately absent. It is provided by
+# the detekt-formatting plugin, which is a separate artifact (A209=b
+# chose not to add it). Spotless and ktlint already own formatting via
+# .editorconfig.

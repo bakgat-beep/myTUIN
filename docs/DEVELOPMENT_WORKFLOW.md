@@ -23,7 +23,7 @@ as each stage is added.
 
 ## 2. The sequence
 
-Run stages in order. Do not skip ahead: a formatting failure makes every
+Run stages in order. Do not skip ahead: a formatting failure makes every 
 later result harder to interpret.
 
 format
@@ -45,13 +45,13 @@ Compose tests
 | --- | --- | --- |
 | Format — apply | `.\gradlew spotlessApply` | no |
 | Format — verify | `.\gradlew spotlessCheck` | no |
-| Static analysis | not yet configured | no |
+| Static analysis | `.\gradlew detekt` | no |
 | Unit tests | `.\gradlew testDebugUnitTest` | no |
 | All local checks | `.\gradlew check` | no |
 | Instrumented tests | `.\gradlew connectedDebugAndroidTest` | **yes** |
 
-`check` runs `spotlessCheck` and `testDebugUnitTest`. Static analysis is
-added to `check` in a later sub-step.
+`check` runs `spotlessCheck`, `detekt` and `testDebugUnitTest`, in that
+order.
 
 `connectedDebugAndroidTest` runs every instrumented test: repository
 tests, migration tests, component tests, and Compose UI tests. It is not
@@ -81,6 +81,17 @@ A commit that only changes documentation needs neither, but running
 Run `spotlessApply`. Review the diff before committing it: the formatter
 should only have changed whitespace, import order and line breaks. If it
 changed anything semantic, stop and investigate.
+
+**`detekt` fails.**
+The HTML report at `app/build/reports/detekt/detekt.html` groups findings
+by rule and file. A finding is resolved in one of three ways:
+- fix the code;
+- add a rule override in `config/detekt/detekt.yml` with a stated reason,
+  if the rule conflicts with a project idiom;
+- add `@Suppress("RuleName")` with a comment, if the finding is a genuine
+  exception in one place.
+
+Raising `maxIssues` is not one of the options.
 
 **`testDebugUnitTest` fails.**
 The failing test names the file and line. Unit tests have no Android

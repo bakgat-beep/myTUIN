@@ -39,7 +39,8 @@ sealed class DomainError(
 class ValidationError(
     val field: String,
     val reason: String,
-) : DomainError("Validation failed on '$field': $reason")
+    cause: Throwable? = null,
+) : DomainError("Validation failed on '$field': $reason", cause)
 
 /**
  * A requested entity does not exist.

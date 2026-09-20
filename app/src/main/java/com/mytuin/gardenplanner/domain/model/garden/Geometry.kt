@@ -16,6 +16,14 @@ import com.mytuin.gardenplanner.domain.vocabulary.GeometryType
  * Invariants are enforced in constructors so a malformed geometry
  * cannot exist inside the domain.
  */
+
+/**
+ * Minimum coordinates in a closed polygon ring: three distinct
+ * vertices plus the closing repeat. Below this the ring cannot
+ * describe an area.
+ */
+private const val MINIMUM_POLYGON_RING_SIZE = 4
+
 sealed interface Geometry {
     val geometryType: GeometryType
 
@@ -43,7 +51,7 @@ sealed interface Geometry {
         override val geometryType: GeometryType = GeometryType.POLYGON
 
         init {
-            require(ring.size >= 4) {
+            require(ring.size >= MINIMUM_POLYGON_RING_SIZE) {
                 "Polygon ring requires at least 4 coordinates (closed); got ${ring.size}"
             }
             require(ring.first() == ring.last()) {

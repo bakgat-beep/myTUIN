@@ -20,7 +20,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.mytuin.gardenplanner.R
 import com.mytuin.gardenplanner.domain.model.garden.Coordinate
 import com.mytuin.gardenplanner.domain.model.garden.Garden
@@ -78,12 +77,10 @@ private const val FALLBACK_LATITUDE = -43.5321
 private const val FALLBACK_LONGITUDE = 172.6362
 
 private const val FALLBACK_BOUNDARY_METRES = 10.0
-private const val VERTEX_HIT_RADIUS_DP = 24f
 
 @Composable
 fun MapLibrePoc(modifier: Modifier = Modifier) {
     val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
 
     val garden: Garden?
     val spaces: List<GrowingSpace>
@@ -121,7 +118,6 @@ fun MapLibrePoc(modifier: Modifier = Modifier) {
     var mapRef by remember { mutableStateOf<MapLibreMap?>(null) }
     var selectedSpaceId by remember { mutableStateOf<String?>(null) }
     var editedGeometry by remember { mutableStateOf<Geometry.Polygon?>(null) }
-    var draggingVertexIndex by remember { mutableStateOf<Int?>(null) }
     var styleVersion by remember { mutableStateOf(0) }
 
     val initialBoundary = remember(spaces) { computeBoundary(spaces) }
@@ -497,31 +493,4 @@ private fun appendVertex(
     val ring = polygon.ring.toMutableList()
     ring.add(ring.lastIndex, coordinate)
     return Geometry.Polygon(ring)
-}
-
-@Suppress("unused")
-private fun nearestVertexIndex(
-    screenPoint: PointF,
-    ring: List<Coordinate>,
-    map: MapLibreMap,
-    origin: Wgs84,
-    thresholdPx: Float,
-): Int? {
-    var bestIndex: Int? = null
-    var bestDistance = thresholdPx
-    ring.forEachIndexed { index, coordinate ->
-        val wgs = MetresToWgs84.toWgs84(origin, coordinate)
-        val vertexScreen =
-            map.projection.toScreenLocation(
-                LatLng(wgs.latitude, wgs.longitude),
-            )
-        val dx = vertexScreen.x - screenPoint.x
-        val dy = vertexScreen.y - screenPoint.y
-        val distance = sqrt(dx * dx + dy * dy)
-        if (distance < bestDistance) {
-            bestDistance = distance
-            bestIndex = index
-        }
-    }
-    return bestIndex
 }
