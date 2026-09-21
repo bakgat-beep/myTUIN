@@ -194,13 +194,13 @@ class PlantRepositoryTest {
     @Test
     fun lifecycle_enum_id_round_trips_through_domain_layer() =
         runBlocking {
-            val entity = samplePlant().copy(lifecycle = PlantLifecycle.WOODY_PERENNIAL)
+            val entity = samplePlant().copy(lifecycle = PlantLifecycle.PERENNIAL)
             db.plantDao().insert(entity)
 
             val domain = repository.getPlant(entity.id)
 
-            assertEquals(PlantLifecycle.WOODY_PERENNIAL, domain?.lifecycle)
-            assertEquals("woody_perennial", domain?.lifecycle?.id)
+            assertEquals(PlantLifecycle.PERENNIAL, domain?.lifecycle)
+            assertEquals("perennial", domain?.lifecycle?.id)
         }
 
     @Test

@@ -3,8 +3,17 @@ package com.mytuin.gardenplanner.domain.vocabulary
 /**
  * PlantLifecycle.
  *
- * PLANT_VOCABULARIES.md §3. Canonical ids only; the enum constant
- * name is a code-level convenience and is never stored (DEC-040).
+ * PLANT_VOCABULARIES.md §3 (v0.4, September 2026). Canonical ids
+ * only; the enum constant name is a code-level convenience and is
+ * never stored (DEC-040).
+ *
+ * v0.3 included short_lived_perennial and woody_perennial. v0.4
+ * reduced the vocabulary to four values. The removal is safe because
+ * no stored data references the removed ids: seed data uses
+ * lifecycle = NULL, and Phase 0 never shipped to a production device.
+ *
+ * Lifespan beyond this broad classification remains plant knowledge
+ * or structured data (§3).
  *
  * Domain layer: no Android, Compose, Room or Hilt dependencies.
  */
@@ -14,8 +23,6 @@ enum class PlantLifecycle(
     ANNUAL("annual"),
     BIENNIAL("biennial"),
     PERENNIAL("perennial"),
-    SHORT_LIVED_PERENNIAL("short_lived_perennial"),
-    WOODY_PERENNIAL("woody_perennial"),
     UNKNOWN("unknown"),
     ;
 
