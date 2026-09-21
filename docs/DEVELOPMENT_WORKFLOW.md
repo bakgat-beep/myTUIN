@@ -49,6 +49,7 @@ Compose tests
 | Unit tests | `.\gradlew testDebugUnitTest` | no |
 | All local checks | `.\gradlew check` | no |
 | Instrumented tests | `.\gradlew connectedDebugAndroidTest` | **yes** |
+| Offline verification | `.\tools\Verify-Offline.ps1` | **yes** |
 
 `check` runs `spotlessCheck`, `detekt` and `testDebugUnitTest`, in that
 order.
@@ -57,6 +58,13 @@ order.
 tests, migration tests, component tests, and Compose UI tests. It is not
 part of `check` because it requires a running emulator or device, and
 `check` must pass on a machine without one.
+
+`Verify-Offline.ps1` is not part of `check`. It requires a device, it
+temporarily disables the device's connectivity, and it performs a
+structural check against the release manifest. Run it before a release
+or after any change to network-related code. See
+`docs/OFFLINE_VERIFICATION.md` for the procedure and the interpretation
+of results.
 
 ---
 
