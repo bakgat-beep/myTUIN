@@ -89,7 +89,7 @@ detekt {
             "src/main/java",
             "src/test/java",
             "src/androidTest/java",
-        )
+        ),
     )
     config.setFrom(rootProject.files("config/detekt/detekt.yml"))
     baseline = file("$rootDir/config/detekt/baseline.xml")

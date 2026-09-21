@@ -15,9 +15,7 @@ import com.mytuin.gardenplanner.domain.vocabulary.GeometryType
  *
  * Invariants are enforced in constructors so a malformed geometry
  * cannot exist inside the domain.
- */
-
-/**
+ *
  * Minimum coordinates in a closed polygon ring: three distinct
  * vertices plus the closing repeat. Below this the ring cannot
  * describe an area.

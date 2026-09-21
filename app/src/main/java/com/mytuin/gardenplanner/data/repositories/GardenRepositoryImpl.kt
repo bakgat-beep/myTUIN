@@ -5,6 +5,7 @@ import com.mytuin.gardenplanner.domain.error.NotFoundError
 import com.mytuin.gardenplanner.domain.model.garden.Garden
 import com.mytuin.gardenplanner.domain.model.garden.NewGardenLocation
 import com.mytuin.gardenplanner.domain.repository.GardenRepository
+import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -14,7 +15,15 @@ class GardenRepositoryImpl
     constructor(
         private val gardenDao: GardenDao,
     ) : GardenRepository {
-        override fun observeGardens(): Flow<List<Garden>> = gardenDao.observeAll().map { rows -> rows.map { it.toDomain() } }
+        override fun observeGardens(includeArchived: Boolean): Flow<List<Garden>> {
+            val source =
+                if (includeArchived) {
+                    gardenDao.observeAll()
+                } else {
+                    gardenDao.observeActive()
+                }
+            return source.map { rows -> rows.map { it.toDomain() } }
+        }
 
         override fun observeGarden(id: String): Flow<Garden?> = gardenDao.observeById(id).map { it?.toDomain() }
 
@@ -39,6 +48,26 @@ class GardenRepositoryImpl
                     hemisphere = location.hemisphere,
                     updatedAt = updatedAt,
                 )
+            if (rows == 0) {
+                throw NotFoundError("Garden", id)
+            }
+        }
+
+        override suspend fun archive(
+            id: String,
+            archivedAt: Long,
+        ) {
+            val rows = gardenDao.updateStatus(id, RecordStatus.ARCHIVED, archivedAt)
+            if (rows == 0) {
+                throw NotFoundError("Garden", id)
+            }
+        }
+
+        override suspend fun restore(
+            id: String,
+            restoredAt: Long,
+        ) {
+            val rows = gardenDao.updateStatus(id, RecordStatus.ACTIVE, restoredAt)
             if (rows == 0) {
                 throw NotFoundError("Garden", id)
             }

@@ -7,15 +7,14 @@ import kotlinx.coroutines.flow.Flow
 /**
  * Repository interface for Garden.
  *
- * A125=a: updateLocation takes the id, the new location, and the
- * effective updatedAt. It replaces the seven location fields on the
- * row; a null field overwrites. It does not touch id, name,
- * description, status, or createdAt.
+ * A231=a: observeGardens excludes archived by default. Callers that
+ * need archived gardens pass includeArchived = true.
  *
- * A127=a: throws NotFoundError if no Garden with [id] exists.
+ * A234: archive and restore return Unit. A239: a missing garden
+ * throws NotFoundError.
  */
 interface GardenRepository {
-    fun observeGardens(): Flow<List<Garden>>
+    fun observeGardens(includeArchived: Boolean = false): Flow<List<Garden>>
 
     fun observeGarden(id: String): Flow<Garden?>
 
@@ -27,5 +26,15 @@ interface GardenRepository {
         id: String,
         location: NewGardenLocation,
         updatedAt: Long,
+    )
+
+    suspend fun archive(
+        id: String,
+        archivedAt: Long,
+    )
+
+    suspend fun restore(
+        id: String,
+        restoredAt: Long,
     )
 }

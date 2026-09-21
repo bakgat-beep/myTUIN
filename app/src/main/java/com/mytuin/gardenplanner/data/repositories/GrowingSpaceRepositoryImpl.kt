@@ -12,25 +12,11 @@ import com.mytuin.gardenplanner.domain.identifiers.IdGenerator
 import com.mytuin.gardenplanner.domain.model.garden.Geometry
 import com.mytuin.gardenplanner.domain.model.garden.GrowingSpace
 import com.mytuin.gardenplanner.domain.repository.GrowingSpaceRepository
+import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-/**
- * Room-backed GrowingSpace repository.
- *
- * A98=a: the repository is the boundary between the domain and
- * infrastructure. Low-level exceptions from Room are caught here and
- * re-thrown as DomainError subclasses; callers above this layer never
- * see SQLiteConstraintException.
- *
- * updateGeometry runs inside GardenDatabase.withTransaction (A67=a).
- * A missing space throws NotFoundError before any write occurs, so
- * the transaction is left untouched and history remains consistent.
- *
- * GardenDatabase is injected directly because Room's withTransaction
- * is a method on RoomDatabase, not on a DAO.
- */
 class GrowingSpaceRepositoryImpl
     @Inject
     constructor(
@@ -39,10 +25,18 @@ class GrowingSpaceRepositoryImpl
         private val growingSpaceHistoryDao: GrowingSpaceHistoryDao,
         private val idGenerator: IdGenerator,
     ) : GrowingSpaceRepository {
-        override fun observeGrowingSpacesInGarden(gardenId: String): Flow<List<GrowingSpace>> =
-            growingSpaceDao
-                .observeForGarden(gardenId)
-                .map { rows -> rows.map { it.toDomain() } }
+        override fun observeGrowingSpacesInGarden(
+            gardenId: String,
+            includeArchived: Boolean,
+        ): Flow<List<GrowingSpace>> {
+            val source =
+                if (includeArchived) {
+                    growingSpaceDao.observeAllForGarden(gardenId)
+                } else {
+                    growingSpaceDao.observeActiveForGarden(gardenId)
+                }
+            return source.map { rows -> rows.map { it.toDomain() } }
+        }
 
         override fun observeGrowingSpace(id: String): Flow<GrowingSpace?> = growingSpaceDao.observeById(id).map { it?.toDomain() }
 
@@ -99,6 +93,26 @@ class GrowingSpaceRepositoryImpl
                     geometryData = newGeometry?.let { GeometryGeoJson.encode(it) },
                     updatedAt = effectiveAt,
                 )
+            }
+        }
+
+        override suspend fun archive(
+            id: String,
+            archivedAt: Long,
+        ) {
+            val rows = growingSpaceDao.updateStatus(id, RecordStatus.ARCHIVED, archivedAt)
+            if (rows == 0) {
+                throw NotFoundError("GrowingSpace", id)
+            }
+        }
+
+        override suspend fun restore(
+            id: String,
+            restoredAt: Long,
+        ) {
+            val rows = growingSpaceDao.updateStatus(id, RecordStatus.ACTIVE, restoredAt)
+            if (rows == 0) {
+                throw NotFoundError("GrowingSpace", id)
             }
         }
     }

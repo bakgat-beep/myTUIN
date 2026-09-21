@@ -7,6 +7,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.mytuin.gardenplanner.data.database.GardenDatabase
 import com.mytuin.gardenplanner.data.database.GardenDatabaseFactory
 import com.mytuin.gardenplanner.data.entities.GardenEntity
+import com.mytuin.gardenplanner.domain.error.NotFoundError
 import com.mytuin.gardenplanner.domain.error.ValidationError
 import com.mytuin.gardenplanner.domain.model.garden.Coordinate
 import com.mytuin.gardenplanner.domain.model.garden.Geometry
@@ -266,4 +267,71 @@ class GrowingSpaceRepositoryTest {
             createdAt = 1_700_000_000_000L,
             updatedAt = 1_700_000_000_000L,
         )
+
+    @Test
+    fun archive_sets_status_and_excludes_from_default_observation() =
+        runBlocking {
+            val space = sampleSpace()
+            repository.insert(space)
+
+            repository.archive(space.id, 1_700_000_500_000L)
+
+            assertEquals(
+                RecordStatus.ARCHIVED,
+                repository.getGrowingSpace(space.id)?.status,
+            )
+            assertEquals(
+                0,
+                repository.observeGrowingSpacesInGarden(gardenId).first().size,
+            )
+            assertEquals(
+                1,
+                repository.observeGrowingSpacesInGarden(gardenId, includeArchived = true).first().size,
+            )
+        }
+
+    @Test
+    fun restore_returns_the_space_to_active() =
+        runBlocking {
+            val space = sampleSpace()
+            repository.insert(space)
+            repository.archive(space.id, 1_700_000_500_000L)
+
+            repository.restore(space.id, 1_700_001_000_000L)
+
+            assertEquals(
+                RecordStatus.ACTIVE,
+                repository.getGrowingSpace(space.id)?.status,
+            )
+            assertEquals(
+                1,
+                repository.observeGrowingSpacesInGarden(gardenId).first().size,
+            )
+        }
+
+    @Test
+    fun archive_throws_NotFoundError_when_space_missing() =
+        runBlocking {
+            try {
+                repository.archive("growingspace_does_not_exist", 1_700_000_500_000L)
+                fail("Expected NotFoundError")
+            } catch (expected: NotFoundError) {
+                assertEquals("GrowingSpace", expected.entityType)
+            }
+        }
+
+    @Test
+    fun restoring_a_space_does_not_affect_its_garden() =
+        runBlocking {
+            val space = sampleSpace()
+            repository.insert(space)
+            repository.archive(space.id, 1_700_000_500_000L)
+            repository.restore(space.id, 1_700_001_000_000L)
+
+            // The garden row is untouched. Its status remains whatever it
+            // was created with (DRAFT per sampleGarden in GardenRepositoryTest;
+            // this test uses the garden from setUp).
+            val garden = db.gardenDao().getById(gardenId)
+            assertEquals(RecordStatus.DRAFT, garden?.status)
+        }
 }

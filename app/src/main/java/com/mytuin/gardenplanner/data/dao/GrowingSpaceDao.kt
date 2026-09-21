@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.Query
 import com.mytuin.gardenplanner.data.entities.GrowingSpaceEntity
 import com.mytuin.gardenplanner.domain.vocabulary.GeometryType
+import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -15,11 +16,40 @@ interface GrowingSpaceDao {
     @Query("SELECT * FROM growing_space WHERE id = :id")
     suspend fun getById(id: String): GrowingSpaceEntity?
 
-    @Query("SELECT * FROM growing_space WHERE garden_id = :gardenId ORDER BY name")
-    fun observeForGarden(gardenId: String): Flow<List<GrowingSpaceEntity>>
+    @Query(
+        """
+    SELECT * FROM growing_space
+    WHERE garden_id = :gardenId AND status != 'archived'
+    ORDER BY name
+    """,
+    )
+    fun observeActiveForGarden(gardenId: String): Flow<List<GrowingSpaceEntity>>
+
+    @Query(
+        """
+    SELECT * FROM growing_space
+    WHERE garden_id = :gardenId
+    ORDER BY name
+    """,
+    )
+    fun observeAllForGarden(gardenId: String): Flow<List<GrowingSpaceEntity>>
 
     @Query("SELECT * FROM growing_space WHERE id = :id")
     fun observeById(id: String): Flow<GrowingSpaceEntity?>
+
+    @Query(
+        """
+        UPDATE growing_space
+        SET status = :status,
+            updated_at = :updatedAt
+        WHERE id = :id
+        """,
+    )
+    suspend fun updateStatus(
+        id: String,
+        status: RecordStatus,
+        updatedAt: Long,
+    ): Int
 
     @Query(
         """

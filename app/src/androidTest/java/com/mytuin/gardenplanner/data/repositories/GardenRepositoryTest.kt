@@ -242,4 +242,71 @@ class GardenRepositoryTest {
             createdAt = 1_700_000_000_000L,
             updatedAt = 1_700_000_000_000L,
         )
+
+    @Test
+    fun archive_sets_status_to_archived() =
+        runBlocking {
+            val garden = sampleGarden()
+            repository.insert(garden)
+
+            repository.archive(garden.id, 1_700_000_500_000L)
+
+            assertEquals(RecordStatus.ARCHIVED, repository.getGarden(garden.id)?.status)
+            assertEquals(1_700_000_500_000L, repository.getGarden(garden.id)?.updatedAt)
+        }
+
+    @Test
+    fun archive_excludes_the_garden_from_default_observation() =
+        runBlocking {
+            val garden = sampleGarden()
+            repository.insert(garden)
+            repository.archive(garden.id, 1_700_000_500_000L)
+
+            assertEquals(0, repository.observeGardens().first().size)
+        }
+
+    @Test
+    fun archive_includes_the_garden_when_requested() =
+        runBlocking {
+            val garden = sampleGarden()
+            repository.insert(garden)
+            repository.archive(garden.id, 1_700_000_500_000L)
+
+            assertEquals(1, repository.observeGardens(includeArchived = true).first().size)
+        }
+
+    @Test
+    fun restore_returns_the_garden_to_active() =
+        runBlocking {
+            val garden = sampleGarden()
+            repository.insert(garden)
+            repository.archive(garden.id, 1_700_000_500_000L)
+
+            repository.restore(garden.id, 1_700_001_000_000L)
+
+            assertEquals(RecordStatus.ACTIVE, repository.getGarden(garden.id)?.status)
+            assertEquals(1, repository.observeGardens().first().size)
+        }
+
+    @Test
+    fun archive_throws_NotFoundError_when_garden_missing() =
+        runBlocking {
+            try {
+                repository.archive("garden_does_not_exist", 1_700_000_500_000L)
+                fail("Expected NotFoundError")
+            } catch (expected: NotFoundError) {
+                assertEquals("Garden", expected.entityType)
+            }
+        }
+
+    @Test
+    fun restore_throws_NotFoundError_when_garden_missing() =
+        runBlocking {
+            try {
+                repository.restore("garden_does_not_exist", 1_700_001_000_000L)
+                fail("Expected NotFoundError")
+            } catch (expected: NotFoundError) {
+                assertEquals("Garden", expected.entityType)
+            }
+        }
 }

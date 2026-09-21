@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.Query
 import com.mytuin.gardenplanner.data.entities.GardenEntity
 import com.mytuin.gardenplanner.domain.vocabulary.Hemisphere
+import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -15,20 +16,36 @@ interface GardenDao {
     @Query("SELECT * FROM garden WHERE id = :id")
     suspend fun getById(id: String): GardenEntity?
 
+    /**
+     * S2: one query serves both archive and restore.
+     *
+     * A231=a: archived rows are excluded unless includeArchived is
+     * true. The stored value for archived is the canonical id
+     * 'archived' (DEC-040).
+     */
+    @Query("SELECT * FROM garden WHERE status != 'archived' ORDER BY name")
+    fun observeActive(): Flow<List<GardenEntity>>
+
     @Query("SELECT * FROM garden ORDER BY name")
     fun observeAll(): Flow<List<GardenEntity>>
 
     @Query("SELECT * FROM garden WHERE id = :id")
     fun observeById(id: String): Flow<GardenEntity?>
 
-    /**
-     * Replaces the seven location fields on a Garden and updates
-     * updated_at. Returns the number of rows affected, so the
-     * repository can throw NotFoundError when the id does not match.
-     *
-     * The hemisphere parameter is TypeConverted via
-     * VocabularyConverters.
-     */
+    @Query(
+        """
+        UPDATE garden
+        SET status = :status,
+            updated_at = :updatedAt
+        WHERE id = :id
+        """,
+    )
+    suspend fun updateStatus(
+        id: String,
+        status: RecordStatus,
+        updatedAt: Long,
+    ): Int
+
     @Query(
         """
         UPDATE garden

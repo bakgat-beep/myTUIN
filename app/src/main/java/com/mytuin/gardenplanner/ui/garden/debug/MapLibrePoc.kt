@@ -1,6 +1,5 @@
 package com.mytuin.gardenplanner.ui.garden.debug
 
-import android.graphics.PointF
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -32,7 +31,6 @@ import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
-import kotlin.math.sqrt
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.maplibre.android.camera.CameraPosition

@@ -212,4 +212,33 @@ class GrowingSpaceHistoryRepositoryTest {
             createdAt = 1_700_000_000_000L,
             updatedAt = 1_700_000_000_000L,
         )
+
+    @Test
+    fun archive_preserves_history_rows_and_current_row() =
+        runBlocking {
+            // Write one history row via an edit.
+            spaceRepository.updateGeometry(
+                id = spaceId,
+                newGeometry = Geometry.Point(Coordinate(2.0, 2.0)),
+                effectiveAt = 1_700_000_500_000L,
+                reason = null,
+            )
+            assertEquals(1, historyRepository.getHistoryForSpace(spaceId).size)
+
+            // Archive the space.
+            spaceRepository.archive(spaceId, 1_700_001_000_000L)
+
+            // The space's current row is still retrievable by id, with
+            // its status updated.
+            val space = spaceRepository.getGrowingSpace(spaceId)
+            assertEquals(RecordStatus.ARCHIVED, space?.status)
+
+            // The history row is untouched.
+            val history = historyRepository.getHistoryForSpace(spaceId)
+            assertEquals(1, history.size)
+            assertEquals(
+                Geometry.Point(Coordinate(0.0, 0.0)),
+                history.first().geometry,
+            )
+        }
 }

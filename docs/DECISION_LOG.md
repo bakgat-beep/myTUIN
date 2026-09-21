@@ -1805,3 +1805,111 @@ docs/MODULE_ARCHITECTURE.md §18
 docs/V1_USER_EXPERIENCE.md §25
 docs/IMPORT_EXPORT_SPECIFICATION.md §4
 docs/V1_TECHNICAL_ARCHITECTURE.md §21
+
+---
+
+DEC-043 — Phase 0 (project foundation) is complete
+
+Date: September 2026
+Status: Accepted
+Area: Architecture / Development / Data
+
+Decision
+
+Phase 0 of the Garden Planner & Manager project is complete.
+
+All 26 deliverables listed in
+PHASE_0_PROJECT_FOUNDATION.md §30 are met. All acceptance criteria in
+§31 pass. The vertical slice required by §36 — Create Garden → Create
+Growing Space → Persist → Reload → Verify history-safe edit — passes
+as an automated instrumented test.
+
+Phase 1 (data and persistence foundation) may begin.
+
+Rationale
+
+PHASE_0_PROJECT_FOUNDATION.md §36 states that Phase 0 ends when both
+the §30 deliverable list is met and the §31 acceptance criteria pass.
+Both conditions are satisfied.
+
+The evidence for each §30 and §31 item is recorded in the Phase 0
+closure walkthrough conducted in development discussion in September
+2026. Every item was verified against a running build, a passing test,
+      or a committed artefact. No item was declared met on the strength of
+      intent or design alone.
+
+The foundation supports Phase 1 without requiring restructuring. The
+layered package boundaries, the schema versioning mechanism, the
+migration test harness, the vocabulary enforcement, the repository and
+use-case patterns, the dependency injection setup, and the offline
+verification method are all in place and will be used as-is by Phase 1
+work.
+
+Consequences
+
+- Phase 1 work begins.
+
+- The following versions are pinned and were current at closure:
+  AGP 8.7.3, Kotlin 2.1.0, Compose BOM 2025.01.00, Room 2.6.1,
+  Hilt 2.54, DataStore 1.1.7, MapLibre 11.8.7, Spotless 8.9.0,
+  ktlint 1.5.0, detekt 1.23.8, JUnit 5.11.3, JUnit 4.13.2,
+  MockK 1.13.13, Turbine 1.2.0, Robolectric 4.14.1.
+
+- Application version is 0.1.0. Database schema version is 4.
+  Schema versions 1 through 4 are committed in app/schemas/.
+
+- Three gaps are recorded explicitly rather than hidden:
+
+  1. Export does not exist. The §31 criteria requiring garden-affecting
+     preferences to survive export and display preferences to be
+     excluded from export are met conditionally: the repository
+     structures that make this possible are in place, but no export
+     code exists. This is Phase 7 work per IMPLEMENTATION_PLAN.md §9.
+
+  2. MapLibre drag-vertex-to-move is not implemented. The other five
+     interactions §22 requires are demonstrated. The gap is
+     documented in MapLibrePoc.kt and is acceptable because the proof
+     of concept is scheduled for deletion when the real Garden screen
+     lands.
+
+  3. Robolectric is used by one test (RoomOnJvmTest). The library is
+     on the classpath and exercised, satisfying §30 item 21, but it
+     is not a widely-used part of the test strategy.
+
+- Phase 0 artefacts are debug-gated and scheduled for removal:
+  MapLibrePoc, DiagnosticsFooter, and the INTERNET permission in
+  app/src/debug/AndroidManifest.xml. Each disappears when its
+  replacement lands.
+
+- No V1 gardening workflow is end-to-end functional in the UI. Phase 0
+  is a foundation. The five primary screens show empty states; the
+  Garden tab shows the MapLibre proof of concept in debug builds. This
+  is the intended state at Phase 0 closure.
+
+- The specification set remains authoritative. Phase 1 work is bound
+  by the same rules that governed Phase 0: ask for the relevant
+  specification sections before writing code, never invent vocabulary
+  identifiers, flag every specification ambiguity rather than resolving
+  it silently.
+
+Related documents
+
+docs/PHASE_0_PROJECT_FOUNDATION.md
+docs/IMPLEMENTATION_PLAN.md
+docs/ARCHITECTURE_PLAN.md
+docs/CORE_ARCHITECTURE.md
+docs/V1_TECHNICAL_ARCHITECTURE.md
+docs/MODULE_ARCHITECTURE.md
+docs/V1_DATABASE_SCHEMA.md
+docs/DATA_MODEL.md
+docs/DATA_MIGRATION_STRATEGY.md
+docs/TESTING_STRATEGY.md
+docs/DEVELOPMENT_WORKFLOW.md
+docs/OFFLINE_VERIFICATION.md
+docs/DECISION_LOG.md (DEC-038 through DEC-042)
+docs/vocabularies/*.md
+
+Supersedes
+
+No earlier decision. This is the first decision to record Phase 0
+completion.

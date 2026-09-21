@@ -4,6 +4,7 @@ import com.mytuin.gardenplanner.domain.error.NotFoundError
 import com.mytuin.gardenplanner.domain.model.garden.Geometry
 import com.mytuin.gardenplanner.domain.model.garden.GrowingSpace
 import com.mytuin.gardenplanner.domain.repository.GrowingSpaceRepository
+import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
@@ -19,8 +20,15 @@ class FakeGrowingSpaceRepository : GrowingSpaceRepository {
     private val store = MutableStateFlow<List<GrowingSpace>>(emptyList())
     private val updateCalls = mutableListOf<UpdateGeometryCall>()
 
-    override fun observeGrowingSpacesInGarden(gardenId: String): Flow<List<GrowingSpace>> =
-        store.map { rows -> rows.filter { it.gardenId == gardenId } }
+    override fun observeGrowingSpacesInGarden(
+        gardenId: String,
+        includeArchived: Boolean,
+    ): Flow<List<GrowingSpace>> =
+        store.map { rows ->
+            rows
+                .filter { it.gardenId == gardenId }
+                .let { if (includeArchived) it else it.filter { s -> s.status != RecordStatus.ARCHIVED } }
+        }
 
     override fun observeGrowingSpace(id: String): Flow<GrowingSpace?> = store.map { rows -> rows.firstOrNull { it.id == id } }
 
@@ -37,7 +45,6 @@ class FakeGrowingSpaceRepository : GrowingSpaceRepository {
         reason: String?,
     ) {
         if (store.value.none { it.id == id }) {
-            // A101: match the real repository's error type.
             throw NotFoundError("GrowingSpace", id)
         }
         updateCalls.add(UpdateGeometryCall(id, newGeometry, effectiveAt, reason))
@@ -45,6 +52,38 @@ class FakeGrowingSpaceRepository : GrowingSpaceRepository {
             store.value.map { space ->
                 if (space.id == id) {
                     space.copy(geometry = newGeometry, updatedAt = effectiveAt)
+                } else {
+                    space
+                }
+            }
+    }
+
+    override suspend fun archive(
+        id: String,
+        archivedAt: Long,
+    ) {
+        applyStatus(id, RecordStatus.ARCHIVED, archivedAt)
+    }
+
+    override suspend fun restore(
+        id: String,
+        restoredAt: Long,
+    ) {
+        applyStatus(id, RecordStatus.ACTIVE, restoredAt)
+    }
+
+    private fun applyStatus(
+        id: String,
+        status: RecordStatus,
+        at: Long,
+    ) {
+        if (store.value.none { it.id == id }) {
+            throw NotFoundError("GrowingSpace", id)
+        }
+        store.value =
+            store.value.map { space ->
+                if (space.id == id) {
+                    space.copy(status = status, updatedAt = at)
                 } else {
                     space
                 }
