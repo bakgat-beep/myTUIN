@@ -1,6 +1,7 @@
 package com.mytuin.gardenplanner.data.database
 
 import androidx.room.TypeConverter
+import com.mytuin.gardenplanner.domain.vocabulary.AreaType
 import com.mytuin.gardenplanner.domain.vocabulary.GardenPlantPreferenceKind
 import com.mytuin.gardenplanner.domain.vocabulary.GardenPreferenceKey
 import com.mytuin.gardenplanner.domain.vocabulary.GardenPriority
@@ -83,4 +84,12 @@ class VocabularyConverters {
     fun idToGardenPlantPreferenceKind(id: String): GardenPlantPreferenceKind =
         GardenPlantPreferenceKind.fromId(id)
             ?: error("Unknown GardenPlantPreferenceKind id stored in database: '$id'")
+
+    @TypeConverter
+    fun areaTypeToId(value: AreaType): String = value.id
+
+    @TypeConverter
+    fun idToAreaType(id: String): AreaType =
+        AreaType.fromId(id)
+            ?: error("Unknown AreaType id stored in database: '$id'")
 }

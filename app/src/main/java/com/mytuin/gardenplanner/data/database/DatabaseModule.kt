@@ -1,6 +1,7 @@
 package com.mytuin.gardenplanner.data.database
 
 import android.content.Context
+import com.mytuin.gardenplanner.data.dao.AreaDao
 import com.mytuin.gardenplanner.data.dao.CultivarDao
 import com.mytuin.gardenplanner.data.dao.GardenDao
 import com.mytuin.gardenplanner.data.dao.GardenPreferenceDao
@@ -29,6 +30,9 @@ object DatabaseModule {
 
     @Provides
     fun provideGardenPreferenceDao(db: GardenDatabase): GardenPreferenceDao = db.gardenPreferenceDao()
+
+    @Provides
+    fun provideAreaDao(db: GardenDatabase): AreaDao = db.areaDao()
 
     @Provides
     fun provideGrowingSpaceDao(db: GardenDatabase): GrowingSpaceDao = db.growingSpaceDao()

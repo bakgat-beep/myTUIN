@@ -50,6 +50,12 @@ complexity:
     # The count is dictated by the query, not by design choice.
     excludes: ['**/data/dao/**', '**/ui/garden/debug/**']
 
+  # A Room @TypeConverters class holds two functions per vocabulary
+  # (toId, fromId). The count grows linearly with the number of
+  # vocabularies, not with class complexity; every function is a
+  # one-line mechanical conversion. Splitting it into one class per
+  # vocabulary would fragment a cohesive unit purely to satisfy a
+  # numeric threshold. Excluded from this rule for that reason.
   TooManyFunctions:
     thresholdInFiles: 20
     thresholdInClasses: 20
@@ -61,6 +67,8 @@ complexity:
     ignoreOverridden: true
     ignoreAnnotatedFunctions:
       - Preview
+    excludes:
+      - '**/data/database/VocabularyConverters.kt'
 
   # Test methods are deliberately long. Splitting them into helpers
   # obscures what they test. The MapLibre proof of concept is a

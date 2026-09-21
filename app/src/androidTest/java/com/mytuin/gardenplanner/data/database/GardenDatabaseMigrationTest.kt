@@ -19,16 +19,17 @@ class GardenDatabaseMigrationTest {
         )
 
     @Test
-    fun empty_database_fixture_migrates_from_v1_to_v4() {
+    fun empty_database_fixture_migrates_from_v1_to_v5() {
         helper.createDatabase("empty-fixture", 1).close()
 
-        val migrated = helper.runMigrationsAndValidate("empty-fixture", 4, true)
+        val migrated = helper.runMigrationsAndValidate("empty-fixture", 5, true)
 
         listOf(
             "growing_space",
             "growing_space_history",
             "garden_preference",
             "garden_plant_preference",
+            "area",
         ).forEach { table ->
             migrated
                 .query(
@@ -41,7 +42,7 @@ class GardenDatabaseMigrationTest {
     }
 
     @Test
-    fun minimal_garden_fixture_migrates_from_v1_to_v4_with_data_intact() {
+    fun minimal_garden_fixture_migrates_from_v1_to_v5_with_data_intact() {
         helper.createDatabase("minimal-garden-fixture", 1).apply {
             execSQL(
                 """
@@ -60,7 +61,7 @@ class GardenDatabaseMigrationTest {
             close()
         }
 
-        val migrated = helper.runMigrationsAndValidate("minimal-garden-fixture", 4, true)
+        val migrated = helper.runMigrationsAndValidate("minimal-garden-fixture", 5, true)
 
         migrated
             .query(
@@ -73,7 +74,7 @@ class GardenDatabaseMigrationTest {
     }
 
     @Test
-    fun representative_garden_fixture_migrates_from_v1_to_v4_with_full_row_intact() {
+    fun representative_garden_fixture_migrates_from_v1_to_v5_with_full_row_intact() {
         helper.createDatabase("representative-garden-fixture", 1).apply {
             execSQL(
                 """
@@ -104,7 +105,7 @@ class GardenDatabaseMigrationTest {
         val migrated =
             helper.runMigrationsAndValidate(
                 "representative-garden-fixture",
-                4,
+                5,
                 true,
             )
 
@@ -135,7 +136,7 @@ class GardenDatabaseMigrationTest {
     }
 
     @Test
-    fun fixture_migrates_from_v2_to_v4_with_growing_space_intact() {
+    fun fixture_migrates_from_v2_to_v5_with_growing_space_intact() {
         helper.createDatabase("v2-fixture", 2).apply {
             execSQL(
                 """
@@ -172,7 +173,7 @@ class GardenDatabaseMigrationTest {
             close()
         }
 
-        val migrated = helper.runMigrationsAndValidate("v2-fixture", 4, true)
+        val migrated = helper.runMigrationsAndValidate("v2-fixture", 5, true)
 
         migrated
             .query(
@@ -195,7 +196,7 @@ class GardenDatabaseMigrationTest {
     }
 
     @Test
-    fun fixture_migrates_from_v3_to_v4_with_history_intact() {
+    fun fixture_migrates_from_v3_to_v5_with_history_intact() {
         helper.createDatabase("v3-fixture", 3).apply {
             execSQL(
                 """
@@ -243,7 +244,7 @@ class GardenDatabaseMigrationTest {
             close()
         }
 
-        val migrated = helper.runMigrationsAndValidate("v3-fixture", 4, true)
+        val migrated = helper.runMigrationsAndValidate("v3-fixture", 5, true)
 
         migrated
             .query(
@@ -259,6 +260,67 @@ class GardenDatabaseMigrationTest {
                 assertEquals(1_700_000_000_000L, cursor.getLong(2))
                 assertEquals(1_700_000_500_000L, cursor.getLong(3))
             }
+        migrated.close()
+    }
+
+    @Test
+    fun fixture_migrates_from_v4_to_v5_adding_area_table_with_existing_data_intact() {
+        helper.createDatabase("v4-fixture", 4).apply {
+            execSQL(
+                """
+                INSERT INTO garden (
+                    id, name, created_at, updated_at, status, hemisphere
+                ) VALUES (
+                    'garden_test_v4',
+                    'V4 Garden',
+                    1700000000000,
+                    1700000000000,
+                    'draft',
+                    'unknown'
+                )
+                """.trimIndent(),
+            )
+            execSQL(
+                """
+                INSERT INTO growing_space (
+                    id, garden_id, name, space_type, status,
+                    created_at, updated_at
+                ) VALUES (
+                    'growingspace_test_v4',
+                    'garden_test_v4',
+                    'V4 Bed',
+                    'raised_bed',
+                    'active',
+                    1700000000000,
+                    1700000000000
+                )
+                """.trimIndent(),
+            )
+            close()
+        }
+
+        val migrated = helper.runMigrationsAndValidate("v4-fixture", 5, true)
+
+        migrated
+            .query("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'area'")
+            .use { cursor ->
+                assertTrue("area table must exist after v4 -> v5 migration", cursor.moveToFirst())
+            }
+
+        migrated
+            .query("SELECT name FROM garden WHERE id = 'garden_test_v4'")
+            .use { cursor ->
+                assertTrue("v4 garden row must survive migration", cursor.moveToFirst())
+                assertEquals("V4 Garden", cursor.getString(0))
+            }
+
+        migrated
+            .query("SELECT name FROM growing_space WHERE id = 'growingspace_test_v4'")
+            .use { cursor ->
+                assertTrue("v4 growing_space row must survive migration", cursor.moveToFirst())
+                assertEquals("V4 Bed", cursor.getString(0))
+            }
+
         migrated.close()
     }
 }

@@ -15,4 +15,6 @@ interface IdGenerator {
     fun newGrowingSpaceId(): String
 
     fun newGrowingSpaceHistoryId(): String
+
+    fun newAreaId(): String
 }
