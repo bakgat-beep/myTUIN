@@ -8,6 +8,7 @@ import com.mytuin.gardenplanner.domain.vocabulary.GardenPriority
 import com.mytuin.gardenplanner.domain.vocabulary.GeometryType
 import com.mytuin.gardenplanner.domain.vocabulary.GrowingSpaceType
 import com.mytuin.gardenplanner.domain.vocabulary.Hemisphere
+import com.mytuin.gardenplanner.domain.vocabulary.InfrastructureType
 import com.mytuin.gardenplanner.domain.vocabulary.PlantAliasType
 import com.mytuin.gardenplanner.domain.vocabulary.PlantLifecycle
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
@@ -92,4 +93,12 @@ class VocabularyConverters {
     fun idToAreaType(id: String): AreaType =
         AreaType.fromId(id)
             ?: error("Unknown AreaType id stored in database: '$id'")
+
+    @TypeConverter
+    fun infrastructureTypeToId(value: InfrastructureType): String = value.id
+
+    @TypeConverter
+    fun idToInfrastructureType(id: String): InfrastructureType =
+        InfrastructureType.fromId(id)
+            ?: error("Unknown InfrastructureType id stored in database: '$id'")
 }

@@ -27,6 +27,8 @@ class VocabularyValidatorTest {
             GardenPlantPreferenceKind.entries,
             ThemeMode.entries,
             UnitSystem.entries,
+            AreaType.entries,
+            InfrastructureType.entries,
         )
 
     @Test

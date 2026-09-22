@@ -17,4 +17,6 @@ interface IdGenerator {
     fun newGrowingSpaceHistoryId(): String
 
     fun newAreaId(): String
+
+    fun newSpatialObjectId(): String
 }

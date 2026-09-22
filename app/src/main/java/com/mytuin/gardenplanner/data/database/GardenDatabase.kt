@@ -12,6 +12,7 @@ import com.mytuin.gardenplanner.data.dao.GrowingSpaceDao
 import com.mytuin.gardenplanner.data.dao.GrowingSpaceHistoryDao
 import com.mytuin.gardenplanner.data.dao.PlantAliasDao
 import com.mytuin.gardenplanner.data.dao.PlantDao
+import com.mytuin.gardenplanner.data.dao.SpatialObjectDao
 import com.mytuin.gardenplanner.data.entities.AreaEntity
 import com.mytuin.gardenplanner.data.entities.CultivarEntity
 import com.mytuin.gardenplanner.data.entities.GardenEntity
@@ -21,8 +22,9 @@ import com.mytuin.gardenplanner.data.entities.GrowingSpaceEntity
 import com.mytuin.gardenplanner.data.entities.GrowingSpaceHistoryEntity
 import com.mytuin.gardenplanner.data.entities.PlantAliasEntity
 import com.mytuin.gardenplanner.data.entities.PlantEntity
+import com.mytuin.gardenplanner.data.entities.SpatialObjectEntity
 
-const val GARDEN_DATABASE_VERSION: Int = 5
+const val GARDEN_DATABASE_VERSION: Int = 6
 
 /**
  * The V1 Room database.
@@ -34,6 +36,7 @@ const val GARDEN_DATABASE_VERSION: Int = 5
  *   v4 — adds GardenPreference and GardenPlantPreference (step 6i,
  *        DEC-042).
  *   v5 — adds Area (Phase 1 step 1a).
+ *   v6 — adds SpatialObject (Phase 1 step 1b).
  *
  * All migrations are @AutoMigration. Room derives the SQL from the
  * schema diff at compile time.
@@ -46,6 +49,7 @@ const val GARDEN_DATABASE_VERSION: Int = 5
         GardenPreferenceEntity::class,
         GardenPlantPreferenceEntity::class,
         AreaEntity::class,
+        SpatialObjectEntity::class,
         GrowingSpaceEntity::class,
         GrowingSpaceHistoryEntity::class,
         PlantEntity::class,
@@ -59,6 +63,7 @@ const val GARDEN_DATABASE_VERSION: Int = 5
         AutoMigration(from = 2, to = 3),
         AutoMigration(from = 3, to = 4),
         AutoMigration(from = 4, to = 5),
+        AutoMigration(from = 5, to = 6),
     ],
 )
 @TypeConverters(VocabularyConverters::class)
@@ -68,6 +73,8 @@ abstract class GardenDatabase : RoomDatabase() {
     abstract fun gardenPreferenceDao(): GardenPreferenceDao
 
     abstract fun areaDao(): AreaDao
+
+    abstract fun spatialObjectDao(): SpatialObjectDao
 
     abstract fun growingSpaceDao(): GrowingSpaceDao
 

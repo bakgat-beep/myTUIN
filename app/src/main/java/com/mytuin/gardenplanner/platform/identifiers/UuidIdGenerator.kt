@@ -14,4 +14,6 @@ class UuidIdGenerator
         override fun newGrowingSpaceHistoryId(): String = "growingspacehistory_${UUID.randomUUID()}"
 
         override fun newAreaId(): String = "area_${UUID.randomUUID()}"
+
+        override fun newSpatialObjectId(): String = "spatialobject_${UUID.randomUUID()}"
     }
