@@ -9,6 +9,9 @@ import com.mytuin.gardenplanner.domain.vocabulary.GrowingSpaceType
  * these appear here so the caller cannot supply them.
  *
  * All dimensions in metres (A51=A).
+ *
+ * areaId defaults to null. Same optional placement as the domain
+ * model.
  */
 data class NewGrowingSpace(
     val gardenId: String,
@@ -22,5 +25,6 @@ data class NewGrowingSpace(
     val areaSquareMetres: Double? = null,
     val volumeCubicMetres: Double? = null,
     val description: String? = null,
+    val areaId: String? = null,
     val notes: String? = null,
 )

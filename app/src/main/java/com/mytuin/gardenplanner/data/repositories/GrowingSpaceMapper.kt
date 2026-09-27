@@ -20,6 +20,7 @@ fun GrowingSpaceEntity.toDomain(): GrowingSpace =
         areaSquareMetres = area,
         volumeCubicMetres = volume,
         description = description,
+        areaId = area_id,
         notes = notes,
         createdAt = created_at,
         updatedAt = updated_at,
@@ -43,6 +44,7 @@ fun GrowingSpace.toEntity(): GrowingSpaceEntity =
         area = areaSquareMetres,
         volume = volumeCubicMetres,
         description = description,
+        area_id = areaId,
         notes = notes,
     )
 

@@ -24,7 +24,7 @@ import com.mytuin.gardenplanner.data.entities.PlantAliasEntity
 import com.mytuin.gardenplanner.data.entities.PlantEntity
 import com.mytuin.gardenplanner.data.entities.SpatialObjectEntity
 
-const val GARDEN_DATABASE_VERSION: Int = 6
+const val GARDEN_DATABASE_VERSION: Int = 7
 
 /**
  * The V1 Room database.
@@ -37,6 +37,8 @@ const val GARDEN_DATABASE_VERSION: Int = 6
  *        DEC-042).
  *   v5 — adds Area (Phase 1 step 1a).
  *   v6 — adds SpatialObject (Phase 1 step 1b).
+ *   v7 — adds area_id to growing_space, resolving the A54 deferral
+ *        (Phase 1 step 1c).
  *
  * All migrations are @AutoMigration. Room derives the SQL from the
  * schema diff at compile time.
@@ -64,6 +66,7 @@ const val GARDEN_DATABASE_VERSION: Int = 6
         AutoMigration(from = 3, to = 4),
         AutoMigration(from = 4, to = 5),
         AutoMigration(from = 5, to = 6),
+        AutoMigration(from = 6, to = 7),
     ],
 )
 @TypeConverters(VocabularyConverters::class)

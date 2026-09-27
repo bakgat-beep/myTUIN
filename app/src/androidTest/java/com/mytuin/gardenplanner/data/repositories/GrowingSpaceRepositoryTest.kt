@@ -6,6 +6,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.mytuin.gardenplanner.data.database.GardenDatabase
 import com.mytuin.gardenplanner.data.database.GardenDatabaseFactory
+import com.mytuin.gardenplanner.data.entities.AreaEntity
 import com.mytuin.gardenplanner.data.entities.GardenEntity
 import com.mytuin.gardenplanner.domain.error.NotFoundError
 import com.mytuin.gardenplanner.domain.error.ValidationError
@@ -13,10 +14,10 @@ import com.mytuin.gardenplanner.domain.model.garden.Coordinate
 import com.mytuin.gardenplanner.domain.model.garden.Geometry
 import com.mytuin.gardenplanner.domain.model.garden.GrowingSpace
 import com.mytuin.gardenplanner.domain.repository.GrowingSpaceRepository
+import com.mytuin.gardenplanner.domain.vocabulary.AreaType
 import com.mytuin.gardenplanner.domain.vocabulary.GrowingSpaceType
 import com.mytuin.gardenplanner.domain.vocabulary.Hemisphere
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
-import com.mytuin.gardenplanner.platform.identifiers.UuidIdGenerator
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -34,6 +35,7 @@ class GrowingSpaceRepositoryTest {
     private lateinit var repository: GrowingSpaceRepository
 
     private val gardenId = "garden_00000000-0000-0000-0000-000000000001"
+    private val areaId = "area_00000000-0000-0000-0000-000000000001"
 
     @Before
     fun setUp() =
@@ -52,9 +54,12 @@ class GrowingSpaceRepositoryTest {
                     idGenerator =
                         com.mytuin.gardenplanner.platform.identifiers
                             .UuidIdGenerator(),
+                    gardenDao = db.gardenDao(),
+                    areaDao = db.areaDao(),
                 )
 
             db.gardenDao().insert(sampleGarden())
+            db.areaDao().insert(sampleArea())
         }
 
     @After
@@ -89,10 +94,42 @@ class GrowingSpaceRepositoryTest {
                 repository.insert(orphan)
                 fail("Expected ValidationError; insert succeeded")
             } catch (expected: ValidationError) {
-                // V1_DATABASE_SCHEMA §67: FK enforced. A98: surfaced as a
-                // structured DomainError, not raw SQLiteConstraintException.
                 assertEquals("garden_id", expected.field)
             }
+        }
+
+    @Test
+    fun insert_requires_existing_area_when_area_id_supplied() =
+        runBlocking {
+            val orphan =
+                sampleSpace().copy(
+                    id = "growingspace_00000000-0000-0000-0000-00000000cc",
+                    areaId = "area_does_not_exist",
+                )
+            try {
+                repository.insert(orphan)
+                fail("Expected ValidationError; insert succeeded")
+            } catch (expected: ValidationError) {
+                assertEquals("area_id", expected.field)
+            }
+        }
+
+    @Test
+    fun area_id_round_trips_when_supplied() =
+        runBlocking {
+            val space = sampleSpace().copy(areaId = areaId)
+            repository.insert(space)
+
+            assertEquals(areaId, repository.getGrowingSpace(space.id)?.areaId)
+        }
+
+    @Test
+    fun null_area_id_round_trips_as_null() =
+        runBlocking {
+            val space = sampleSpace().copy(areaId = null)
+            repository.insert(space)
+
+            assertNull(repository.getGrowingSpace(space.id)?.areaId)
         }
 
     @Test
@@ -248,6 +285,20 @@ class GrowingSpaceRepositoryTest {
             updated_at = 1_700_000_000_000L,
         )
 
+    private fun sampleArea(): AreaEntity =
+        AreaEntity(
+            id = areaId,
+            garden_id = gardenId,
+            name = "Vegetable Garden",
+            area_type = AreaType.ZONE,
+            description = null,
+            geometry_type = null,
+            geometry_data = null,
+            status = RecordStatus.ACTIVE,
+            created_at = 1_700_000_000_000L,
+            updated_at = 1_700_000_000_000L,
+        )
+
     private fun sampleSpace(): GrowingSpace =
         GrowingSpace(
             id = "growingspace_00000000-0000-0000-0000-000000000001",
@@ -263,6 +314,7 @@ class GrowingSpaceRepositoryTest {
             areaSquareMetres = 3.6,
             volumeCubicMetres = null,
             description = "Main raised bed",
+            areaId = null,
             notes = null,
             createdAt = 1_700_000_000_000L,
             updatedAt = 1_700_000_000_000L,
@@ -328,9 +380,6 @@ class GrowingSpaceRepositoryTest {
             repository.archive(space.id, 1_700_000_500_000L)
             repository.restore(space.id, 1_700_001_000_000L)
 
-            // The garden row is untouched. Its status remains whatever it
-            // was created with (DRAFT per sampleGarden in GardenRepositoryTest;
-            // this test uses the garden from setUp).
             val garden = db.gardenDao().getById(gardenId)
             assertEquals(RecordStatus.DRAFT, garden?.status)
         }

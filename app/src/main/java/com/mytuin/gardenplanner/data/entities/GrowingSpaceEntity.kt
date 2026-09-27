@@ -15,22 +15,19 @@ import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
  *
  * Stable identifier format: "growingspace_<uuid>" (A57).
  *
- * Foreign key to Garden is RESTRICT (A55): a Garden may not be deleted
- * while growing spaces reference it (V1_DATABASE_SCHEMA §8).
- * Index on garden_id (A56; V1_DATABASE_SCHEMA §68).
+ * Foreign keys to Garden and Area are RESTRICT (A3, A55): neither
+ * parent may be deleted while growing spaces reference it
+ * (V1_DATABASE_SCHEMA §8).
+ *
+ * area_id is nullable. The column was deferred at A54 during Phase 0
+ * and added here (Phase 1 step 1c).
  *
  * geometry_type and geometry_data are paired: both null, or both
- * non-null. The mapper enforces this. geometry_data is a GeoJSON
- * string (A50); coordinates are metres in the garden's local frame
- * (A50b=(i)). The GeoJSON type name and the geometry_type id are
- * different strings ("LineString" vs "line"); the mapper cross-checks
- * them.
+ * non-null. The mapper enforces this.
  *
  * Dimension columns are metres / square metres / cubic metres
  * (A51=A; DEC-042). No unit column: conversion to display units is
  * a presentation-layer concern.
- *
- * area_id is absent (A54).
  */
 @Entity(
     tableName = "growing_space",
@@ -42,9 +39,17 @@ import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
             onDelete = ForeignKey.RESTRICT,
             onUpdate = ForeignKey.RESTRICT,
         ),
+        ForeignKey(
+            entity = AreaEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["area_id"],
+            onDelete = ForeignKey.RESTRICT,
+            onUpdate = ForeignKey.RESTRICT,
+        ),
     ],
     indices = [
         Index(value = ["garden_id"]),
+        Index(value = ["area_id"]),
     ],
 )
 data class GrowingSpaceEntity(
@@ -65,5 +70,6 @@ data class GrowingSpaceEntity(
     val area: Double? = null,
     val volume: Double? = null,
     val description: String? = null,
+    val area_id: String? = null,
     val notes: String? = null,
 )

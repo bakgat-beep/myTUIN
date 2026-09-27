@@ -11,18 +11,12 @@ import javax.inject.Inject
 /**
  * Create a new GrowingSpace.
  *
- * A59=A: named CreateGrowingSpace rather than the §6 example
- * AddGrowingSpace, for consistency with CreateGarden.
+ * Assigns id, status (ACTIVE), createdAt, updatedAt. Returns the new
+ * id.
  *
- * Assigns id, status (ACTIVE, S1), createdAt, updatedAt. Returns the
- * new id.
- *
- * The garden_id foreign key is enforced by Room. If the caller passes
- * a gardenId that does not refer to an existing Garden, the repository
- * throws ValidationError (field = "garden_id"). A25=C: exceptions,
- * not a structured Result type. A98: the repository wraps low-level
- * exceptions; callers above this layer never see
- * SQLiteConstraintException.
+ * The garden_id and area_id foreign keys are enforced by Room. A
+ * missing Garden or Area surfaces as ValidationError from the
+ * repository with the offending field named.
  */
 class CreateGrowingSpace
     @Inject
@@ -48,6 +42,7 @@ class CreateGrowingSpace
                     areaSquareMetres = input.areaSquareMetres,
                     volumeCubicMetres = input.volumeCubicMetres,
                     description = input.description,
+                    areaId = input.areaId,
                     notes = input.notes,
                     createdAt = now,
                     updatedAt = now,

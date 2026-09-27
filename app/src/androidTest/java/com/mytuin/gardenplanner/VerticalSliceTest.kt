@@ -106,6 +106,8 @@ class VerticalSliceTest {
                     growingSpaceDao = db.growingSpaceDao(),
                     growingSpaceHistoryDao = db.growingSpaceHistoryDao(),
                     idGenerator = idGenerator,
+                    gardenDao = db.gardenDao(),
+                    areaDao = db.areaDao(),
                 )
             val createGrowingSpace =
                 CreateGrowingSpace(
@@ -161,6 +163,8 @@ class VerticalSliceTest {
                     growingSpaceDao = db.growingSpaceDao(),
                     growingSpaceHistoryDao = db.growingSpaceHistoryDao(),
                     idGenerator = idGenerator,
+                    gardenDao = db.gardenDao(),
+                    areaDao = db.areaDao(),
                 )
             val historyRepository: GrowingSpaceHistoryRepository =
                 GrowingSpaceHistoryRepositoryImpl(
@@ -256,6 +260,8 @@ class VerticalSliceTest {
                     growingSpaceDao = db.growingSpaceDao(),
                     growingSpaceHistoryDao = db.growingSpaceHistoryDao(),
                     idGenerator = idGenerator,
+                    gardenDao = db.gardenDao(),
+                    areaDao = db.areaDao(),
                 ).getGrowingSpace(spaceId)
 
             val historyAfterSecondReload =

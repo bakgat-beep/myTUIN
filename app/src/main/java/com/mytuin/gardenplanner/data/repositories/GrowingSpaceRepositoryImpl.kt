@@ -2,6 +2,8 @@ package com.mytuin.gardenplanner.data.repositories
 
 import android.database.sqlite.SQLiteConstraintException
 import androidx.room.withTransaction
+import com.mytuin.gardenplanner.data.dao.AreaDao
+import com.mytuin.gardenplanner.data.dao.GardenDao
 import com.mytuin.gardenplanner.data.dao.GrowingSpaceDao
 import com.mytuin.gardenplanner.data.dao.GrowingSpaceHistoryDao
 import com.mytuin.gardenplanner.data.database.GardenDatabase
@@ -24,6 +26,8 @@ class GrowingSpaceRepositoryImpl
         private val growingSpaceDao: GrowingSpaceDao,
         private val growingSpaceHistoryDao: GrowingSpaceHistoryDao,
         private val idGenerator: IdGenerator,
+        private val gardenDao: GardenDao,
+        private val areaDao: AreaDao,
     ) : GrowingSpaceRepository {
         override fun observeGrowingSpacesInGarden(
             gardenId: String,
@@ -43,11 +47,13 @@ class GrowingSpaceRepositoryImpl
         override suspend fun getGrowingSpace(id: String): GrowingSpace? = growingSpaceDao.getById(id)?.toDomain()
 
         override suspend fun insert(growingSpace: GrowingSpace) {
+            requireGardenExists(growingSpace.gardenId)
+            growingSpace.areaId?.let { requireAreaExists(it) }
             try {
                 growingSpaceDao.insert(growingSpace.toEntity())
             } catch (e: SQLiteConstraintException) {
                 throw ValidationError(
-                    field = "garden_id",
+                    field = "growing_space",
                     reason = e.message ?: "constraint violation",
                     cause = e,
                 )
@@ -114,5 +120,21 @@ class GrowingSpaceRepositoryImpl
             if (rows == 0) {
                 throw NotFoundError("GrowingSpace", id)
             }
+        }
+
+        private suspend fun requireGardenExists(gardenId: String) {
+            gardenDao.getById(gardenId)
+                ?: throw ValidationError(
+                    field = "garden_id",
+                    reason = "Garden does not exist: $gardenId",
+                )
+        }
+
+        private suspend fun requireAreaExists(areaId: String) {
+            areaDao.getById(areaId)
+                ?: throw ValidationError(
+                    field = "area_id",
+                    reason = "Area does not exist: $areaId",
+                )
         }
     }

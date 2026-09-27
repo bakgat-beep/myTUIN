@@ -35,6 +35,7 @@ class RestoreGrowingSpaceTest {
                     areaSquareMetres = null,
                     volumeCubicMetres = null,
                     description = null,
+                    areaId = null,
                     notes = null,
                     createdAt = 1_700_000_000_000L,
                     updatedAt = 1_700_000_500_000L,

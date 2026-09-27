@@ -14,10 +14,12 @@ import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
  * exists; conversion to display units is a presentation concern.
  *
  * geometry is nullable: a space may exist before its shape has been
- * drawn. Not all growing spaces (a lawn, a row) will necessarily be
- * given a closed polygon.
+ * drawn.
  *
- * area_id is deliberately absent (A54). Area does not exist yet.
+ * areaId is nullable. V1_DATABASE_SCHEMA §13 lists it under Optional
+ * fields; A3 confirms FK is RESTRICT. Placement after description
+ * matches SpatialObject (Step 1b), keeping the optional spatial parent
+ * near the other optional fields.
  */
 data class GrowingSpace(
     val id: String,
@@ -33,6 +35,7 @@ data class GrowingSpace(
     val areaSquareMetres: Double?,
     val volumeCubicMetres: Double?,
     val description: String?,
+    val areaId: String?,
     val notes: String?,
     val createdAt: Long,
     val updatedAt: Long,

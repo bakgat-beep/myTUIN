@@ -111,6 +111,22 @@ class CreateGrowingSpaceTest {
             assertEquals(polygon, repository.snapshot().first().geometry)
         }
 
+    @Test
+    fun invoke_preserves_area_id_when_supplied() =
+        runBlocking {
+            createGrowingSpace(minimalInput().copy(areaId = "area_test_0001"))
+
+            assertEquals("area_test_0001", repository.snapshot().first().areaId)
+        }
+
+    @Test
+    fun invoke_defaults_area_id_to_null() =
+        runBlocking {
+            createGrowingSpace(minimalInput())
+
+            assertNull(repository.snapshot().first().areaId)
+        }
+
     private fun minimalInput(): NewGrowingSpace =
         NewGrowingSpace(
             gardenId = "garden_test_0001",

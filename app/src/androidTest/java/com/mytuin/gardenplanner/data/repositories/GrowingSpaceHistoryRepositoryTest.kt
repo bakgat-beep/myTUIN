@@ -50,6 +50,8 @@ class GrowingSpaceHistoryRepositoryTest {
                     growingSpaceDao = db.growingSpaceDao(),
                     growingSpaceHistoryDao = db.growingSpaceHistoryDao(),
                     idGenerator = UuidIdGenerator(),
+                    gardenDao = db.gardenDao(),
+                    areaDao = db.areaDao(),
                 )
             historyRepository =
                 GrowingSpaceHistoryRepositoryImpl(
@@ -208,6 +210,7 @@ class GrowingSpaceHistoryRepositoryTest {
             areaSquareMetres = null,
             volumeCubicMetres = null,
             description = null,
+            areaId = null,
             notes = null,
             createdAt = 1_700_000_000_000L,
             updatedAt = 1_700_000_000_000L,
