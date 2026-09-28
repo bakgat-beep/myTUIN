@@ -361,14 +361,14 @@ class GardenDatabaseMigrationTest {
             close()
         }
 
-        val migrated = helper.runMigrationsAndValidate("v5-fixture", 7, true)
+        val migrated = helper.runMigrationsAndValidate("v5-fixture", 8, true)
 
         migrated
             .query(
                 "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'spatial_object'",
             ).use { cursor ->
                 assertTrue(
-                    "spatial_object table must exist after v5 -> v7 migration",
+                    "spatial_object table must exist after v5 -> v8 migration",
                     cursor.moveToFirst(),
                 )
             }
@@ -455,6 +455,108 @@ class GardenDatabaseMigrationTest {
             .use { cursor ->
                 assertTrue("v6 garden row must survive migration", cursor.moveToFirst())
                 assertEquals("V6 Garden", cursor.getString(0))
+            }
+
+        migrated.close()
+    }
+
+    @Test
+    fun fixture_migrates_from_v7_to_v8_adding_plant_instance_table_with_data_intact() {
+        helper.createDatabase("v7-fixture", 7).apply {
+            execSQL(
+                """
+                INSERT INTO garden (
+                    id, name, created_at, updated_at, status, hemisphere
+                ) VALUES (
+                    'garden_test_v7',
+                    'V7 Garden',
+                    1700000000000,
+                    1700000000000,
+                    'draft',
+                    'unknown'
+                )
+                """.trimIndent(),
+            )
+            execSQL(
+                """
+                INSERT INTO area (
+                    id, garden_id, name, area_type,
+                    created_at, updated_at, status
+                ) VALUES (
+                    'area_test_v7',
+                    'garden_test_v7',
+                    'Vegetable Garden',
+                    'zone',
+                    1700000000000,
+                    1700000000000,
+                    'active'
+                )
+                """.trimIndent(),
+            )
+            execSQL(
+                """
+                INSERT INTO growing_space (
+                    id, garden_id, name, space_type, status,
+                    created_at, updated_at, area_id
+                ) VALUES (
+                    'growingspace_test_v7',
+                    'garden_test_v7',
+                    'V7 Bed',
+                    'raised_bed',
+                    'active',
+                    1700000000000,
+                    1700000000000,
+                    'area_test_v7'
+                )
+                """.trimIndent(),
+            )
+            close()
+        }
+
+        val migrated = helper.runMigrationsAndValidate("v7-fixture", 8, true)
+
+        migrated
+            .query(
+                "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'plant_instance'",
+            ).use { cursor ->
+                assertTrue(
+                    "plant_instance table must exist after v7 -> v8 migration",
+                    cursor.moveToFirst(),
+                )
+            }
+
+        // plant_instance must have 24 columns.
+        var columnCount = 0
+        migrated
+            .query("PRAGMA table_info(plant_instance)")
+            .use { cursor ->
+                while (cursor.moveToNext()) {
+                    columnCount += 1
+                }
+            }
+        assertEquals("plant_instance must have 24 columns", 24, columnCount)
+
+        migrated
+            .query("SELECT name FROM garden WHERE id = 'garden_test_v7'")
+            .use { cursor ->
+                assertTrue("v7 garden row must survive migration", cursor.moveToFirst())
+                assertEquals("V7 Garden", cursor.getString(0))
+            }
+
+        migrated
+            .query("SELECT name FROM area WHERE id = 'area_test_v7'")
+            .use { cursor ->
+                assertTrue("v7 area row must survive migration", cursor.moveToFirst())
+                assertEquals("Vegetable Garden", cursor.getString(0))
+            }
+
+        migrated
+            .query(
+                "SELECT name, area_id FROM growing_space WHERE id = 'growingspace_test_v7'",
+            ).use { cursor ->
+                assertTrue("v7 growing_space row must survive migration", cursor.moveToFirst())
+                assertEquals("V7 Bed", cursor.getString(0))
+                assertEquals("area_test_v7", cursor.getString(1))
             }
 
         migrated.close()

@@ -67,8 +67,16 @@ complexity:
     ignoreOverridden: true
     ignoreAnnotatedFunctions:
       - Preview
+    # Test classes count functions by test coverage, not by class
+    # complexity. A repository test with 20+ methods is normal and the
+    # rule is not aimed at it. The same reasoning as LongMethod, which
+    # also excludes the test source sets. VocabularyConverters is
+    # excluded because a @TypeConverters class holds two functions per
+    # vocabulary.
     excludes:
       - '**/data/database/VocabularyConverters.kt'
+      - '**/src/test/**'
+      - '**/src/androidTest/**'
 
   # Test methods are deliberately long. Splitting them into helpers
   # obscures what they test. The MapLibre proof of concept is a

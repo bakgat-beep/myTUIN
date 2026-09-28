@@ -1,11 +1,9 @@
-Worked for 33s
-
 Garden Planner & Manager — V1 Database Schema
 
 Document: docs/V1_DATABASE_SCHEMA.md
-Version: 0.2
+Version: 0.3
 Status: Working specification
-Last updated: August 2026
+Last updated: September 2026
 
 
 ---
@@ -845,6 +843,10 @@ planned_date
 
 planted_date
 
+planting_stock
+
+lifecycle
+
 expected_end_date
 
 removed_date
@@ -1187,6 +1189,8 @@ depth;
 spacing;
 
 propagation source;
+
+planting stock;
 
 planting context.
 

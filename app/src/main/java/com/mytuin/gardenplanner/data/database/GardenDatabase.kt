@@ -12,6 +12,7 @@ import com.mytuin.gardenplanner.data.dao.GrowingSpaceDao
 import com.mytuin.gardenplanner.data.dao.GrowingSpaceHistoryDao
 import com.mytuin.gardenplanner.data.dao.PlantAliasDao
 import com.mytuin.gardenplanner.data.dao.PlantDao
+import com.mytuin.gardenplanner.data.dao.PlantInstanceDao
 import com.mytuin.gardenplanner.data.dao.SpatialObjectDao
 import com.mytuin.gardenplanner.data.entities.AreaEntity
 import com.mytuin.gardenplanner.data.entities.CultivarEntity
@@ -22,9 +23,10 @@ import com.mytuin.gardenplanner.data.entities.GrowingSpaceEntity
 import com.mytuin.gardenplanner.data.entities.GrowingSpaceHistoryEntity
 import com.mytuin.gardenplanner.data.entities.PlantAliasEntity
 import com.mytuin.gardenplanner.data.entities.PlantEntity
+import com.mytuin.gardenplanner.data.entities.PlantInstanceEntity
 import com.mytuin.gardenplanner.data.entities.SpatialObjectEntity
 
-const val GARDEN_DATABASE_VERSION: Int = 7
+const val GARDEN_DATABASE_VERSION: Int = 8
 
 /**
  * The V1 Room database.
@@ -37,8 +39,8 @@ const val GARDEN_DATABASE_VERSION: Int = 7
  *        DEC-042).
  *   v5 — adds Area (Phase 1 step 1a).
  *   v6 — adds SpatialObject (Phase 1 step 1b).
- *   v7 — adds area_id to growing_space, resolving the A54 deferral
- *        (Phase 1 step 1c).
+ *   v7 — adds area_id to growing_space (Phase 1 step 1c).
+ *   v8 — adds PlantInstance (Phase 1 step 2a).
  *
  * All migrations are @AutoMigration. Room derives the SQL from the
  * schema diff at compile time.
@@ -55,6 +57,7 @@ const val GARDEN_DATABASE_VERSION: Int = 7
         GrowingSpaceEntity::class,
         GrowingSpaceHistoryEntity::class,
         PlantEntity::class,
+        PlantInstanceEntity::class,
         PlantAliasEntity::class,
         CultivarEntity::class,
     ],
@@ -67,6 +70,7 @@ const val GARDEN_DATABASE_VERSION: Int = 7
         AutoMigration(from = 4, to = 5),
         AutoMigration(from = 5, to = 6),
         AutoMigration(from = 6, to = 7),
+        AutoMigration(from = 7, to = 8),
     ],
 )
 @TypeConverters(VocabularyConverters::class)
@@ -84,6 +88,8 @@ abstract class GardenDatabase : RoomDatabase() {
     abstract fun growingSpaceHistoryDao(): GrowingSpaceHistoryDao
 
     abstract fun plantDao(): PlantDao
+
+    abstract fun plantInstanceDao(): PlantInstanceDao
 
     abstract fun plantAliasDao(): PlantAliasDao
 

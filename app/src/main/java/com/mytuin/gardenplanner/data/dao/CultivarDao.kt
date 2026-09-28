@@ -11,6 +11,9 @@ interface CultivarDao {
     @Insert
     suspend fun insert(cultivar: CultivarEntity)
 
+    @Query("SELECT * FROM cultivar WHERE id = :id")
+    suspend fun getById(id: String): CultivarEntity?
+
     @Query("SELECT * FROM cultivar WHERE plant_id = :plantId")
     suspend fun getForPlant(plantId: String): List<CultivarEntity>
 

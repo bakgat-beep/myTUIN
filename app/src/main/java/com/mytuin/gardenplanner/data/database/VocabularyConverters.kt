@@ -10,7 +10,9 @@ import com.mytuin.gardenplanner.domain.vocabulary.GrowingSpaceType
 import com.mytuin.gardenplanner.domain.vocabulary.Hemisphere
 import com.mytuin.gardenplanner.domain.vocabulary.InfrastructureType
 import com.mytuin.gardenplanner.domain.vocabulary.PlantAliasType
+import com.mytuin.gardenplanner.domain.vocabulary.PlantInstanceLifecycle
 import com.mytuin.gardenplanner.domain.vocabulary.PlantLifecycle
+import com.mytuin.gardenplanner.domain.vocabulary.PlantingStockType
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
 
 class VocabularyConverters {
@@ -37,6 +39,22 @@ class VocabularyConverters {
     fun idToPlantLifecycle(id: String): PlantLifecycle =
         PlantLifecycle.fromId(id)
             ?: error("Unknown PlantLifecycle id stored in database: '$id'")
+
+    @TypeConverter
+    fun plantInstanceLifecycleToId(value: PlantInstanceLifecycle): String = value.id
+
+    @TypeConverter
+    fun idToPlantInstanceLifecycle(id: String): PlantInstanceLifecycle =
+        PlantInstanceLifecycle.fromId(id)
+            ?: error("Unknown PlantInstanceLifecycle id stored in database: '$id'")
+
+    @TypeConverter
+    fun plantingStockTypeToId(value: PlantingStockType): String = value.id
+
+    @TypeConverter
+    fun idToPlantingStockType(id: String): PlantingStockType =
+        PlantingStockType.fromId(id)
+            ?: error("Unknown PlantingStockType id stored in database: '$id'")
 
     @TypeConverter
     fun plantAliasTypeToId(value: PlantAliasType): String = value.id

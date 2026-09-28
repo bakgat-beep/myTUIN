@@ -1,7 +1,7 @@
 # Garden Planner & Manager — Plant Controlled Vocabularies
 
 **Document:** `docs/vocabularies/PLANT_VOCABULARIES.md`
-**Version:** 0.4
+**Version:** 0.5
 **Status:** Working specification
 **Last updated:** September 2026
 
@@ -32,9 +32,10 @@ Plant-specific concepts belong here only where they are genuinely plant classifi
 
 ---
 
-## 3. Plant lifecycle
+## 3. Plant biological lifecycle
 
 Lifecycle describes the broad biological persistence of a plant.
+This concerns the biological persistence of the plant and not PlantInstance lifecycle.
 
 ### Values
 
@@ -60,6 +61,36 @@ Normally survives for multiple growing seasons.
 Lifecycle is not currently known.
 
 Lifespan beyond this broad classification remains plant knowledge or structured data.
+
+---
+
+## 3a. Plant Instance Lifecycle
+
+### Definitions
+
+**planned**
+The plant instance has been planned but has not yet been planted/started.
+
+**planted**
+The plant has been planted or sown and the instance is active.
+
+**established**
+The plant instance has successfully established in its location after planting/germination.
+
+**dormant**
+The instance remains active but the plant is currently dormant.
+
+**harvested**
+The instance has reached its harvest endpoint, where harvesting represents completion of the intended production cycle.
+
+**removed**
+The plant was deliberately removed before the normal end of its lifecycle.
+
+**failed**
+The plant instance failed to establish or survive, or otherwise became non-viable.
+
+**completed**
+The planned lifecycle has ended successfully without `harvested` being the appropriate terminal state.                  |
 
 ---
 
@@ -881,33 +912,34 @@ If these questions do not establish a clear need, do not add the value.
 
 ## 39. Summary of plant vocabularies
 
-| Vocabulary                 | Purpose                                    |
-| -------------------------- | ------------------------------------------ |
-| Lifecycle                  | Broad biological persistence               |
-| Plant role                 | Functional/garden role                     |
-| Food-production category   | Edible plant part                          |
-| Growth stage               | Developmental stage                        |
-| Growth habit               | Physical growth form                       |
-| Growth rate                | Broad rate of growth                       |
-| Growing method             | Broad cultivation method                   |
-| Propagation method         | Propagation approach                       |
-| Maturity classification    | Broad maturity timing                      |
-| Frost sensitivity          | Relative frost sensitivity                 |
-| Heat tolerance             | Relative heat tolerance                    |
-| Drought tolerance          | Relative drought tolerance                 |
-| Waterlogging tolerance     | Relative tolerance of saturated conditions |
-| Salinity tolerance         | Relative salinity tolerance                |
-| Light requirement          | Preferred light level                      |
-| Shade tolerance            | Relative tolerance of reduced light        |
-| Temperature classification | Broad cool/warm season behaviour           |
-| Establishment difficulty   | Broad establishment difficulty             |
-| Maintenance demand         | Broad maintenance demand                   |
-| Root behaviour             | Broad root-growth characteristic           |
-| Support requirement        | Degree of physical support requirement     |
-| Pollination requirement    | Broad pollination requirement              |
-| Pollination method         | Broad pollination mechanism                |
-| Planting stock type        | Type of planting material                  |
-| Resistance/susceptibility  | Problem-specific response classification   |
+| Vocabulary                 | Purpose                                                 |
+|----------------------------|---------------------------------------------------------|
+| Biological lifecycle       | Broad biological persistence                            |
+| Instance lifecycle         | Lifecycle state of a PlantInstance in the user's garden |
+| Plant role                 | Functional/garden role                                  |
+| Food-production category   | Edible plant part                                       |
+| Growth stage               | Developmental stage                                     |
+| Growth habit               | Physical growth form                                    |
+| Growth rate                | Broad rate of growth                                    |
+| Growing method             | Broad cultivation method                                |
+| Propagation method         | Propagation approach                                    |
+| Maturity classification    | Broad maturity timing                                   |
+| Frost sensitivity          | Relative frost sensitivity                              |
+| Heat tolerance             | Relative heat tolerance                                 |
+| Drought tolerance          | Relative drought tolerance                              |
+| Waterlogging tolerance     | Relative tolerance of saturated conditions              |
+| Salinity tolerance         | Relative salinity tolerance                             |
+| Light requirement          | Preferred light level                                   |
+| Shade tolerance            | Relative tolerance of reduced light                     |
+| Temperature classification | Broad cool/warm season behaviour                        |
+| Establishment difficulty   | Broad establishment difficulty                          |
+| Maintenance demand         | Broad maintenance demand                                |
+| Root behaviour             | Broad root-growth characteristic                        |
+| Support requirement        | Degree of physical support requirement                  |
+| Pollination requirement    | Broad pollination requirement                           |
+| Pollination method         | Broad pollination mechanism                             |
+| Planting stock type        | Type of planting material                               |
+| Resistance/susceptibility  | Problem-specific response classification                |
 
 ---
 
@@ -929,7 +961,7 @@ The vocabulary system should remain:
 ## 41. Plant database field set
 
 | Field                     | Brief descriptor                                                                 |
-| ------------------------- | -------------------------------------------------------------------------------- |
+| ------------------------- |----------------------------------------------------------------------------------|
 | `id`                      | Stable unique identifier for the plant record.                                   |
 | `common_name`             | Primary common name used by myTUIN.                                              |
 | `other_common_names`      | Other recognised common names.                                                   |
@@ -954,6 +986,7 @@ The vocabulary system should remain:
 | `frost_sensitivity`       | Relative frost sensitivity.                                                      |
 | `heat_tolerance`          | Relative heat tolerance.                                                         |
 | `drought_tolerance`       | Relative drought tolerance.                                                      |
+| `salinity_tolerance`      | Relative tolerance of saline conditions.                                         |
 | `waterlogging_tolerance`  | Relative tolerance of prolonged saturated conditions.                            |
 | `water_requirement`       | Typical water requirement, represented as structured knowledge.                  |
 | `preferred_soil`          | Suitable/preferred soil characteristics.                                         |
@@ -984,7 +1017,7 @@ The vocabulary system should remain:
 | `watering`                | Practical watering requirements or guidance.                                     |
 | `pruning`                 | Pruning requirements and timing.                                                 |
 | `other_maintenance`       | Other significant maintenance requirements.                                      |
-| `harvestable_parts`       | Edible/harvested plant parts.                                                    |
+| `harvestable_parts`       | Edible/harvested plant parts. Uses Food-production category values.              |
 | `harvest_indicators`      | Signs that the crop is ready to harvest.                                         |
 | `harvest_method`          | How the harvest is normally performed.                                           |
 | `harvest_frequency`       | Typical frequency or repeat-harvest behaviour.                                   |
