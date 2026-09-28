@@ -1913,3 +1913,74 @@ Supersedes
 
 No earlier decision. This is the first decision to record Phase 0
 completion.
+
+---
+
+DEC-044 — PlantInstance carries its own geometry
+
+Date: September 2026
+Status: Accepted
+Area: Data
+
+Decision
+
+PlantInstance gains an optional geometry field, using the same
+representation as GrowingSpace: a point, line or polygon in the
+garden's local spatial frame, stored as paired geometry_type and
+geometry_data columns.
+
+V1_DATABASE_SCHEMA §19 is updated to list geometry among the
+optional fields.
+
+Rationale
+
+The schema as originally drafted (§19, v0.3) modelled PlantInstance
+location through two relationships: growing_space_id and
+spatial_object_id. During Phase 1 step 1b a case surfaced that
+neither can express: a tree.
+
+B3 recorded the clarification that a tree is logically a plant, not
+a spatial object. That resolves the vocabulary question but leaves
+the location question open. A tree cannot be "inside a GrowingSpace"
+in any meaningful sense, and attaching it to a SpatialObject such as
+a path or a water source does not describe the tree's own location.
+The only faithful representation is to give the PlantInstance its
+own geometry.
+
+Extending geometry to PlantInstance rather than creating a
+separate tree-specific entity follows DEC-021 (prefer simple
+architecture) and §74 (deliberate V1 simplifications). The same
+mechanism applies naturally to other location shapes:
+specimen shrubs, hedge lines drawn as a line, and a bed-wide
+sowing batch drawn as a polygon.
+
+Consequences
+
+- PlantInstance.geometry is optional. A plant inside a bed may
+  carry no individual geometry; the growing_space_id relationship
+  is sufficient.
+- PlantInstance may now carry a location via any of three paths:
+  growing_space_id, spatial_object_id, or its own geometry.
+  These are not mutually exclusive and are not required to be
+  consistent by schema. Consistency, if needed, is a domain
+  concern.
+- PlantInstance geometry changes are not tracked in a history
+  table in step 2a. DEC-041 names PlantInstance location among
+  the state records that need history; that is step 2b's scope.
+  The geometry column added here is the field that step 2b will
+  write history for.
+- The geometry serialisation reuses GeometryGeoJson and the paired
+  geometry_type/geometry_data pattern already established for
+  GrowingSpace and SpatialObject. No new geometry code.
+
+Related documents
+
+docs/V1_DATABASE_SCHEMA.md §19
+docs/DATA_MODEL.md §15, §17
+docs/DECISION_LOG.md DEC-041, DEC-021
+docs/vocabularies/GARDEN_VOCABULARIES.md §7
+
+Supersedes
+
+No earlier decision. This extends PlantInstance's representation
+within the existing spatial model.

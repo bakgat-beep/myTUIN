@@ -1,7 +1,7 @@
 Garden Planner & Manager — V1 Database Schema
 
 Document: docs/V1_DATABASE_SCHEMA.md
-Version: 0.3
+Version: 0.4
 Status: Working specification
 Last updated: September 2026
 
@@ -830,43 +830,35 @@ status
 Optional fields
 
 cultivar_id
-
 growing_space_id
-
 spatial_object_id
-
+geometry
 name
-
 quantity
-
 planned_date
-
 planted_date
-
 planting_stock
-
 lifecycle
-
 expected_end_date
-
 removed_date
-
 notes
 
 
 A PlantInstance may represent:
 
 one plant;
-
 a group of identical plants;
-
 a row;
-
 a planting batch.
-
 
 The user must not be forced to create one record per plant when group tracking is sufficient.
 
+geometry is optional and gives a PlantInstance its own location,
+independent of any GrowingSpace or SpatialObject. It uses the same
+representation as GrowingSpace (see §13): a point, line or polygon in
+the garden's local spatial frame. It resolves the case of a plant
+whose location is not inside a growing space — a tree, a specimen
+shrub, a hedge line, or a bed-wide sowing batch drawn as a polygon.
 
 ---
 
