@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import com.mytuin.gardenplanner.data.entities.PlantInstanceEntity
+import com.mytuin.gardenplanner.domain.vocabulary.GeometryType
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
 import kotlinx.coroutines.flow.Flow
 
@@ -65,6 +66,30 @@ interface PlantInstanceDao {
     suspend fun updateStatus(
         id: String,
         status: RecordStatus,
+        updatedAt: Long,
+    ): Int
+
+    /**
+     * Updates all three location fields. H4: passing all four
+     * location parameters as null clears the location.
+     */
+    @Query(
+        """
+        UPDATE plant_instance
+        SET growing_space_id = :growingSpaceId,
+            spatial_object_id = :spatialObjectId,
+            geometry_type = :geometryType,
+            geometry_data = :geometryData,
+            updated_at = :updatedAt
+        WHERE id = :id
+        """,
+    )
+    suspend fun updateLocation(
+        id: String,
+        growingSpaceId: String?,
+        spatialObjectId: String?,
+        geometryType: GeometryType?,
+        geometryData: String?,
         updatedAt: Long,
     ): Int
 }

@@ -1,6 +1,7 @@
 package com.mytuin.gardenplanner.testdoubles
 
 import com.mytuin.gardenplanner.domain.error.NotFoundError
+import com.mytuin.gardenplanner.domain.model.garden.NewPlantInstanceLocation
 import com.mytuin.gardenplanner.domain.model.garden.PlantInstance
 import com.mytuin.gardenplanner.domain.repository.PlantInstanceRepository
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
@@ -15,8 +16,16 @@ class FakePlantInstanceRepository : PlantInstanceRepository {
         val at: Long,
     )
 
+    data class LocationChangeCall(
+        val id: String,
+        val location: NewPlantInstanceLocation,
+        val effectiveAt: Long,
+        val reason: String?,
+    )
+
     private val store = MutableStateFlow<List<PlantInstance>>(emptyList())
     private val statusChangeCalls = mutableListOf<StatusChangeCall>()
+    private val locationChangeCalls = mutableListOf<LocationChangeCall>()
 
     override fun observePlantInstancesInGarden(
         gardenId: String,
@@ -58,6 +67,31 @@ class FakePlantInstanceRepository : PlantInstanceRepository {
         store.value = store.value + plantInstance
     }
 
+    override suspend fun updateLocation(
+        id: String,
+        location: NewPlantInstanceLocation,
+        effectiveAt: Long,
+        reason: String?,
+    ) {
+        if (store.value.none { it.id == id }) {
+            throw NotFoundError("PlantInstance", id)
+        }
+        locationChangeCalls.add(LocationChangeCall(id, location, effectiveAt, reason))
+        store.value =
+            store.value.map { instance ->
+                if (instance.id == id) {
+                    instance.copy(
+                        growingSpaceId = location.growingSpaceId,
+                        spatialObjectId = location.spatialObjectId,
+                        geometry = location.geometry,
+                        updatedAt = effectiveAt,
+                    )
+                } else {
+                    instance
+                }
+            }
+    }
+
     override suspend fun archive(
         id: String,
         archivedAt: Long,
@@ -94,4 +128,6 @@ class FakePlantInstanceRepository : PlantInstanceRepository {
     fun snapshot(): List<PlantInstance> = store.value
 
     fun statusChangeCalls(): List<StatusChangeCall> = statusChangeCalls.toList()
+
+    fun locationChangeCalls(): List<LocationChangeCall> = locationChangeCalls.toList()
 }

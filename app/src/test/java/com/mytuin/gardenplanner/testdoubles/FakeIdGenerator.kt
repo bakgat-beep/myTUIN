@@ -9,6 +9,7 @@ class FakeIdGenerator(
     private val nextAreaIdValue: String = "area_test_id_0001",
     private val nextSpatialObjectIdValue: String = "spatialobject_test_id_0001",
     private val nextPlantInstanceIdValue: String = "plantinstance_test_id_0001",
+    private val nextPlantInstanceHistoryIdValue: String = "plantinstancehistory_test_id_0001",
 ) : IdGenerator {
     override fun newGardenId(): String = nextGardenIdValue
 
@@ -21,4 +22,6 @@ class FakeIdGenerator(
     override fun newSpatialObjectId(): String = nextSpatialObjectIdValue
 
     override fun newPlantInstanceId(): String = nextPlantInstanceIdValue
+
+    override fun newPlantInstanceHistoryId(): String = nextPlantInstanceHistoryIdValue
 }

@@ -61,7 +61,12 @@ class PlantInstanceRepositoryTest {
                     .build()
             repository =
                 PlantInstanceRepositoryImpl(
+                    db = db,
                     plantInstanceDao = db.plantInstanceDao(),
+                    plantInstanceHistoryDao = db.plantInstanceHistoryDao(),
+                    idGenerator =
+                        com.mytuin.gardenplanner.platform.identifiers
+                            .UuidIdGenerator(),
                     gardenDao = db.gardenDao(),
                     plantDao = db.plantDao(),
                     cultivarDao = db.cultivarDao(),

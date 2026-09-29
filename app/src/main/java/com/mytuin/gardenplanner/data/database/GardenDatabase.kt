@@ -13,6 +13,7 @@ import com.mytuin.gardenplanner.data.dao.GrowingSpaceHistoryDao
 import com.mytuin.gardenplanner.data.dao.PlantAliasDao
 import com.mytuin.gardenplanner.data.dao.PlantDao
 import com.mytuin.gardenplanner.data.dao.PlantInstanceDao
+import com.mytuin.gardenplanner.data.dao.PlantInstanceHistoryDao
 import com.mytuin.gardenplanner.data.dao.SpatialObjectDao
 import com.mytuin.gardenplanner.data.entities.AreaEntity
 import com.mytuin.gardenplanner.data.entities.CultivarEntity
@@ -24,9 +25,10 @@ import com.mytuin.gardenplanner.data.entities.GrowingSpaceHistoryEntity
 import com.mytuin.gardenplanner.data.entities.PlantAliasEntity
 import com.mytuin.gardenplanner.data.entities.PlantEntity
 import com.mytuin.gardenplanner.data.entities.PlantInstanceEntity
+import com.mytuin.gardenplanner.data.entities.PlantInstanceHistoryEntity
 import com.mytuin.gardenplanner.data.entities.SpatialObjectEntity
 
-const val GARDEN_DATABASE_VERSION: Int = 8
+const val GARDEN_DATABASE_VERSION: Int = 9
 
 /**
  * The V1 Room database.
@@ -41,6 +43,7 @@ const val GARDEN_DATABASE_VERSION: Int = 8
  *   v6 — adds SpatialObject (Phase 1 step 1b).
  *   v7 — adds area_id to growing_space (Phase 1 step 1c).
  *   v8 — adds PlantInstance (Phase 1 step 2a).
+ *   v9 — adds PlantInstanceHistory (Phase 1 step 2b, DEC-041).
  *
  * All migrations are @AutoMigration. Room derives the SQL from the
  * schema diff at compile time.
@@ -58,6 +61,7 @@ const val GARDEN_DATABASE_VERSION: Int = 8
         GrowingSpaceHistoryEntity::class,
         PlantEntity::class,
         PlantInstanceEntity::class,
+        PlantInstanceHistoryEntity::class,
         PlantAliasEntity::class,
         CultivarEntity::class,
     ],
@@ -71,6 +75,7 @@ const val GARDEN_DATABASE_VERSION: Int = 8
         AutoMigration(from = 5, to = 6),
         AutoMigration(from = 6, to = 7),
         AutoMigration(from = 7, to = 8),
+        AutoMigration(from = 8, to = 9),
     ],
 )
 @TypeConverters(VocabularyConverters::class)
@@ -90,6 +95,8 @@ abstract class GardenDatabase : RoomDatabase() {
     abstract fun plantDao(): PlantDao
 
     abstract fun plantInstanceDao(): PlantInstanceDao
+
+    abstract fun plantInstanceHistoryDao(): PlantInstanceHistoryDao
 
     abstract fun plantAliasDao(): PlantAliasDao
 
