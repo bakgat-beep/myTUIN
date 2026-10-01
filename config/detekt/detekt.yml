@@ -86,6 +86,18 @@ complexity:
     threshold: 60
     excludes: ['**/src/test/**', '**/src/androidTest/**', '**/ui/garden/debug/**']
 
+  # Test classes grow by coverage, not by complexity. The migration
+  # test in particular gains one method per schema version and is
+  # naturally cohesive: every test asserts a migration from a prior
+  # version to the current one. Splitting it would duplicate the
+  # MigrationTestHelper field and the fixture-building patterns for
+  # no readability gain. Same reasoning as LongMethod and
+  # TooManyFunctions, which also exclude the test source sets.
+  LargeClass:
+    excludes:
+      - '**/src/test/**'
+      - '**/src/androidTest/**'
+
 style:
   MagicNumber:
     ignorePropertyDeclaration: true

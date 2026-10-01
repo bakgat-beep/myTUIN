@@ -19,6 +19,8 @@ class VocabularyValidatorTest {
             Hemisphere.entries,
             RecordStatus.entries,
             PlantLifecycle.entries,
+            PlantInstanceLifecycle.entries,
+            PlantingStockType.entries,
             PlantAliasType.entries,
             GrowingSpaceType.entries,
             GeometryType.entries,
@@ -29,6 +31,14 @@ class VocabularyValidatorTest {
             UnitSystem.entries,
             AreaType.entries,
             InfrastructureType.entries,
+            ActivityType.entries,
+            PlantingMethod.entries,
+            WateringMethod.entries,
+            FeedingMethod.entries,
+            PruningMethod.entries,
+            SoilWorkMethod.entries,
+            ActivityQuantityUnit.entries,
+            DataOrigin.entries,
         )
 
     @Test

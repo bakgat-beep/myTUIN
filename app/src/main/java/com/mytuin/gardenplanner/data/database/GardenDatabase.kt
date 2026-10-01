@@ -4,6 +4,7 @@ import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import com.mytuin.gardenplanner.data.dao.ActivityDao
 import com.mytuin.gardenplanner.data.dao.AreaDao
 import com.mytuin.gardenplanner.data.dao.CultivarDao
 import com.mytuin.gardenplanner.data.dao.GardenDao
@@ -15,6 +16,7 @@ import com.mytuin.gardenplanner.data.dao.PlantDao
 import com.mytuin.gardenplanner.data.dao.PlantInstanceDao
 import com.mytuin.gardenplanner.data.dao.PlantInstanceHistoryDao
 import com.mytuin.gardenplanner.data.dao.SpatialObjectDao
+import com.mytuin.gardenplanner.data.entities.ActivityEntity
 import com.mytuin.gardenplanner.data.entities.AreaEntity
 import com.mytuin.gardenplanner.data.entities.CultivarEntity
 import com.mytuin.gardenplanner.data.entities.GardenEntity
@@ -28,7 +30,7 @@ import com.mytuin.gardenplanner.data.entities.PlantInstanceEntity
 import com.mytuin.gardenplanner.data.entities.PlantInstanceHistoryEntity
 import com.mytuin.gardenplanner.data.entities.SpatialObjectEntity
 
-const val GARDEN_DATABASE_VERSION: Int = 9
+const val GARDEN_DATABASE_VERSION: Int = 10
 
 /**
  * The V1 Room database.
@@ -44,6 +46,7 @@ const val GARDEN_DATABASE_VERSION: Int = 9
  *   v7 — adds area_id to growing_space (Phase 1 step 1c).
  *   v8 — adds PlantInstance (Phase 1 step 2a).
  *   v9 — adds PlantInstanceHistory (Phase 1 step 2b, DEC-041).
+ *   v10 — adds Activity (Phase 1 step 3a).
  *
  * All migrations are @AutoMigration. Room derives the SQL from the
  * schema diff at compile time.
@@ -64,6 +67,7 @@ const val GARDEN_DATABASE_VERSION: Int = 9
         PlantInstanceHistoryEntity::class,
         PlantAliasEntity::class,
         CultivarEntity::class,
+        ActivityEntity::class,
     ],
     version = GARDEN_DATABASE_VERSION,
     exportSchema = true,
@@ -76,6 +80,7 @@ const val GARDEN_DATABASE_VERSION: Int = 9
         AutoMigration(from = 6, to = 7),
         AutoMigration(from = 7, to = 8),
         AutoMigration(from = 8, to = 9),
+        AutoMigration(from = 9, to = 10),
     ],
 )
 @TypeConverters(VocabularyConverters::class)
@@ -101,4 +106,6 @@ abstract class GardenDatabase : RoomDatabase() {
     abstract fun plantAliasDao(): PlantAliasDao
 
     abstract fun cultivarDao(): CultivarDao
+
+    abstract fun activityDao(): ActivityDao
 }

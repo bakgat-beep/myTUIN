@@ -1,6 +1,7 @@
 package com.mytuin.gardenplanner.data.database
 
 import android.content.Context
+import com.mytuin.gardenplanner.data.dao.ActivityDao
 import com.mytuin.gardenplanner.data.dao.AreaDao
 import com.mytuin.gardenplanner.data.dao.CultivarDao
 import com.mytuin.gardenplanner.data.dao.GardenDao
@@ -60,4 +61,7 @@ object DatabaseModule {
 
     @Provides
     fun provideCultivarDao(db: GardenDatabase): CultivarDao = db.cultivarDao()
+
+    @Provides
+    fun provideActivityDao(db: GardenDatabase): ActivityDao = db.activityDao()
 }

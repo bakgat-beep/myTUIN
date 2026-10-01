@@ -20,4 +20,6 @@ class UuidIdGenerator
         override fun newPlantInstanceId(): String = "plantinstance_${UUID.randomUUID()}"
 
         override fun newPlantInstanceHistoryId(): String = "plantinstancehistory_${UUID.randomUUID()}"
+
+        override fun newActivityId(): String = "activity_${UUID.randomUUID()}"
     }

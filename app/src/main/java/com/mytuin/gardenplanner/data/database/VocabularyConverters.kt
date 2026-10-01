@@ -1,7 +1,11 @@
 package com.mytuin.gardenplanner.data.database
 
 import androidx.room.TypeConverter
+import com.mytuin.gardenplanner.domain.vocabulary.ActivityQuantityUnit
+import com.mytuin.gardenplanner.domain.vocabulary.ActivityType
 import com.mytuin.gardenplanner.domain.vocabulary.AreaType
+import com.mytuin.gardenplanner.domain.vocabulary.DataOrigin
+import com.mytuin.gardenplanner.domain.vocabulary.FeedingMethod
 import com.mytuin.gardenplanner.domain.vocabulary.GardenPlantPreferenceKind
 import com.mytuin.gardenplanner.domain.vocabulary.GardenPreferenceKey
 import com.mytuin.gardenplanner.domain.vocabulary.GardenPriority
@@ -12,8 +16,12 @@ import com.mytuin.gardenplanner.domain.vocabulary.InfrastructureType
 import com.mytuin.gardenplanner.domain.vocabulary.PlantAliasType
 import com.mytuin.gardenplanner.domain.vocabulary.PlantInstanceLifecycle
 import com.mytuin.gardenplanner.domain.vocabulary.PlantLifecycle
+import com.mytuin.gardenplanner.domain.vocabulary.PlantingMethod
 import com.mytuin.gardenplanner.domain.vocabulary.PlantingStockType
+import com.mytuin.gardenplanner.domain.vocabulary.PruningMethod
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
+import com.mytuin.gardenplanner.domain.vocabulary.SoilWorkMethod
+import com.mytuin.gardenplanner.domain.vocabulary.WateringMethod
 
 class VocabularyConverters {
     @TypeConverter
@@ -119,4 +127,68 @@ class VocabularyConverters {
     fun idToInfrastructureType(id: String): InfrastructureType =
         InfrastructureType.fromId(id)
             ?: error("Unknown InfrastructureType id stored in database: '$id'")
+
+    @TypeConverter
+    fun activityTypeToId(value: ActivityType): String = value.id
+
+    @TypeConverter
+    fun idToActivityType(id: String): ActivityType =
+        ActivityType.fromId(id)
+            ?: error("Unknown ActivityType id stored in database: '$id'")
+
+    @TypeConverter
+    fun plantingMethodToId(value: PlantingMethod): String = value.id
+
+    @TypeConverter
+    fun idToPlantingMethod(id: String): PlantingMethod =
+        PlantingMethod.fromId(id)
+            ?: error("Unknown PlantingMethod id stored in database: '$id'")
+
+    @TypeConverter
+    fun wateringMethodToId(value: WateringMethod): String = value.id
+
+    @TypeConverter
+    fun idToWateringMethod(id: String): WateringMethod =
+        WateringMethod.fromId(id)
+            ?: error("Unknown WateringMethod id stored in database: '$id'")
+
+    @TypeConverter
+    fun feedingMethodToId(value: FeedingMethod): String = value.id
+
+    @TypeConverter
+    fun idToFeedingMethod(id: String): FeedingMethod =
+        FeedingMethod.fromId(id)
+            ?: error("Unknown FeedingMethod id stored in database: '$id'")
+
+    @TypeConverter
+    fun pruningMethodToId(value: PruningMethod): String = value.id
+
+    @TypeConverter
+    fun idToPruningMethod(id: String): PruningMethod =
+        PruningMethod.fromId(id)
+            ?: error("Unknown PruningMethod id stored in database: '$id'")
+
+    @TypeConverter
+    fun soilWorkMethodToId(value: SoilWorkMethod): String = value.id
+
+    @TypeConverter
+    fun idToSoilWorkMethod(id: String): SoilWorkMethod =
+        SoilWorkMethod.fromId(id)
+            ?: error("Unknown SoilWorkMethod id stored in database: '$id'")
+
+    @TypeConverter
+    fun activityQuantityUnitToId(value: ActivityQuantityUnit): String = value.id
+
+    @TypeConverter
+    fun idToActivityQuantityUnit(id: String): ActivityQuantityUnit =
+        ActivityQuantityUnit.fromId(id)
+            ?: error("Unknown ActivityQuantityUnit id stored in database: '$id'")
+
+    @TypeConverter
+    fun dataOriginToId(value: DataOrigin): String = value.id
+
+    @TypeConverter
+    fun idToDataOrigin(id: String): DataOrigin =
+        DataOrigin.fromId(id)
+            ?: error("Unknown DataOrigin id stored in database: '$id'")
 }
