@@ -1290,62 +1290,46 @@ Represents something observed in the user's garden.
 Required fields
 
 id
-
 garden_id
-
 observed_at
-
 observation_type
-
 confidence
-
 created_at
+activity_id
 
 
 Optional fields
 
 area_id
-
 growing_space_id
-
 spatial_object_id
-
 plant_instance_id
-
 problem_id
-
 notes
-
 structured_values
 
 
 Potential observation types include:
 
 plant;
-
 soil;
-
 water;
-
 pest;
-
 disease;
-
 damage;
-
 weather;
-
 growth;
-
 flowering;
-
 fruiting;
-
 general.
 
 
 Only fields relevant to the selected observation type should be presented to the user.
 
+activity_id links every Observation to its timeline entry: an
+Activity of type observation. The Activity is the record that the
+observation was made; the Observation carries what was observed.
+This is the linkage decision recorded in DEC-045.
 
 ---
 

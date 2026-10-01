@@ -61,11 +61,9 @@ class FakeObservationRepository : ObservationRepository {
                 }
         }
 
-    override fun observeObservation(id: String): Flow<Observation?> =
-        store.map { rows -> rows.firstOrNull { it.id == id } }
+    override fun observeObservation(id: String): Flow<Observation?> = store.map { rows -> rows.firstOrNull { it.id == id } }
 
-    override suspend fun getObservation(id: String): Observation? =
-        store.value.firstOrNull { it.id == id }
+    override suspend fun getObservation(id: String): Observation? = store.value.firstOrNull { it.id == id }
 
     override suspend fun insert(observation: Observation) {
         store.value = store.value + observation

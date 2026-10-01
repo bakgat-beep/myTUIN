@@ -17,12 +17,12 @@ import javax.inject.Inject
  * A missing Observation throws NotFoundError from the repository.
  */
 class ArchiveObservation
-@Inject
-constructor(
-    private val repository: ObservationRepository,
-    private val clock: Clock,
-) {
-    suspend operator fun invoke(observationId: String) {
-        repository.archive(id = observationId, archivedAt = clock.nowMillis())
+    @Inject
+    constructor(
+        private val repository: ObservationRepository,
+        private val clock: Clock,
+    ) {
+        suspend operator fun invoke(observationId: String) {
+            repository.archive(id = observationId, archivedAt = clock.nowMillis())
+        }
     }
-}

@@ -1984,3 +1984,72 @@ Supersedes
 
 No earlier decision. This extends PlantInstance's representation
 within the existing spatial model.
+
+---
+
+DEC-045 — Observation is linked to an Activity
+
+Date: September 2026
+Status: Accepted
+Area: Data
+
+Decision
+
+Every Observation is linked to an Activity of type observation via
+a required activity_id foreign key.
+
+The Activity is the timeline entry: it records that the observation
+was made, at what time and in what spatial context. The Observation
+carries the content: what was observed, with what confidence.
+
+Recording an observation creates both rows in a single transaction.
+
+Rationale
+
+V1_DATABASE_SCHEMA §30 defines Observation as a standalone entity
+with its own required fields. ACTIVITY_VOCABULARIES §3.7 lists
+observation as a valid activity type. The two documents were in
+tension: if both existed without a link, they would describe one
+event twice with no structural way to correlate them.
+
+Three readings were considered:
+
+(i)   Observation is an Activity. Rejected: §30 gives Observation
+an entity shape with distinct required fields that do not
+fit the Activity shape.
+(ii)  Observation is a distinct entity, activity_type = observation
+is the timeline entry, and the two records are linked.
+(iii) activity_type = observation is a legacy value. Rejected:
+ACTIVITY_VOCABULARIES §3.7 lists it as current.
+
+Reading (ii) was chosen. It preserves both documents' intent, gives
+the timeline a uniform record type, and makes the Observation
+participate in the same activity-scoped queries the rest of the
+schema uses.
+
+Consequences
+
+- observation.activity_id is required and references activity with
+  RESTRICT.
+- ObservationRepositoryImpl.insert creates both rows in a single
+  transaction. The Activity's content is derived from the
+  Observation: activity_type = observation, occurred_at =
+  observed_at, location refs = the Observation's, status = active.
+- Observation has no status column. Archiving the Observation
+  archives the linked Activity; the DAO's default queries join the
+  activity table to filter archived rows.
+- The same pattern extends naturally to Measurement and Harvest,
+  both of which have their own entity shape and are also legitimate
+  things that happened. Each will be considered on its own merits;
+  this decision does not automatically bind them.
+
+Related documents
+
+docs/V1_DATABASE_SCHEMA.md §30
+docs/vocabularies/ACTIVITY_VOCABULARIES.md §3.7, §33
+docs/DECISION_LOG.md DEC-007, DEC-008
+
+Supersedes
+
+No earlier decision. This resolves a latent ambiguity between §30
+and ACTIVITY_VOCABULARIES §3.7.

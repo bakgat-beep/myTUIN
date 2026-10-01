@@ -24,31 +24,31 @@ import javax.inject.Inject
  * Returns the new Observation's id.
  */
 class CreateObservation
-@Inject
-constructor(
-    private val repository: ObservationRepository,
-    private val idGenerator: IdGenerator,
-    private val clock: Clock,
-) {
-    suspend operator fun invoke(input: NewObservation): String {
-        val now = clock.nowMillis()
-        val observation =
-            Observation(
-                id = idGenerator.newObservationId(),
-                activityId = idGenerator.newActivityId(),
-                gardenId = input.gardenId,
-                observedAt = input.observedAt,
-                observationType = input.observationType,
-                confidence = input.confidence,
-                createdAt = now,
-                areaId = input.areaId,
-                growingSpaceId = input.growingSpaceId,
-                spatialObjectId = input.spatialObjectId,
-                plantInstanceId = input.plantInstanceId,
-                structuredValues = input.structuredValues,
-                notes = input.notes,
-            )
-        repository.insert(observation)
-        return observation.id
+    @Inject
+    constructor(
+        private val repository: ObservationRepository,
+        private val idGenerator: IdGenerator,
+        private val clock: Clock,
+    ) {
+        suspend operator fun invoke(input: NewObservation): String {
+            val now = clock.nowMillis()
+            val observation =
+                Observation(
+                    id = idGenerator.newObservationId(),
+                    activityId = idGenerator.newActivityId(),
+                    gardenId = input.gardenId,
+                    observedAt = input.observedAt,
+                    observationType = input.observationType,
+                    confidence = input.confidence,
+                    createdAt = now,
+                    areaId = input.areaId,
+                    growingSpaceId = input.growingSpaceId,
+                    spatialObjectId = input.spatialObjectId,
+                    plantInstanceId = input.plantInstanceId,
+                    structuredValues = input.structuredValues,
+                    notes = input.notes,
+                )
+            repository.insert(observation)
+            return observation.id
+        }
     }
-}
