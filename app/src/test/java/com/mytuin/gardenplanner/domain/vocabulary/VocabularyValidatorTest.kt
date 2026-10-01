@@ -39,6 +39,8 @@ class VocabularyValidatorTest {
             SoilWorkMethod.entries,
             ActivityQuantityUnit.entries,
             DataOrigin.entries,
+            ObservationType.entries,
+            Confidence.entries,
         )
 
     @Test

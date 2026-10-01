@@ -4,6 +4,7 @@ import androidx.room.TypeConverter
 import com.mytuin.gardenplanner.domain.vocabulary.ActivityQuantityUnit
 import com.mytuin.gardenplanner.domain.vocabulary.ActivityType
 import com.mytuin.gardenplanner.domain.vocabulary.AreaType
+import com.mytuin.gardenplanner.domain.vocabulary.Confidence
 import com.mytuin.gardenplanner.domain.vocabulary.DataOrigin
 import com.mytuin.gardenplanner.domain.vocabulary.FeedingMethod
 import com.mytuin.gardenplanner.domain.vocabulary.GardenPlantPreferenceKind
@@ -13,6 +14,7 @@ import com.mytuin.gardenplanner.domain.vocabulary.GeometryType
 import com.mytuin.gardenplanner.domain.vocabulary.GrowingSpaceType
 import com.mytuin.gardenplanner.domain.vocabulary.Hemisphere
 import com.mytuin.gardenplanner.domain.vocabulary.InfrastructureType
+import com.mytuin.gardenplanner.domain.vocabulary.ObservationType
 import com.mytuin.gardenplanner.domain.vocabulary.PlantAliasType
 import com.mytuin.gardenplanner.domain.vocabulary.PlantInstanceLifecycle
 import com.mytuin.gardenplanner.domain.vocabulary.PlantLifecycle
@@ -191,4 +193,20 @@ class VocabularyConverters {
     fun idToDataOrigin(id: String): DataOrigin =
         DataOrigin.fromId(id)
             ?: error("Unknown DataOrigin id stored in database: '$id'")
+
+    @TypeConverter
+    fun observationTypeToId(value: ObservationType): String = value.id
+
+    @TypeConverter
+    fun idToObservationType(id: String): ObservationType =
+        ObservationType.fromId(id)
+            ?: error("Unknown ObservationType id stored in database: '$id'")
+
+    @TypeConverter
+    fun confidenceToId(value: Confidence): String = value.id
+
+    @TypeConverter
+    fun idToConfidence(id: String): Confidence =
+        Confidence.fromId(id)
+            ?: error("Unknown Confidence id stored in database: '$id'")
 }

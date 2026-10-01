@@ -25,4 +25,6 @@ interface IdGenerator {
     fun newPlantInstanceHistoryId(): String
 
     fun newActivityId(): String
+
+    fun newObservationId(): String
 }
