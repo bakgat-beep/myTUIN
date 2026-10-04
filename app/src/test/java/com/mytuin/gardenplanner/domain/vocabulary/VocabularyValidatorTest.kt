@@ -41,6 +41,8 @@ class VocabularyValidatorTest {
             DataOrigin.entries,
             ObservationType.entries,
             Confidence.entries,
+            MeasurementProperty.entries,
+            MeasurementUnit.entries,
         )
 
     @Test

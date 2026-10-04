@@ -27,4 +27,6 @@ interface IdGenerator {
     fun newActivityId(): String
 
     fun newObservationId(): String
+
+    fun newMeasurementId(): String
 }

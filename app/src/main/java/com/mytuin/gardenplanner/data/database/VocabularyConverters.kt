@@ -14,6 +14,8 @@ import com.mytuin.gardenplanner.domain.vocabulary.GeometryType
 import com.mytuin.gardenplanner.domain.vocabulary.GrowingSpaceType
 import com.mytuin.gardenplanner.domain.vocabulary.Hemisphere
 import com.mytuin.gardenplanner.domain.vocabulary.InfrastructureType
+import com.mytuin.gardenplanner.domain.vocabulary.MeasurementProperty
+import com.mytuin.gardenplanner.domain.vocabulary.MeasurementUnit
 import com.mytuin.gardenplanner.domain.vocabulary.ObservationType
 import com.mytuin.gardenplanner.domain.vocabulary.PlantAliasType
 import com.mytuin.gardenplanner.domain.vocabulary.PlantInstanceLifecycle
@@ -209,4 +211,20 @@ class VocabularyConverters {
     fun idToConfidence(id: String): Confidence =
         Confidence.fromId(id)
             ?: error("Unknown Confidence id stored in database: '$id'")
+
+    @TypeConverter
+    fun measurementPropertyToId(value: MeasurementProperty): String = value.id
+
+    @TypeConverter
+    fun idToMeasurementProperty(id: String): MeasurementProperty =
+        MeasurementProperty.fromId(id)
+            ?: error("Unknown MeasurementProperty id stored in database: '$id'")
+
+    @TypeConverter
+    fun measurementUnitToId(value: MeasurementUnit): String = value.id
+
+    @TypeConverter
+    fun idToMeasurementUnit(id: String): MeasurementUnit =
+        MeasurementUnit.fromId(id)
+            ?: error("Unknown MeasurementUnit id stored in database: '$id'")
 }

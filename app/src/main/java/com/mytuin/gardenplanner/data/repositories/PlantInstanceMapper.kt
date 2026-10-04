@@ -16,9 +16,14 @@ import java.time.LocalTime
  *
  * Geometry uses the shared geometryFromEntity and GeometryGeoJson
  * helpers, unchanged.
+ *
+ * encodeTime and knownDateFromEntity are internal because
+ * MeasurementMapper reuses them. The logic is identical for any
+ * entity that stores a KnownDate as an (epoch_day, time_of_day_millis)
+ * pair.
  */
 
-private const val MILLIS_PER_SECOND = 1000
+internal const val MILLIS_PER_SECOND = 1000
 
 fun PlantInstanceEntity.toDomain(): PlantInstance =
     PlantInstance(
@@ -71,7 +76,7 @@ fun PlantInstance.toEntity(): PlantInstanceEntity =
         notes = notes,
     )
 
-private fun KnownDate?.encodeTime(): Int? = this?.time?.toSecondOfDay()?.let { it * MILLIS_PER_SECOND }
+internal fun KnownDate?.encodeTime(): Int? = this?.time?.toSecondOfDay()?.let { it * MILLIS_PER_SECOND }
 
 internal fun knownDateFromEntity(
     epochDay: Int?,

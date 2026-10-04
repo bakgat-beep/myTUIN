@@ -24,4 +24,6 @@ class UuidIdGenerator
         override fun newActivityId(): String = "activity_${UUID.randomUUID()}"
 
         override fun newObservationId(): String = "observation_${UUID.randomUUID()}"
+
+        override fun newMeasurementId(): String = "measurement_${UUID.randomUUID()}"
     }
