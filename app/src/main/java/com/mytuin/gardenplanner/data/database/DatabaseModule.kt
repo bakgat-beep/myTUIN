@@ -9,6 +9,7 @@ import com.mytuin.gardenplanner.data.dao.GardenPreferenceDao
 import com.mytuin.gardenplanner.data.dao.GrowingSpaceDao
 import com.mytuin.gardenplanner.data.dao.GrowingSpaceHistoryDao
 import com.mytuin.gardenplanner.data.dao.HarvestDao
+import com.mytuin.gardenplanner.data.dao.HarvestLossDao
 import com.mytuin.gardenplanner.data.dao.MeasurementDao
 import com.mytuin.gardenplanner.data.dao.ObservationDao
 import com.mytuin.gardenplanner.data.dao.PlantAliasDao
@@ -76,4 +77,7 @@ object DatabaseModule {
 
     @Provides
     fun provideHarvestDao(db: GardenDatabase): HarvestDao = db.harvestDao()
+
+    @Provides
+    fun provideHarvestLossDao(db: GardenDatabase): HarvestLossDao = db.harvestLossDao()
 }

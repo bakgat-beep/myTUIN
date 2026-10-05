@@ -44,6 +44,8 @@ class VocabularyValidatorTest {
             MeasurementProperty.entries,
             MeasurementUnit.entries,
             HarvestSizeCategory.entries,
+            HarvestLossCause.entries,
+            HarvestLossSeverity.entries,
         )
 
     @Test

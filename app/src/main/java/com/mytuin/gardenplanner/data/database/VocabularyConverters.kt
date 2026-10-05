@@ -12,6 +12,8 @@ import com.mytuin.gardenplanner.domain.vocabulary.GardenPreferenceKey
 import com.mytuin.gardenplanner.domain.vocabulary.GardenPriority
 import com.mytuin.gardenplanner.domain.vocabulary.GeometryType
 import com.mytuin.gardenplanner.domain.vocabulary.GrowingSpaceType
+import com.mytuin.gardenplanner.domain.vocabulary.HarvestLossCause
+import com.mytuin.gardenplanner.domain.vocabulary.HarvestLossSeverity
 import com.mytuin.gardenplanner.domain.vocabulary.HarvestSizeCategory
 import com.mytuin.gardenplanner.domain.vocabulary.Hemisphere
 import com.mytuin.gardenplanner.domain.vocabulary.InfrastructureType
@@ -236,4 +238,20 @@ class VocabularyConverters {
     fun idToHarvestSizeCategory(id: String): HarvestSizeCategory =
         HarvestSizeCategory.fromId(id)
             ?: error("Unknown HarvestSizeCategory id stored in database: '$id'")
+
+    @TypeConverter
+    fun harvestLossCauseToId(value: HarvestLossCause): String = value.id
+
+    @TypeConverter
+    fun idToHarvestLossCause(id: String): HarvestLossCause =
+        HarvestLossCause.fromId(id)
+            ?: error("Unknown HarvestLossCause id stored in database: '$id'")
+
+    @TypeConverter
+    fun harvestLossSeverityToId(value: HarvestLossSeverity): String = value.id
+
+    @TypeConverter
+    fun idToHarvestLossSeverity(id: String): HarvestLossSeverity =
+        HarvestLossSeverity.fromId(id)
+            ?: error("Unknown HarvestLossSeverity id stored in database: '$id'")
 }

@@ -12,6 +12,7 @@ import com.mytuin.gardenplanner.data.dao.GardenPreferenceDao
 import com.mytuin.gardenplanner.data.dao.GrowingSpaceDao
 import com.mytuin.gardenplanner.data.dao.GrowingSpaceHistoryDao
 import com.mytuin.gardenplanner.data.dao.HarvestDao
+import com.mytuin.gardenplanner.data.dao.HarvestLossDao
 import com.mytuin.gardenplanner.data.dao.MeasurementDao
 import com.mytuin.gardenplanner.data.dao.ObservationDao
 import com.mytuin.gardenplanner.data.dao.PlantAliasDao
@@ -28,6 +29,7 @@ import com.mytuin.gardenplanner.data.entities.GardenPreferenceEntity
 import com.mytuin.gardenplanner.data.entities.GrowingSpaceEntity
 import com.mytuin.gardenplanner.data.entities.GrowingSpaceHistoryEntity
 import com.mytuin.gardenplanner.data.entities.HarvestEntity
+import com.mytuin.gardenplanner.data.entities.HarvestLossEntity
 import com.mytuin.gardenplanner.data.entities.MeasurementEntity
 import com.mytuin.gardenplanner.data.entities.ObservationEntity
 import com.mytuin.gardenplanner.data.entities.PlantAliasEntity
@@ -36,7 +38,7 @@ import com.mytuin.gardenplanner.data.entities.PlantInstanceEntity
 import com.mytuin.gardenplanner.data.entities.PlantInstanceHistoryEntity
 import com.mytuin.gardenplanner.data.entities.SpatialObjectEntity
 
-const val GARDEN_DATABASE_VERSION: Int = 13
+const val GARDEN_DATABASE_VERSION: Int = 14
 
 /**
  * The V1 Room database.
@@ -56,6 +58,7 @@ const val GARDEN_DATABASE_VERSION: Int = 13
  *   v11 — adds Observation (Phase 1 step 3b, DEC-045).
  *   v12 — adds Measurement (Phase 1 step 3c).
  *   v13 — adds Harvest (Phase 1 step 3d, DEC-045 pattern).
+ *   v14 — adds HarvestLoss (Phase 1 step 3d').
  *
  * All migrations are @AutoMigration. Room derives the SQL from the
  * schema diff at compile time.
@@ -80,6 +83,7 @@ const val GARDEN_DATABASE_VERSION: Int = 13
         ObservationEntity::class,
         MeasurementEntity::class,
         HarvestEntity::class,
+        HarvestLossEntity::class,
     ],
     version = GARDEN_DATABASE_VERSION,
     exportSchema = true,
@@ -96,6 +100,7 @@ const val GARDEN_DATABASE_VERSION: Int = 13
         AutoMigration(from = 10, to = 11),
         AutoMigration(from = 11, to = 12),
         AutoMigration(from = 12, to = 13),
+        AutoMigration(from = 13, to = 14),
     ],
 )
 @TypeConverters(VocabularyConverters::class)
@@ -129,4 +134,6 @@ abstract class GardenDatabase : RoomDatabase() {
     abstract fun measurementDao(): MeasurementDao
 
     abstract fun harvestDao(): HarvestDao
+
+    abstract fun harvestLossDao(): HarvestLossDao
 }

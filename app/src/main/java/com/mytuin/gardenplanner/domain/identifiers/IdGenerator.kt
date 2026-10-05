@@ -31,4 +31,6 @@ interface IdGenerator {
     fun newMeasurementId(): String
 
     fun newHarvestId(): String
+
+    fun newHarvestLossId(): String
 }
