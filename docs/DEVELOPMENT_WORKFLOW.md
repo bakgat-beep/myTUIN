@@ -1,9 +1,9 @@
 # Development workflow
 
 **Document:** `docs/DEVELOPMENT_WORKFLOW.md`
-**Version:** 0.2
+**Version:** 0.3
 **Status:** Working specification
-**Last updated:** September 2026
+**Last updated:** October 2026
 
 ---
 
@@ -221,3 +221,82 @@ Phase 1 will need specification documents that Phase 0 did not:
 The same per-step discipline applies: ask for the specific sections a
 step depends on, do not invent identifiers, do not resolve ambiguities
 silently.
+
+---
+
+## 9. Architectural-boundary checks
+
+Three grep-style checks enforce invariants the compiler cannot. They
+run via `tools/Verify-CodeSymbols.ps1`. See that file's header for
+usage. Run them after any change that touches the layering or adds a
+vocabulary.
+
+---
+
+### 9.1 Domain layer must not import Android, Compose, Room or Hilt
+
+```powershell
+.\tools\Verify-CodeSymbols.ps1 `
+  -Path app/src/main/java/com/mytuin/gardenplanner/domain `
+  -Pattern '^\s*import\s+(android\.|androidx\.|dagger\.|hilt)'
+```
+
+PHASE_0_PROJECT_FOUNDATION §31 (Architecture); DEC-038. The domain
+must remain testable without the Android runtime, and portable in
+principle. No file under domain/ may import any of those packages.
+
+---
+
+### 9.2 Snake_case schema identifiers must not leak into the domain
+
+```powershell
+.\tools\Verify-CodeSymbols.ps1 `
+  -Path app/src/main/java/com/mytuin/gardenplanner/domain `
+  -Pattern '\b(canonical_name|scientific_name|created_at|updated_at|...)\b'
+```
+
+PHASE_0_PROJECT_FOUNDATION §31 (Architecture).
+
+V1_TECHNICAL_ARCHITECTURE §79. Room entity properties use snake_case
+to match the schema document; the domain model uses camelCase. The
+mapper in data/repositories/ bridges them. A snake_case identifier
+appearing in the domain means the mapper has been bypassed.
+
+Rule for this pattern list: snake_case only. Every entry must
+contain at least one underscore. A single-word column name has the
+same spelling in the schema and the domain, so including it produces
+false positives on legitimate domain fields and on standard JVM
+library signatures. If a new single-word column appears in the
+schema, do not add it to this list.
+
+The full current pattern list:
+
+canonical_name, scientific_name, created_at, updated_at,
+garden_id, space_type, area_type, object_type, geometry_type,
+geometry_data, area_id, plant_id, cultivar_id, growing_space_id,
+spatial_object_id, planting_stock, plant_instance_id, valid_from,
+valid_to, recorded_at, activity_type, activity_id, occurred_at,
+data_origin, planting_method, watering_method, feeding_method,
+pruning_method, soil_work_method, observed_at, observation_type,
+structured_values, measured_at, measured_at_epoch_day,
+measured_at_time_of_day_millis, date_epoch_day,
+date_time_of_day_millis, size_category
+
+---
+
+### 9.3 Uppercase enum constant names must not appear as string literals
+
+```powershell
+.\tools\Verify-CodeSymbols.ps1 `
+  -Path app/src/main `
+  -Pattern '"(ANNUAL|BIENNIAL|PERENNIAL|...)"'
+```
+
+DEC-040. Vocabulary identifiers are lowercase snake_case; the stored
+value is the enum's id property, not the enum constant name. A
+string literal matching a constant name would mean code is persisting
+the constant instead of the id.
+
+The pattern list grows as each new vocabulary is added. Every constant
+name from every VocabularyValue implementation belongs in the list.
+See domain/vocabulary/ for the current set.

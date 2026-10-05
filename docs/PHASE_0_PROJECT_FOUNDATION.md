@@ -1109,3 +1109,4 @@ technology), DEC-040 (vocabulary implementation), DEC-041
 (historical change mechanism) and DEC-042 (preference storage).
 Phase 1 must conform to these decisions; deviations require a new
 DEC entry.
+
