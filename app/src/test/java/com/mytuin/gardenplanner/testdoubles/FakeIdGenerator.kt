@@ -13,6 +13,7 @@ class FakeIdGenerator(
     private val nextActivityIdValue: String = "activity_test_id_0001",
     private val nextObservationIdValue: String = "observation_test_id_0001",
     private val nextMeasurementIdValue: String = "measurement_test_id_0001",
+    private val nextHarvestIdValue: String = "harvest_test_id_0001",
 ) : IdGenerator {
     override fun newGardenId(): String = nextGardenIdValue
 
@@ -33,4 +34,6 @@ class FakeIdGenerator(
     override fun newObservationId(): String = nextObservationIdValue
 
     override fun newMeasurementId(): String = nextMeasurementIdValue
+
+    override fun newHarvestId(): String = nextHarvestIdValue
 }

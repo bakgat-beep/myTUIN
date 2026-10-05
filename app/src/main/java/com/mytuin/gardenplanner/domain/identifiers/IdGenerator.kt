@@ -29,4 +29,6 @@ interface IdGenerator {
     fun newObservationId(): String
 
     fun newMeasurementId(): String
+
+    fun newHarvestId(): String
 }

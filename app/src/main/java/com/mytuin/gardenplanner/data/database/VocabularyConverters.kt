@@ -12,6 +12,7 @@ import com.mytuin.gardenplanner.domain.vocabulary.GardenPreferenceKey
 import com.mytuin.gardenplanner.domain.vocabulary.GardenPriority
 import com.mytuin.gardenplanner.domain.vocabulary.GeometryType
 import com.mytuin.gardenplanner.domain.vocabulary.GrowingSpaceType
+import com.mytuin.gardenplanner.domain.vocabulary.HarvestSizeCategory
 import com.mytuin.gardenplanner.domain.vocabulary.Hemisphere
 import com.mytuin.gardenplanner.domain.vocabulary.InfrastructureType
 import com.mytuin.gardenplanner.domain.vocabulary.MeasurementProperty
@@ -227,4 +228,12 @@ class VocabularyConverters {
     fun idToMeasurementUnit(id: String): MeasurementUnit =
         MeasurementUnit.fromId(id)
             ?: error("Unknown MeasurementUnit id stored in database: '$id'")
+
+    @TypeConverter
+    fun harvestSizeCategoryToId(value: HarvestSizeCategory): String = value.id
+
+    @TypeConverter
+    fun idToHarvestSizeCategory(id: String): HarvestSizeCategory =
+        HarvestSizeCategory.fromId(id)
+            ?: error("Unknown HarvestSizeCategory id stored in database: '$id'")
 }

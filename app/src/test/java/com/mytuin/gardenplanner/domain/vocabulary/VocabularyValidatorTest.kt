@@ -43,6 +43,7 @@ class VocabularyValidatorTest {
             Confidence.entries,
             MeasurementProperty.entries,
             MeasurementUnit.entries,
+            HarvestSizeCategory.entries,
         )
 
     @Test
