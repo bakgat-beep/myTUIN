@@ -25,6 +25,10 @@ import com.mytuin.gardenplanner.domain.vocabulary.PlantInstanceLifecycle
 import com.mytuin.gardenplanner.domain.vocabulary.PlantLifecycle
 import com.mytuin.gardenplanner.domain.vocabulary.PlantingMethod
 import com.mytuin.gardenplanner.domain.vocabulary.PlantingStockType
+import com.mytuin.gardenplanner.domain.vocabulary.ProblemCategory
+import com.mytuin.gardenplanner.domain.vocabulary.ProblemEvidenceDirection
+import com.mytuin.gardenplanner.domain.vocabulary.ProblemSeverity
+import com.mytuin.gardenplanner.domain.vocabulary.ProblemStatus
 import com.mytuin.gardenplanner.domain.vocabulary.PruningMethod
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
 import com.mytuin.gardenplanner.domain.vocabulary.SoilWorkMethod
@@ -254,4 +258,36 @@ class VocabularyConverters {
     fun idToHarvestLossSeverity(id: String): HarvestLossSeverity =
         HarvestLossSeverity.fromId(id)
             ?: error("Unknown HarvestLossSeverity id stored in database: '$id'")
+
+    @TypeConverter
+    fun problemCategoryToId(value: ProblemCategory): String = value.id
+
+    @TypeConverter
+    fun idToProblemCategory(id: String): ProblemCategory =
+        ProblemCategory.fromId(id)
+            ?: error("Unknown ProblemCategory id stored in database: '$id'")
+
+    @TypeConverter
+    fun problemSeverityToId(value: ProblemSeverity): String = value.id
+
+    @TypeConverter
+    fun idToProblemSeverity(id: String): ProblemSeverity =
+        ProblemSeverity.fromId(id)
+            ?: error("Unknown ProblemSeverity id stored in database: '$id'")
+
+    @TypeConverter
+    fun problemStatusToId(value: ProblemStatus): String = value.id
+
+    @TypeConverter
+    fun idToProblemStatus(id: String): ProblemStatus =
+        ProblemStatus.fromId(id)
+            ?: error("Unknown ProblemStatus id stored in database: '$id'")
+
+    @TypeConverter
+    fun problemEvidenceDirectionToId(value: ProblemEvidenceDirection): String = value.id
+
+    @TypeConverter
+    fun idToProblemEvidenceDirection(id: String): ProblemEvidenceDirection =
+        ProblemEvidenceDirection.fromId(id)
+            ?: error("Unknown ProblemEvidenceDirection id stored in database: '$id'")
 }

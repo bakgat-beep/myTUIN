@@ -39,6 +39,8 @@ class GardenDatabaseMigrationTest {
             "measurement",
             "harvest",
             "harvest_loss",
+            "problem",
+            "problem_observation",
         )
 
     @Test
@@ -968,6 +970,103 @@ class GardenDatabaseMigrationTest {
             .use { cursor ->
                 assertTrue("v13 harvest row must survive migration", cursor.moveToFirst())
                 assertEquals(5.0, cursor.getDouble(0), 0.0)
+                assertEquals("count", cursor.getString(1))
+            }
+
+        migrated.close()
+    }
+
+    @Test
+    fun fixture_migrates_from_v14_to_current_adding_problem_tables_with_data_intact() {
+        helper.createDatabase("v14-fixture", 14).apply {
+            execSQL(
+                """
+                INSERT INTO garden (
+                    id, name, created_at, updated_at, status, hemisphere
+                ) VALUES (
+                    'garden_test_v14',
+                    'V14 Garden',
+                    1700000000000,
+                    1700000000000,
+                    'draft',
+                    'unknown'
+                )
+                """.trimIndent(),
+            )
+            execSQL(
+                """
+                INSERT INTO harvest_loss (
+                    id, garden_id, date_epoch_day, quantity, unit, created_at
+                ) VALUES (
+                    'harvestloss_test_v14',
+                    'garden_test_v14',
+                    20000,
+                    3.0,
+                    'count',
+                    1700000000000
+                )
+                """.trimIndent(),
+            )
+            close()
+        }
+
+        val migrated = helper.runMigrationsAndValidate("v14-fixture", GARDEN_DATABASE_VERSION, true)
+
+        migrated
+            .query(
+                "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'problem'",
+            ).use { cursor ->
+                assertTrue(
+                    "problem table must exist after v14 migration",
+                    cursor.moveToFirst(),
+                )
+            }
+
+        migrated
+            .query(
+                "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'problem_observation'",
+            ).use { cursor ->
+                assertTrue(
+                    "problem_observation table must exist after v14 migration",
+                    cursor.moveToFirst(),
+                )
+            }
+
+        // problem must have 15 columns.
+        var problemColumnCount = 0
+        migrated
+            .query("PRAGMA table_info(problem)")
+            .use { cursor ->
+                while (cursor.moveToNext()) {
+                    problemColumnCount += 1
+                }
+            }
+        assertEquals("problem must have 15 columns", 15, problemColumnCount)
+
+        // problem_observation must have 4 columns.
+        var linkColumnCount = 0
+        migrated
+            .query("PRAGMA table_info(problem_observation)")
+            .use { cursor ->
+                while (cursor.moveToNext()) {
+                    linkColumnCount += 1
+                }
+            }
+        assertEquals("problem_observation must have 4 columns", 4, linkColumnCount)
+
+        migrated
+            .query("SELECT name FROM garden WHERE id = 'garden_test_v14'")
+            .use { cursor ->
+                assertTrue("v14 garden row must survive migration", cursor.moveToFirst())
+                assertEquals("V14 Garden", cursor.getString(0))
+            }
+
+        migrated
+            .query(
+                "SELECT quantity, unit FROM harvest_loss WHERE id = 'harvestloss_test_v14'",
+            ).use { cursor ->
+                assertTrue("v14 harvest_loss row must survive migration", cursor.moveToFirst())
+                assertEquals(3.0, cursor.getDouble(0), 0.0)
                 assertEquals("count", cursor.getString(1))
             }
 

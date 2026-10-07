@@ -30,4 +30,6 @@ class UuidIdGenerator
         override fun newHarvestId(): String = "harvest_${UUID.randomUUID()}"
 
         override fun newHarvestLossId(): String = "harvestloss_${UUID.randomUUID()}"
+
+        override fun newProblemId(): String = "problem_${UUID.randomUUID()}"
     }

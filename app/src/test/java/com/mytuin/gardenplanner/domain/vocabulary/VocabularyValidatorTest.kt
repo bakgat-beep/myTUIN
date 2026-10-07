@@ -46,6 +46,10 @@ class VocabularyValidatorTest {
             HarvestSizeCategory.entries,
             HarvestLossCause.entries,
             HarvestLossSeverity.entries,
+            ProblemCategory.entries,
+            ProblemSeverity.entries,
+            ProblemStatus.entries,
+            ProblemEvidenceDirection.entries,
         )
 
     @Test

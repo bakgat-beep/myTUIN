@@ -19,6 +19,8 @@ import com.mytuin.gardenplanner.data.dao.PlantAliasDao
 import com.mytuin.gardenplanner.data.dao.PlantDao
 import com.mytuin.gardenplanner.data.dao.PlantInstanceDao
 import com.mytuin.gardenplanner.data.dao.PlantInstanceHistoryDao
+import com.mytuin.gardenplanner.data.dao.ProblemDao
+import com.mytuin.gardenplanner.data.dao.ProblemObservationDao
 import com.mytuin.gardenplanner.data.dao.SpatialObjectDao
 import com.mytuin.gardenplanner.data.entities.ActivityEntity
 import com.mytuin.gardenplanner.data.entities.AreaEntity
@@ -36,9 +38,11 @@ import com.mytuin.gardenplanner.data.entities.PlantAliasEntity
 import com.mytuin.gardenplanner.data.entities.PlantEntity
 import com.mytuin.gardenplanner.data.entities.PlantInstanceEntity
 import com.mytuin.gardenplanner.data.entities.PlantInstanceHistoryEntity
+import com.mytuin.gardenplanner.data.entities.ProblemEntity
+import com.mytuin.gardenplanner.data.entities.ProblemObservationEntity
 import com.mytuin.gardenplanner.data.entities.SpatialObjectEntity
 
-const val GARDEN_DATABASE_VERSION: Int = 14
+const val GARDEN_DATABASE_VERSION: Int = 15
 
 /**
  * The V1 Room database.
@@ -57,8 +61,9 @@ const val GARDEN_DATABASE_VERSION: Int = 14
  *   v10 — adds Activity (Phase 1 step 3a).
  *   v11 — adds Observation (Phase 1 step 3b, DEC-045).
  *   v12 — adds Measurement (Phase 1 step 3c).
- *   v13 — adds Harvest (Phase 1 step 3d, DEC-045 pattern).
+ *   v13 — adds Harvest (Phase 1 step 3d).
  *   v14 — adds HarvestLoss (Phase 1 step 3d').
+ *   v15 — adds Problem and ProblemObservation (Phase 1 step 3e).
  *
  * All migrations are @AutoMigration. Room derives the SQL from the
  * schema diff at compile time.
@@ -84,6 +89,8 @@ const val GARDEN_DATABASE_VERSION: Int = 14
         MeasurementEntity::class,
         HarvestEntity::class,
         HarvestLossEntity::class,
+        ProblemEntity::class,
+        ProblemObservationEntity::class,
     ],
     version = GARDEN_DATABASE_VERSION,
     exportSchema = true,
@@ -101,6 +108,7 @@ const val GARDEN_DATABASE_VERSION: Int = 14
         AutoMigration(from = 11, to = 12),
         AutoMigration(from = 12, to = 13),
         AutoMigration(from = 13, to = 14),
+        AutoMigration(from = 14, to = 15),
     ],
 )
 @TypeConverters(VocabularyConverters::class)
@@ -136,4 +144,8 @@ abstract class GardenDatabase : RoomDatabase() {
     abstract fun harvestDao(): HarvestDao
 
     abstract fun harvestLossDao(): HarvestLossDao
+
+    abstract fun problemDao(): ProblemDao
+
+    abstract fun problemObservationDao(): ProblemObservationDao
 }
