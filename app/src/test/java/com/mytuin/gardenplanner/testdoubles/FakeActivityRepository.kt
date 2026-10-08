@@ -66,6 +66,22 @@ class FakeActivityRepository : ActivityRepository {
                 }
         }
 
+    override fun observeActivitiesForPlan(
+        planId: String,
+        includeArchived: Boolean,
+    ): Flow<List<Activity>> =
+        store.map { rows ->
+            rows
+                .filter { it.planId == planId }
+                .let { filtered ->
+                    if (includeArchived) {
+                        filtered
+                    } else {
+                        filtered.filter { it.status != RecordStatus.ARCHIVED }
+                    }
+                }
+        }
+
     override fun observeActivity(id: String): Flow<Activity?> = store.map { rows -> rows.firstOrNull { it.id == id } }
 
     override suspend fun getActivity(id: String): Activity? = store.value.firstOrNull { it.id == id }

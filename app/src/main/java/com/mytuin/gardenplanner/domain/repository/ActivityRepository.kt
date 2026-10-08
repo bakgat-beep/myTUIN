@@ -6,14 +6,8 @@ import kotlinx.coroutines.flow.Flow
 /**
  * Repository interface for Activity.
  *
- * Three read scopes plus point lookup. Garden is the primary scope;
- * the plant-instance and growing-space queries are what Phase 4 will
- * need for the "history of this plant" and "history of this bed"
- * views.
- *
- * No update method. Event records are immutable once created (S7).
- * Corrections use the append-only mechanism described in
- * V1_DATABASE_SCHEMA §62, which is a later step.
+ * Four read scopes plus point lookup. `observeActivitiesForPlan`
+ * (PL9) returns the Activities that completed a given Plan.
  */
 interface ActivityRepository {
     fun observeActivitiesInGarden(
@@ -28,6 +22,11 @@ interface ActivityRepository {
 
     fun observeActivitiesInGrowingSpace(
         growingSpaceId: String,
+        includeArchived: Boolean = false,
+    ): Flow<List<Activity>>
+
+    fun observeActivitiesForPlan(
+        planId: String,
         includeArchived: Boolean = false,
     ): Flow<List<Activity>>
 

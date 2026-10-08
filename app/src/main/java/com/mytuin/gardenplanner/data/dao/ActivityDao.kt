@@ -77,6 +77,25 @@ interface ActivityDao {
 
     @Query(
         """
+    SELECT * FROM activity
+    WHERE plan_id = :planId
+      AND (status IS NULL OR status != 'archived')
+    ORDER BY occurred_at DESC
+    """,
+    )
+    fun observeActiveForPlan(planId: String): Flow<List<ActivityEntity>>
+
+    @Query(
+        """
+    SELECT * FROM activity
+    WHERE plan_id = :planId
+    ORDER BY occurred_at DESC
+    """,
+    )
+    fun observeAllForPlan(planId: String): Flow<List<ActivityEntity>>
+
+    @Query(
+        """
         UPDATE activity
         SET status = :status
         WHERE id = :id

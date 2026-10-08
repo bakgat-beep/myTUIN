@@ -14,20 +14,18 @@ import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
  * Plan (§27). It is not evidence that a plan was completed unless
  * the user explicitly recorded the activity.
  *
- * occurredAt is required: S3 (resolved by S2 (i)). Activity is only
- * ever an actual event. Planned work is a Plan, not a planned
- * Activity.
+ * PL9: `planId` optionally links an Activity to the Plan it
+ * completes. Per ACTIVITY_VOCABULARIES §29, the completed activity
+ * references the originating plan. Nullable because most Activities
+ * are not completions of a plan.
  *
- * detail carries the type-specific subtype (S4 (a)). The mapper
- * pairs detail with activityType; a mismatch is a data-integrity
- * error.
+ * Invariant 4 protects the semantic: a Plan being `completed` is
+ * not itself evidence that an Activity occurred. The presence of
+ * this link says the user recorded the completion.
  *
- * status is RecordStatus? (S2 (i)), matching every other entity in
- * the codebase. Nullable because §25 lists it as optional.
- *
- * No updatedAt: S7. Event records are immutable once created.
- * Corrections use §62's append-only mechanism, not in-place
- * mutation.
+ * occurredAt is required (S3). detail carries the type-specific
+ * subtype (S4 (a)). status is RecordStatus? (S2 (i)). No updatedAt
+ * (S7).
  */
 data class Activity(
     val id: String,
@@ -39,6 +37,7 @@ data class Activity(
     val growingSpaceId: String?,
     val spatialObjectId: String?,
     val plantInstanceId: String?,
+    val planId: String?,
     val quantity: Double?,
     val unit: ActivityQuantityUnit?,
     val detail: ActivityDetail,

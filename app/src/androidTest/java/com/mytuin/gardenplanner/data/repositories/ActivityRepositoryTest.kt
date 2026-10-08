@@ -9,6 +9,7 @@ import com.mytuin.gardenplanner.data.database.GardenDatabaseFactory
 import com.mytuin.gardenplanner.data.entities.AreaEntity
 import com.mytuin.gardenplanner.data.entities.GardenEntity
 import com.mytuin.gardenplanner.data.entities.GrowingSpaceEntity
+import com.mytuin.gardenplanner.data.entities.PlanEntity
 import com.mytuin.gardenplanner.data.entities.PlantEntity
 import com.mytuin.gardenplanner.data.entities.PlantInstanceEntity
 import com.mytuin.gardenplanner.data.entities.SpatialObjectEntity
@@ -25,6 +26,7 @@ import com.mytuin.gardenplanner.domain.vocabulary.GeometryType
 import com.mytuin.gardenplanner.domain.vocabulary.GrowingSpaceType
 import com.mytuin.gardenplanner.domain.vocabulary.Hemisphere
 import com.mytuin.gardenplanner.domain.vocabulary.InfrastructureType
+import com.mytuin.gardenplanner.domain.vocabulary.PlanningStatus
 import com.mytuin.gardenplanner.domain.vocabulary.PlantLifecycle
 import com.mytuin.gardenplanner.domain.vocabulary.PruningMethod
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
@@ -69,6 +71,7 @@ class ActivityRepositoryTest {
                     growingSpaceDao = db.growingSpaceDao(),
                     spatialObjectDao = db.spatialObjectDao(),
                     plantInstanceDao = db.plantInstanceDao(),
+                    planDao = db.planDao(),
                 )
 
             db.gardenDao().insert(sampleGarden())
@@ -349,6 +352,42 @@ class ActivityRepositoryTest {
         }
 
     @Test
+    fun plan_id_round_trips_when_supplied() =
+        runBlocking {
+            val plan = samplePlan()
+            db.planDao().insert(plan)
+
+            val activity = sampleActivity().copy(planId = plan.id)
+            repository.insert(activity)
+
+            assertEquals(plan.id, repository.getActivity(activity.id)?.planId)
+        }
+
+    @Test
+    fun observeActivitiesForPlan_scopes_to_plan() =
+        runBlocking {
+            val plan = samplePlan()
+            db.planDao().insert(plan)
+
+            repository.insert(
+                sampleActivity().copy(
+                    id = "activity_00000000-0000-0000-0000-00000000d1",
+                    planId = plan.id,
+                ),
+            )
+            repository.insert(
+                sampleActivity().copy(
+                    id = "activity_00000000-0000-0000-0000-00000000d2",
+                    planId = null,
+                ),
+            )
+
+            val linked = repository.observeActivitiesForPlan(plan.id).first()
+            assertEquals(1, linked.size)
+            assertEquals("activity_00000000-0000-0000-0000-00000000d1", linked.first().id)
+        }
+
+    @Test
     fun archive_sets_status_and_excludes_from_default_observation() =
         runBlocking {
             val activity = sampleActivity()
@@ -493,11 +532,23 @@ class ActivityRepositoryTest {
             growingSpaceId = spaceId,
             spatialObjectId = objectId,
             plantInstanceId = instanceId,
+            planId = null,
             quantity = 5.0,
             unit = ActivityQuantityUnit.LITRE,
             detail = ActivityDetail.Watering(WateringMethod.WATERING_CAN),
             dataOrigin = DataOrigin.USER_OBSERVED,
             status = RecordStatus.ACTIVE,
             notes = "Watered the tomatoes",
+        )
+
+    private fun samplePlan(): PlanEntity =
+        PlanEntity(
+            id = "plan_00000000-0000-0000-0000-000000000001",
+            garden_id = gardenId,
+            plan_type = ActivityType.WATERING,
+            status = PlanningStatus.PLANNED,
+            created_at = 1_700_000_000_000L,
+            updated_at = 1_700_000_000_000L,
+            record_status = RecordStatus.ACTIVE,
         )
 }

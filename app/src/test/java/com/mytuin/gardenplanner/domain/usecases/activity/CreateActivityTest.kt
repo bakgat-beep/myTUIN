@@ -183,6 +183,20 @@ class CreateActivityTest {
             )
         }
 
+    @Test
+    fun invoke_defaults_plan_id_to_null() =
+        runBlocking {
+            createActivity(minimalInput())
+            assertNull(repository.snapshot().first().planId)
+        }
+
+    @Test
+    fun invoke_preserves_plan_id_when_supplied() =
+        runBlocking {
+            createActivity(minimalInput().copy(planId = "plan_test_0001"))
+            assertEquals("plan_test_0001", repository.snapshot().first().planId)
+        }
+
     private fun minimalInput(): NewActivity =
         NewActivity(
             gardenId = "garden_test_0001",

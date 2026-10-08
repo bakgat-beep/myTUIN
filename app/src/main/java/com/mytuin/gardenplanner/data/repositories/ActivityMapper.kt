@@ -14,15 +14,8 @@ import com.mytuin.gardenplanner.domain.vocabulary.WateringMethod
  * Mapping between ActivityEntity and Activity domain model.
  *
  * Enforces two invariants on the persistence boundary:
- *
  *   1. quantity and unit are paired: both null or both non-null.
- *   2. exactly the subtype column matching activity_type may be set;
- *      all others must be null.
- *
- * Both invariants are also enforced at the type level in the domain:
- * quantity/unit are separate fields but always constructed together;
- * the subtype lives inside the ActivityDetail sealed hierarchy.
- * The mapper is the bridge.
+ *   2. exactly the subtype column matching activity_type may be set.
  */
 
 private const val COLUMN_PLANTING = "planting_method"
@@ -42,6 +35,7 @@ fun ActivityEntity.toDomain(): Activity =
         growingSpaceId = growing_space_id,
         spatialObjectId = spatial_object_id,
         plantInstanceId = plant_instance_id,
+        planId = plan_id,
         quantity = quantity,
         unit = unit,
         detail =
@@ -76,6 +70,7 @@ fun Activity.toEntity(): ActivityEntity {
         growing_space_id = growingSpaceId,
         spatial_object_id = spatialObjectId,
         plant_instance_id = plantInstanceId,
+        plan_id = planId,
         quantity = quantity,
         unit = unit,
         planting_method = columns.planting,
@@ -97,10 +92,6 @@ private data class SubtypeColumns(
     val soilWork: SoilWorkMethod? = null,
 )
 
-/**
- * Returns the column name that may carry a value for [type], or null
- * if [type] has no subtype. All other subtype columns must be null.
- */
 private fun expectedSubtypeColumnFor(type: ActivityType): String? =
     when (type) {
         ActivityType.PLANTING -> COLUMN_PLANTING

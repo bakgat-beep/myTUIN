@@ -50,12 +50,25 @@ complexity:
     # The count is dictated by the query, not by design choice.
     excludes: ['**/data/dao/**', '**/data/repositories/**', '**/ui/garden/debug/**']
 
-  # A Room @TypeConverters class holds two functions per vocabulary
-  # (toId, fromId). The count grows linearly with the number of
-  # vocabularies, not with class complexity; every function is a
-  # one-line mechanical conversion. Splitting it into one class per
-  # vocabulary would fragment a cohesive unit purely to satisfy a
-  # numeric threshold. Excluded from this rule for that reason.
+  # Three files under data/database/ grow their function count
+  # linearly with the number of schema entities, not with
+  # complexity. In each case the shape is dictated by a framework:
+  #
+  #   VocabularyConverters.kt  — a Room @TypeConverters class holds
+  #                              two functions per vocabulary.
+  #   GardenDatabase.kt        — a Room @Database class holds one
+  #                              abstract DAO accessor per entity.
+  #   DatabaseModule.kt        — a Hilt @Module object holds one
+  #                              @Provides for each of those DAOs.
+  #
+  # Splitting any of them would break the framework contract (the
+  # first two) or fragment a cohesive concern for no gain (the
+  # third). Excluded per-file rather than per-directory so the rule
+  # remains active for anything else that lands there.
+  #
+  # Test source sets are also excluded: test classes count functions
+  # by coverage, not by class complexity. Same reasoning as
+  # LongMethod and LargeClass.
   TooManyFunctions:
     thresholdInFiles: 20
     thresholdInClasses: 20
@@ -67,14 +80,10 @@ complexity:
     ignoreOverridden: true
     ignoreAnnotatedFunctions:
       - Preview
-    # Test classes count functions by test coverage, not by class
-    # complexity. A repository test with 20+ methods is normal and the
-    # rule is not aimed at it. The same reasoning as LongMethod, which
-    # also excludes the test source sets. VocabularyConverters is
-    # excluded because a @TypeConverters class holds two functions per
-    # vocabulary.
     excludes:
       - '**/data/database/VocabularyConverters.kt'
+      - '**/data/database/GardenDatabase.kt'
+      - '**/data/database/DatabaseModule.kt'
       - '**/src/test/**'
       - '**/src/androidTest/**'
 

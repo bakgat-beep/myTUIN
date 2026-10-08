@@ -20,6 +20,9 @@ import com.mytuin.gardenplanner.domain.vocabulary.InfrastructureType
 import com.mytuin.gardenplanner.domain.vocabulary.MeasurementProperty
 import com.mytuin.gardenplanner.domain.vocabulary.MeasurementUnit
 import com.mytuin.gardenplanner.domain.vocabulary.ObservationType
+import com.mytuin.gardenplanner.domain.vocabulary.PlanTargetType
+import com.mytuin.gardenplanner.domain.vocabulary.PlanningPriority
+import com.mytuin.gardenplanner.domain.vocabulary.PlanningStatus
 import com.mytuin.gardenplanner.domain.vocabulary.PlantAliasType
 import com.mytuin.gardenplanner.domain.vocabulary.PlantInstanceLifecycle
 import com.mytuin.gardenplanner.domain.vocabulary.PlantLifecycle
@@ -290,4 +293,28 @@ class VocabularyConverters {
     fun idToProblemEvidenceDirection(id: String): ProblemEvidenceDirection =
         ProblemEvidenceDirection.fromId(id)
             ?: error("Unknown ProblemEvidenceDirection id stored in database: '$id'")
+
+    @TypeConverter
+    fun planningStatusToId(value: PlanningStatus): String = value.id
+
+    @TypeConverter
+    fun idToPlanningStatus(id: String): PlanningStatus =
+        PlanningStatus.fromId(id)
+            ?: error("Unknown PlanningStatus id stored in database: '$id'")
+
+    @TypeConverter
+    fun planningPriorityToId(value: PlanningPriority): String = value.id
+
+    @TypeConverter
+    fun idToPlanningPriority(id: String): PlanningPriority =
+        PlanningPriority.fromId(id)
+            ?: error("Unknown PlanningPriority id stored in database: '$id'")
+
+    @TypeConverter
+    fun planTargetTypeToId(value: PlanTargetType): String = value.id
+
+    @TypeConverter
+    fun idToPlanTargetType(id: String): PlanTargetType =
+        PlanTargetType.fromId(id)
+            ?: error("Unknown PlanTargetType id stored in database: '$id'")
 }

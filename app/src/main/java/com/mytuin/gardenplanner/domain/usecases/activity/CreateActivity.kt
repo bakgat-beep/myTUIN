@@ -14,14 +14,13 @@ import javax.inject.Inject
  * Assigns id, status (ACTIVE) and createdAt. occurredAt is caller-
  * supplied; the event time is part of the record's meaning.
  *
- * All five foreign keys (garden, area, growing space, spatial object,
- * plant instance) are enforced by Room. Missing parents surface as
- * ValidationError with the offending field named.
+ * PL9: `planId` is passed through if supplied, linking this Activity
+ * to the Plan it completes. Nullable; most Activities are not
+ * completions.
  *
- * No transaction: a single-row insert does not need one. The
- * combined "create planting activity plus set plant instance
- * lifecycle" transaction arrives when the planting use case lands
- * in Phase 4.
+ * All six foreign keys (garden, area, growing space, spatial object,
+ * plant instance, plan) are enforced by Room. Missing parents
+ * surface as ValidationError with the offending field named.
  */
 class CreateActivity
     @Inject
@@ -43,6 +42,7 @@ class CreateActivity
                     growingSpaceId = input.growingSpaceId,
                     spatialObjectId = input.spatialObjectId,
                     plantInstanceId = input.plantInstanceId,
+                    planId = input.planId,
                     quantity = input.quantity,
                     unit = input.unit,
                     detail = input.detail,

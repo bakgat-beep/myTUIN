@@ -41,6 +41,8 @@ class GardenDatabaseMigrationTest {
             "harvest_loss",
             "problem",
             "problem_observation",
+            "plan",
+            "plan_target",
         )
 
     @Test
@@ -1068,6 +1070,120 @@ class GardenDatabaseMigrationTest {
                 assertTrue("v14 harvest_loss row must survive migration", cursor.moveToFirst())
                 assertEquals(3.0, cursor.getDouble(0), 0.0)
                 assertEquals("count", cursor.getString(1))
+            }
+
+        migrated.close()
+    }
+
+    @Test
+    fun fixture_migrates_from_v15_to_current_adding_plan_tables_and_activity_plan_id_with_data_intact() {
+        helper.createDatabase("v15-fixture", 15).apply {
+            execSQL(
+                """
+                INSERT INTO garden (
+                    id, name, created_at, updated_at, status, hemisphere
+                ) VALUES (
+                    'garden_test_v15',
+                    'V15 Garden',
+                    1700000000000,
+                    1700000000000,
+                    'draft',
+                    'unknown'
+                )
+                """.trimIndent(),
+            )
+            execSQL(
+                """
+                INSERT INTO activity (
+                    id, garden_id, activity_type, occurred_at, created_at,
+                    status
+                ) VALUES (
+                    'activity_test_v15',
+                    'garden_test_v15',
+                    'watering',
+                    1700000000000,
+                    1700000000000,
+                    'active'
+                )
+                """.trimIndent(),
+            )
+            close()
+        }
+
+        val migrated = helper.runMigrationsAndValidate("v15-fixture", GARDEN_DATABASE_VERSION, true)
+
+        migrated
+            .query(
+                "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'plan'",
+            ).use { cursor ->
+                assertTrue(
+                    "plan table must exist after v15 migration",
+                    cursor.moveToFirst(),
+                )
+            }
+
+        migrated
+            .query(
+                "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'plan_target'",
+            ).use { cursor ->
+                assertTrue(
+                    "plan_target table must exist after v15 migration",
+                    cursor.moveToFirst(),
+                )
+            }
+
+        // plan must have 15 columns.
+        var planColumnCount = 0
+        migrated
+            .query("PRAGMA table_info(plan)")
+            .use { cursor ->
+                while (cursor.moveToNext()) {
+                    planColumnCount += 1
+                }
+            }
+        assertEquals("plan must have 15 columns", 15, planColumnCount)
+
+        // plan_target must have 5 columns.
+        var targetColumnCount = 0
+        migrated
+            .query("PRAGMA table_info(plan_target)")
+            .use { cursor ->
+                while (cursor.moveToNext()) {
+                    targetColumnCount += 1
+                }
+            }
+        assertEquals("plan_target must have 5 columns", 5, targetColumnCount)
+
+        // activity must now have 20 columns, including plan_id.
+        var activityColumnCount = 0
+        var planIdPresent = false
+        migrated
+            .query("PRAGMA table_info(activity)")
+            .use { cursor ->
+                while (cursor.moveToNext()) {
+                    activityColumnCount += 1
+                    if (cursor.getString(1) == "plan_id") {
+                        planIdPresent = true
+                    }
+                }
+            }
+        assertEquals("activity must have 20 columns", 20, activityColumnCount)
+        assertTrue("activity.plan_id must exist", planIdPresent)
+
+        migrated
+            .query("SELECT name FROM garden WHERE id = 'garden_test_v15'")
+            .use { cursor ->
+                assertTrue("v15 garden row must survive migration", cursor.moveToFirst())
+                assertEquals("V15 Garden", cursor.getString(0))
+            }
+
+        migrated
+            .query(
+                "SELECT activity_type, plan_id FROM activity WHERE id = 'activity_test_v15'",
+            ).use { cursor ->
+                assertTrue("v15 activity row must survive migration", cursor.moveToFirst())
+                assertEquals("watering", cursor.getString(0))
+                assertTrue("pre-existing activity must have null plan_id", cursor.isNull(1))
             }
 
         migrated.close()

@@ -7,8 +7,8 @@ package com.mytuin.gardenplanner.domain.identifiers
  * type. IDs must never encode display names, translations or row
  * order (V1_DATABASE_SCHEMA §5; CORE_ARCHITECTURE §51).
  *
- * The problem_observation join table has no id: its identity is the
- * (problem_id, observation_id) pair.
+ * The plan_target join table has no id: its identity is the
+ * (plan_id, target_type, target_id) triple.
  *
  * Domain layer: no Android, Compose, Room or Hilt dependencies.
  */
@@ -38,4 +38,6 @@ interface IdGenerator {
     fun newHarvestLossId(): String
 
     fun newProblemId(): String
+
+    fun newPlanId(): String
 }

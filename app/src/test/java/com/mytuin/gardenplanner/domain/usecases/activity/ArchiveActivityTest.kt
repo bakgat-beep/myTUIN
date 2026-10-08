@@ -32,6 +32,7 @@ class ArchiveActivityTest {
                     growingSpaceId = null,
                     spatialObjectId = null,
                     plantInstanceId = null,
+                    planId = null,
                     quantity = null,
                     unit = null,
                     detail = ActivityDetail.Plain,

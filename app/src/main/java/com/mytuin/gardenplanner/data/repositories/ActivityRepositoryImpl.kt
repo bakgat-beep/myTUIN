@@ -5,6 +5,7 @@ import com.mytuin.gardenplanner.data.dao.ActivityDao
 import com.mytuin.gardenplanner.data.dao.AreaDao
 import com.mytuin.gardenplanner.data.dao.GardenDao
 import com.mytuin.gardenplanner.data.dao.GrowingSpaceDao
+import com.mytuin.gardenplanner.data.dao.PlanDao
 import com.mytuin.gardenplanner.data.dao.PlantInstanceDao
 import com.mytuin.gardenplanner.data.dao.SpatialObjectDao
 import com.mytuin.gardenplanner.domain.error.NotFoundError
@@ -17,7 +18,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 /**
- * Activity has five foreign keys, so a bare
+ * Activity has six foreign keys, so a bare
  * SQLiteConstraintException cannot say which one failed. This
  * implementation pre-checks each optional parent, following the
  * established pattern.
@@ -31,6 +32,7 @@ class ActivityRepositoryImpl
         private val growingSpaceDao: GrowingSpaceDao,
         private val spatialObjectDao: SpatialObjectDao,
         private val plantInstanceDao: PlantInstanceDao,
+        private val planDao: PlanDao,
     ) : ActivityRepository {
         override fun observeActivitiesInGarden(
             gardenId: String,
@@ -71,6 +73,19 @@ class ActivityRepositoryImpl
             return source.map { rows -> rows.map { it.toDomain() } }
         }
 
+        override fun observeActivitiesForPlan(
+            planId: String,
+            includeArchived: Boolean,
+        ): Flow<List<Activity>> {
+            val source =
+                if (includeArchived) {
+                    activityDao.observeAllForPlan(planId)
+                } else {
+                    activityDao.observeActiveForPlan(planId)
+                }
+            return source.map { rows -> rows.map { it.toDomain() } }
+        }
+
         override fun observeActivity(id: String): Flow<Activity?> = activityDao.observeById(id).map { it?.toDomain() }
 
         override suspend fun getActivity(id: String): Activity? = activityDao.getById(id)?.toDomain()
@@ -81,6 +96,7 @@ class ActivityRepositoryImpl
             activity.growingSpaceId?.let { requireGrowingSpaceExists(it) }
             activity.spatialObjectId?.let { requireSpatialObjectExists(it) }
             activity.plantInstanceId?.let { requirePlantInstanceExists(it) }
+            activity.planId?.let { requirePlanExists(it) }
             try {
                 activityDao.insert(activity.toEntity())
             } catch (e: SQLiteConstraintException) {
@@ -96,8 +112,6 @@ class ActivityRepositoryImpl
             id: String,
             archivedAt: Long,
         ) {
-            // archivedAt is accepted for interface symmetry but is not
-            // persisted: activity has no updated_at column (S7).
             val rows = activityDao.updateStatus(id, RecordStatus.ARCHIVED)
             if (rows == 0) {
                 throw NotFoundError("Activity", id)
@@ -151,6 +165,14 @@ class ActivityRepositoryImpl
                 ?: throw ValidationError(
                     field = "plant_instance_id",
                     reason = "PlantInstance does not exist: $plantInstanceId",
+                )
+        }
+
+        private suspend fun requirePlanExists(planId: String) {
+            planDao.getById(planId)
+                ?: throw ValidationError(
+                    field = "plan_id",
+                    reason = "Plan does not exist: $planId",
                 )
         }
     }

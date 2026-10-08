@@ -6,13 +6,6 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
-/**
- * Tests for VocabularyValidator.
- *
- * PHASE_0_PROJECT_FOUNDATION §31 (Vocabulary); DEC-040.
- * A140=c: this is the JUnit 5 exemplar. Other src/test tests remain
- * on JUnit 4, running under the vintage engine.
- */
 class VocabularyValidatorTest {
     private val allVocabularies: List<Collection<VocabularyValue>> =
         listOf(
@@ -50,6 +43,9 @@ class VocabularyValidatorTest {
             ProblemSeverity.entries,
             ProblemStatus.entries,
             ProblemEvidenceDirection.entries,
+            PlanningStatus.entries,
+            PlanningPriority.entries,
+            PlanTargetType.entries,
         )
 
     @Test

@@ -21,20 +21,16 @@ import com.mytuin.gardenplanner.domain.vocabulary.WateringMethod
  *
  * Stable identifier format: "activity_<uuid>".
  *
- * Five foreign keys, all RESTRICT. All but garden are nullable.
+ * Six foreign keys, all RESTRICT. All but garden are nullable.
  *
- * occurred_at is required (S3): Activity is only ever an actual
- * event. Planned work is a Plan.
+ * PL9: `plan_id` optionally links an Activity to the Plan it
+ * completes. Nullable; most Activities are not completions.
  *
- * No updated_at (S7): event records are immutable once created.
+ * occurred_at is required (S3). No updated_at (S7).
  *
  * Subtype columns (S4 (a)): five nullable enum columns, of which at
  * most one may be set, and only the one matching activity_type.
- * The mapper enforces this. `intervention_type` is deliberately
- * absent (deferred until Problem lands).
- *
- * quantity and unit are paired: both null or both non-null. The
- * mapper enforces this.
+ * `intervention_type` is deliberately absent.
  */
 @Entity(
     tableName = "activity",
@@ -74,6 +70,13 @@ import com.mytuin.gardenplanner.domain.vocabulary.WateringMethod
             onDelete = ForeignKey.RESTRICT,
             onUpdate = ForeignKey.RESTRICT,
         ),
+        ForeignKey(
+            entity = PlanEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["plan_id"],
+            onDelete = ForeignKey.RESTRICT,
+            onUpdate = ForeignKey.RESTRICT,
+        ),
     ],
     indices = [
         Index(value = ["garden_id"]),
@@ -82,6 +85,7 @@ import com.mytuin.gardenplanner.domain.vocabulary.WateringMethod
         Index(value = ["growing_space_id"]),
         Index(value = ["spatial_object_id"]),
         Index(value = ["plant_instance_id"]),
+        Index(value = ["plan_id"]),
     ],
 )
 data class ActivityEntity(
@@ -95,6 +99,7 @@ data class ActivityEntity(
     val growing_space_id: String? = null,
     val spatial_object_id: String? = null,
     val plant_instance_id: String? = null,
+    val plan_id: String? = null,
     val quantity: Double? = null,
     val unit: ActivityQuantityUnit? = null,
     val planting_method: PlantingMethod? = null,
