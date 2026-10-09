@@ -46,6 +46,9 @@ class VocabularyValidatorTest {
             PlanningStatus.entries,
             PlanningPriority.entries,
             PlanTargetType.entries,
+            SourceType.entries,
+            SourceStatus.entries,
+            GeographicScope.entries,
         )
 
     @Test

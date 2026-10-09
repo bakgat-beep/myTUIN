@@ -10,6 +10,7 @@ import com.mytuin.gardenplanner.domain.vocabulary.FeedingMethod
 import com.mytuin.gardenplanner.domain.vocabulary.GardenPlantPreferenceKind
 import com.mytuin.gardenplanner.domain.vocabulary.GardenPreferenceKey
 import com.mytuin.gardenplanner.domain.vocabulary.GardenPriority
+import com.mytuin.gardenplanner.domain.vocabulary.GeographicScope
 import com.mytuin.gardenplanner.domain.vocabulary.GeometryType
 import com.mytuin.gardenplanner.domain.vocabulary.GrowingSpaceType
 import com.mytuin.gardenplanner.domain.vocabulary.HarvestLossCause
@@ -35,6 +36,8 @@ import com.mytuin.gardenplanner.domain.vocabulary.ProblemStatus
 import com.mytuin.gardenplanner.domain.vocabulary.PruningMethod
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
 import com.mytuin.gardenplanner.domain.vocabulary.SoilWorkMethod
+import com.mytuin.gardenplanner.domain.vocabulary.SourceStatus
+import com.mytuin.gardenplanner.domain.vocabulary.SourceType
 import com.mytuin.gardenplanner.domain.vocabulary.WateringMethod
 
 class VocabularyConverters {
@@ -317,4 +320,28 @@ class VocabularyConverters {
     fun idToPlanTargetType(id: String): PlanTargetType =
         PlanTargetType.fromId(id)
             ?: error("Unknown PlanTargetType id stored in database: '$id'")
+
+    @TypeConverter
+    fun sourceTypeToId(value: SourceType): String = value.id
+
+    @TypeConverter
+    fun idToSourceType(id: String): SourceType =
+        SourceType.fromId(id)
+            ?: error("Unknown SourceType id stored in database: '$id'")
+
+    @TypeConverter
+    fun sourceStatusToId(value: SourceStatus): String = value.id
+
+    @TypeConverter
+    fun idToSourceStatus(id: String): SourceStatus =
+        SourceStatus.fromId(id)
+            ?: error("Unknown SourceStatus id stored in database: '$id'")
+
+    @TypeConverter
+    fun geographicScopeToId(value: GeographicScope): String = value.id
+
+    @TypeConverter
+    fun idToGeographicScope(id: String): GeographicScope =
+        GeographicScope.fromId(id)
+            ?: error("Unknown GeographicScope id stored in database: '$id'")
 }

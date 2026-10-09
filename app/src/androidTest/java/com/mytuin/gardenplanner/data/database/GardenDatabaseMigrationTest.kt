@@ -43,6 +43,7 @@ class GardenDatabaseMigrationTest {
             "problem_observation",
             "plan",
             "plan_target",
+            "source",
         )
 
     @Test
@@ -1184,6 +1185,80 @@ class GardenDatabaseMigrationTest {
                 assertTrue("v15 activity row must survive migration", cursor.moveToFirst())
                 assertEquals("watering", cursor.getString(0))
                 assertTrue("pre-existing activity must have null plan_id", cursor.isNull(1))
+            }
+
+        migrated.close()
+    }
+
+    @Test
+    fun fixture_migrates_from_v16_to_current_adding_source_table_with_data_intact() {
+        helper.createDatabase("v16-fixture", 16).apply {
+            execSQL(
+                """
+                INSERT INTO garden (
+                    id, name, created_at, updated_at, status, hemisphere
+                ) VALUES (
+                    'garden_test_v16',
+                    'V16 Garden',
+                    1700000000000,
+                    1700000000000,
+                    'draft',
+                    'unknown'
+                )
+                """.trimIndent(),
+            )
+            execSQL(
+                """
+                INSERT INTO plan (
+                    id, garden_id, plan_type, status, created_at, updated_at
+                ) VALUES (
+                    'plan_test_v16',
+                    'garden_test_v16',
+                    'watering',
+                    'planned',
+                    1700000000000,
+                    1700000000000
+                )
+                """.trimIndent(),
+            )
+            close()
+        }
+
+        val migrated = helper.runMigrationsAndValidate("v16-fixture", GARDEN_DATABASE_VERSION, true)
+
+        migrated
+            .query(
+                "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'source'",
+            ).use { cursor ->
+                assertTrue(
+                    "source table must exist after v16 migration",
+                    cursor.moveToFirst(),
+                )
+            }
+
+        // source must have 15 columns.
+        var columnCount = 0
+        migrated
+            .query("PRAGMA table_info(source)")
+            .use { cursor ->
+                while (cursor.moveToNext()) {
+                    columnCount += 1
+                }
+            }
+        assertEquals("source must have 15 columns", 15, columnCount)
+
+        migrated
+            .query("SELECT name FROM garden WHERE id = 'garden_test_v16'")
+            .use { cursor ->
+                assertTrue("v16 garden row must survive migration", cursor.moveToFirst())
+                assertEquals("V16 Garden", cursor.getString(0))
+            }
+
+        migrated
+            .query("SELECT plan_type FROM plan WHERE id = 'plan_test_v16'")
+            .use { cursor ->
+                assertTrue("v16 plan row must survive migration", cursor.moveToFirst())
+                assertEquals("watering", cursor.getString(0))
             }
 
         migrated.close()

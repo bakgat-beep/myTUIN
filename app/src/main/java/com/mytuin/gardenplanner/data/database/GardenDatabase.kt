@@ -23,6 +23,7 @@ import com.mytuin.gardenplanner.data.dao.PlantInstanceDao
 import com.mytuin.gardenplanner.data.dao.PlantInstanceHistoryDao
 import com.mytuin.gardenplanner.data.dao.ProblemDao
 import com.mytuin.gardenplanner.data.dao.ProblemObservationDao
+import com.mytuin.gardenplanner.data.dao.SourceDao
 import com.mytuin.gardenplanner.data.dao.SpatialObjectDao
 import com.mytuin.gardenplanner.data.entities.ActivityEntity
 import com.mytuin.gardenplanner.data.entities.AreaEntity
@@ -44,9 +45,10 @@ import com.mytuin.gardenplanner.data.entities.PlantInstanceEntity
 import com.mytuin.gardenplanner.data.entities.PlantInstanceHistoryEntity
 import com.mytuin.gardenplanner.data.entities.ProblemEntity
 import com.mytuin.gardenplanner.data.entities.ProblemObservationEntity
+import com.mytuin.gardenplanner.data.entities.SourceEntity
 import com.mytuin.gardenplanner.data.entities.SpatialObjectEntity
 
-const val GARDEN_DATABASE_VERSION: Int = 16
+const val GARDEN_DATABASE_VERSION: Int = 17
 
 /**
  * The V1 Room database.
@@ -69,6 +71,7 @@ const val GARDEN_DATABASE_VERSION: Int = 16
  *   v14 — adds HarvestLoss (Phase 1 step 3d').
  *   v15 — adds Problem and ProblemObservation (Phase 1 step 3e).
  *   v16 — adds Plan and PlanTarget; adds plan_id to activity (Phase 1 step 3f).
+ *   v17 — adds Source (Phase 1 step 3g).
  *
  * All migrations are @AutoMigration. Room derives the SQL from the
  * schema diff at compile time.
@@ -98,6 +101,7 @@ const val GARDEN_DATABASE_VERSION: Int = 16
         ProblemObservationEntity::class,
         PlanEntity::class,
         PlanTargetEntity::class,
+        SourceEntity::class,
     ],
     version = GARDEN_DATABASE_VERSION,
     exportSchema = true,
@@ -117,6 +121,7 @@ const val GARDEN_DATABASE_VERSION: Int = 16
         AutoMigration(from = 13, to = 14),
         AutoMigration(from = 14, to = 15),
         AutoMigration(from = 15, to = 16),
+        AutoMigration(from = 16, to = 17),
     ],
 )
 @TypeConverters(VocabularyConverters::class)
@@ -160,4 +165,6 @@ abstract class GardenDatabase : RoomDatabase() {
     abstract fun planDao(): PlanDao
 
     abstract fun planTargetDao(): PlanTargetDao
+
+    abstract fun sourceDao(): SourceDao
 }

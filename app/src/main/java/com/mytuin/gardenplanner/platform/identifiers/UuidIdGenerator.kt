@@ -34,4 +34,6 @@ class UuidIdGenerator
         override fun newProblemId(): String = "problem_${UUID.randomUUID()}"
 
         override fun newPlanId(): String = "plan_${UUID.randomUUID()}"
+
+        override fun newSourceId(): String = "source_${UUID.randomUUID()}"
     }

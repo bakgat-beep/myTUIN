@@ -20,6 +20,7 @@ import com.mytuin.gardenplanner.data.dao.PlantInstanceDao
 import com.mytuin.gardenplanner.data.dao.PlantInstanceHistoryDao
 import com.mytuin.gardenplanner.data.dao.ProblemDao
 import com.mytuin.gardenplanner.data.dao.ProblemObservationDao
+import com.mytuin.gardenplanner.data.dao.SourceDao
 import com.mytuin.gardenplanner.data.dao.SpatialObjectDao
 import dagger.Module
 import dagger.Provides
@@ -96,4 +97,7 @@ object DatabaseModule {
 
     @Provides
     fun providePlanTargetDao(db: GardenDatabase): PlanTargetDao = db.planTargetDao()
+
+    @Provides
+    fun provideSourceDao(db: GardenDatabase): SourceDao = db.sourceDao()
 }
