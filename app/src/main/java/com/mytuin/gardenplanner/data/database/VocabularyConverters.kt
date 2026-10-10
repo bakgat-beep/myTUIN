@@ -6,18 +6,25 @@ import com.mytuin.gardenplanner.domain.vocabulary.ActivityType
 import com.mytuin.gardenplanner.domain.vocabulary.AreaType
 import com.mytuin.gardenplanner.domain.vocabulary.Confidence
 import com.mytuin.gardenplanner.domain.vocabulary.DataOrigin
+import com.mytuin.gardenplanner.domain.vocabulary.DroughtTolerance
 import com.mytuin.gardenplanner.domain.vocabulary.FeedingMethod
+import com.mytuin.gardenplanner.domain.vocabulary.FrostSensitivity
 import com.mytuin.gardenplanner.domain.vocabulary.GardenPlantPreferenceKind
 import com.mytuin.gardenplanner.domain.vocabulary.GardenPreferenceKey
 import com.mytuin.gardenplanner.domain.vocabulary.GardenPriority
 import com.mytuin.gardenplanner.domain.vocabulary.GeographicScope
 import com.mytuin.gardenplanner.domain.vocabulary.GeometryType
 import com.mytuin.gardenplanner.domain.vocabulary.GrowingSpaceType
+import com.mytuin.gardenplanner.domain.vocabulary.GrowthRate
 import com.mytuin.gardenplanner.domain.vocabulary.HarvestLossCause
 import com.mytuin.gardenplanner.domain.vocabulary.HarvestLossSeverity
 import com.mytuin.gardenplanner.domain.vocabulary.HarvestSizeCategory
+import com.mytuin.gardenplanner.domain.vocabulary.HeatTolerance
 import com.mytuin.gardenplanner.domain.vocabulary.Hemisphere
 import com.mytuin.gardenplanner.domain.vocabulary.InfrastructureType
+import com.mytuin.gardenplanner.domain.vocabulary.LightRequirement
+import com.mytuin.gardenplanner.domain.vocabulary.MaintenanceDemand
+import com.mytuin.gardenplanner.domain.vocabulary.MaturityClassification
 import com.mytuin.gardenplanner.domain.vocabulary.MeasurementProperty
 import com.mytuin.gardenplanner.domain.vocabulary.MeasurementUnit
 import com.mytuin.gardenplanner.domain.vocabulary.ObservationType
@@ -29,16 +36,22 @@ import com.mytuin.gardenplanner.domain.vocabulary.PlantInstanceLifecycle
 import com.mytuin.gardenplanner.domain.vocabulary.PlantLifecycle
 import com.mytuin.gardenplanner.domain.vocabulary.PlantingMethod
 import com.mytuin.gardenplanner.domain.vocabulary.PlantingStockType
+import com.mytuin.gardenplanner.domain.vocabulary.PollinationRequirement
 import com.mytuin.gardenplanner.domain.vocabulary.ProblemCategory
 import com.mytuin.gardenplanner.domain.vocabulary.ProblemEvidenceDirection
 import com.mytuin.gardenplanner.domain.vocabulary.ProblemSeverity
 import com.mytuin.gardenplanner.domain.vocabulary.ProblemStatus
 import com.mytuin.gardenplanner.domain.vocabulary.PruningMethod
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
+import com.mytuin.gardenplanner.domain.vocabulary.SalinityTolerance
+import com.mytuin.gardenplanner.domain.vocabulary.ShadeTolerance
 import com.mytuin.gardenplanner.domain.vocabulary.SoilWorkMethod
 import com.mytuin.gardenplanner.domain.vocabulary.SourceStatus
 import com.mytuin.gardenplanner.domain.vocabulary.SourceType
+import com.mytuin.gardenplanner.domain.vocabulary.SupportRequirement
+import com.mytuin.gardenplanner.domain.vocabulary.TemperatureClass
 import com.mytuin.gardenplanner.domain.vocabulary.WateringMethod
+import com.mytuin.gardenplanner.domain.vocabulary.WaterloggingTolerance
 
 class VocabularyConverters {
     @TypeConverter
@@ -344,4 +357,108 @@ class VocabularyConverters {
     fun idToGeographicScope(id: String): GeographicScope =
         GeographicScope.fromId(id)
             ?: error("Unknown GeographicScope id stored in database: '$id'")
+
+    @TypeConverter
+    fun growthRateToId(value: GrowthRate): String = value.id
+
+    @TypeConverter
+    fun idToGrowthRate(id: String): GrowthRate =
+        GrowthRate.fromId(id)
+            ?: error("Unknown GrowthRate id stored in database: '$id'")
+
+    @TypeConverter
+    fun supportRequirementToId(value: SupportRequirement): String = value.id
+
+    @TypeConverter
+    fun idToSupportRequirement(id: String): SupportRequirement =
+        SupportRequirement.fromId(id)
+            ?: error("Unknown SupportRequirement id stored in database: '$id'")
+
+    @TypeConverter
+    fun lightRequirementToId(value: LightRequirement): String = value.id
+
+    @TypeConverter
+    fun idToLightRequirement(id: String): LightRequirement =
+        LightRequirement.fromId(id)
+            ?: error("Unknown LightRequirement id stored in database: '$id'")
+
+    @TypeConverter
+    fun shadeToleranceToId(value: ShadeTolerance): String = value.id
+
+    @TypeConverter
+    fun idToShadeTolerance(id: String): ShadeTolerance =
+        ShadeTolerance.fromId(id)
+            ?: error("Unknown ShadeTolerance id stored in database: '$id'")
+
+    @TypeConverter
+    fun temperatureClassToId(value: TemperatureClass): String = value.id
+
+    @TypeConverter
+    fun idToTemperatureClass(id: String): TemperatureClass =
+        TemperatureClass.fromId(id)
+            ?: error("Unknown TemperatureClass id stored in database: '$id'")
+
+    @TypeConverter
+    fun frostSensitivityToId(value: FrostSensitivity): String = value.id
+
+    @TypeConverter
+    fun idToFrostSensitivity(id: String): FrostSensitivity =
+        FrostSensitivity.fromId(id)
+            ?: error("Unknown FrostSensitivity id stored in database: '$id'")
+
+    @TypeConverter
+    fun heatToleranceToId(value: HeatTolerance): String = value.id
+
+    @TypeConverter
+    fun idToHeatTolerance(id: String): HeatTolerance =
+        HeatTolerance.fromId(id)
+            ?: error("Unknown HeatTolerance id stored in database: '$id'")
+
+    @TypeConverter
+    fun droughtToleranceToId(value: DroughtTolerance): String = value.id
+
+    @TypeConverter
+    fun idToDroughtTolerance(id: String): DroughtTolerance =
+        DroughtTolerance.fromId(id)
+            ?: error("Unknown DroughtTolerance id stored in database: '$id'")
+
+    @TypeConverter
+    fun salinityToleranceToId(value: SalinityTolerance): String = value.id
+
+    @TypeConverter
+    fun idToSalinityTolerance(id: String): SalinityTolerance =
+        SalinityTolerance.fromId(id)
+            ?: error("Unknown SalinityTolerance id stored in database: '$id'")
+
+    @TypeConverter
+    fun waterloggingToleranceToId(value: WaterloggingTolerance): String = value.id
+
+    @TypeConverter
+    fun idToWaterloggingTolerance(id: String): WaterloggingTolerance =
+        WaterloggingTolerance.fromId(id)
+            ?: error("Unknown WaterloggingTolerance id stored in database: '$id'")
+
+    @TypeConverter
+    fun maturityClassificationToId(value: MaturityClassification): String = value.id
+
+    @TypeConverter
+    fun idToMaturityClassification(id: String): MaturityClassification =
+        MaturityClassification.fromId(id)
+            ?: error("Unknown MaturityClassification id stored in database: '$id'")
+
+    @TypeConverter
+    fun maintenanceDemandToId(value: MaintenanceDemand): String = value.id
+
+    @TypeConverter
+    fun idToMaintenanceDemand(id: String): MaintenanceDemand =
+        MaintenanceDemand.fromId(id)
+            ?: error("Unknown MaintenanceDemand id stored in database: '$id'")
+
+    @TypeConverter
+    fun pollinationRequirementToId(value: PollinationRequirement): String = value.id
+
+    @TypeConverter
+    fun idToPollinationRequirement(id: String): PollinationRequirement =
+        PollinationRequirement.fromId(id)
+            ?: error("Unknown PollinationRequirement id stored in database: '$id'")
 }

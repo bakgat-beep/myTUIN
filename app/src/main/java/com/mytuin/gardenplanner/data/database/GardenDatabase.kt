@@ -48,7 +48,7 @@ import com.mytuin.gardenplanner.data.entities.ProblemObservationEntity
 import com.mytuin.gardenplanner.data.entities.SourceEntity
 import com.mytuin.gardenplanner.data.entities.SpatialObjectEntity
 
-const val GARDEN_DATABASE_VERSION: Int = 17
+const val GARDEN_DATABASE_VERSION: Int = 18
 
 /**
  * The V1 Room database.
@@ -58,6 +58,7 @@ const val GARDEN_DATABASE_VERSION: Int = 17
  *   v2 — adds GrowingSpace (step 5c).
  *   v3 — adds GrowingSpaceHistory (step 5d, DEC-041).
  *   v4 — adds GardenPreference and GardenPlantPreference (step 6i,
+ *        DEC-042).
  *        DEC-042).
  *   v5 — adds Area (Phase 1 step 1a).
  *   v6 — adds SpatialObject (Phase 1 step 1b).
@@ -72,6 +73,7 @@ const val GARDEN_DATABASE_VERSION: Int = 17
  *   v15 — adds Problem and ProblemObservation (Phase 1 step 3e).
  *   v16 — adds Plan and PlanTarget; adds plan_id to activity (Phase 1 step 3f).
  *   v17 — adds Source (Phase 1 step 3g).
+ *   v18 — adds 14 scalar classification columns to plant (Phase 1 step 4a).
  *
  * All migrations are @AutoMigration. Room derives the SQL from the
  * schema diff at compile time.
@@ -122,6 +124,7 @@ const val GARDEN_DATABASE_VERSION: Int = 17
         AutoMigration(from = 14, to = 15),
         AutoMigration(from = 15, to = 16),
         AutoMigration(from = 16, to = 17),
+        AutoMigration(from = 17, to = 18),
     ],
 )
 @TypeConverters(VocabularyConverters::class)

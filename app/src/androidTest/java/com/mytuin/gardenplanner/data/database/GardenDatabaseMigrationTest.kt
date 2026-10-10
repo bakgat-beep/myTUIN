@@ -1263,4 +1263,94 @@ class GardenDatabaseMigrationTest {
 
         migrated.close()
     }
+
+    @Test
+    fun fixture_migrates_from_v17_to_current_adding_plant_scalar_columns_with_data_intact() {
+        helper.createDatabase("v17-fixture", 17).apply {
+            execSQL(
+                """
+                INSERT INTO plant (
+                    id, canonical_name, created_at, updated_at, status
+                ) VALUES (
+                    'plant_test_v17',
+                    'V17 Plant',
+                    1700000000000,
+                    1700000000000,
+                    'active'
+                )
+                """.trimIndent(),
+            )
+            close()
+        }
+
+        val migrated = helper.runMigrationsAndValidate("v17-fixture", GARDEN_DATABASE_VERSION, true)
+
+        // plant must now have 25 columns (11 original + 14 new).
+        var columnCount = 0
+        val columnNames = mutableListOf<String>()
+        migrated
+            .query("PRAGMA table_info(plant)")
+            .use { cursor ->
+                while (cursor.moveToNext()) {
+                    columnCount += 1
+                    columnNames += cursor.getString(1)
+                }
+            }
+        assertEquals("plant must have 25 columns after v17 migration", 25, columnCount)
+
+        // Every new column must be present and nullable.
+        listOf(
+            "growth_rate",
+            "support_requirement",
+            "light_requirement",
+            "shade_tolerance",
+            "temperature_class",
+            "frost_sensitivity",
+            "heat_tolerance",
+            "drought_tolerance",
+            "salinity_tolerance",
+            "waterlogging_tolerance",
+            "maturity",
+            "maintenance_demand",
+            "pollination_requirement",
+            "container_suitable",
+        ).forEach { column ->
+            assertTrue("plant.$column must exist after v17 migration", column in columnNames)
+        }
+
+        // The two new indices must exist.
+        val indexNames = mutableListOf<String>()
+        migrated
+            .query("SELECT name FROM sqlite_master WHERE type = 'index' AND tbl_name = 'plant'")
+            .use { cursor ->
+                while (cursor.moveToNext()) {
+                    indexNames += cursor.getString(0)
+                }
+            }
+        assertTrue(
+            "an index on light_requirement must exist",
+            indexNames.any { it.contains("light_requirement") },
+        )
+        assertTrue(
+            "an index on frost_sensitivity must exist",
+            indexNames.any { it.contains("frost_sensitivity") },
+        )
+
+        // The pre-existing row must survive with the new columns NULL.
+        migrated
+            .query(
+                """
+                SELECT canonical_name, growth_rate, container_suitable
+                FROM plant
+                WHERE id = 'plant_test_v17'
+                """.trimIndent(),
+            ).use { cursor ->
+                assertTrue("v17 plant row must survive migration", cursor.moveToFirst())
+                assertEquals("V17 Plant", cursor.getString(0))
+                assertTrue("growth_rate must default to NULL", cursor.isNull(1))
+                assertTrue("container_suitable must default to NULL", cursor.isNull(2))
+            }
+
+        migrated.close()
+    }
 }

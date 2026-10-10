@@ -49,6 +49,19 @@ class VocabularyValidatorTest {
             SourceType.entries,
             SourceStatus.entries,
             GeographicScope.entries,
+            GrowthRate.entries,
+            SupportRequirement.entries,
+            LightRequirement.entries,
+            ShadeTolerance.entries,
+            TemperatureClass.entries,
+            FrostSensitivity.entries,
+            HeatTolerance.entries,
+            DroughtTolerance.entries,
+            SalinityTolerance.entries,
+            WaterloggingTolerance.entries,
+            MaturityClassification.entries,
+            MaintenanceDemand.entries,
+            PollinationRequirement.entries,
         )
 
     @Test
