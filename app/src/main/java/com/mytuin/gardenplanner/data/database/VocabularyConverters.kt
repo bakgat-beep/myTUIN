@@ -8,13 +8,16 @@ import com.mytuin.gardenplanner.domain.vocabulary.Confidence
 import com.mytuin.gardenplanner.domain.vocabulary.DataOrigin
 import com.mytuin.gardenplanner.domain.vocabulary.DroughtTolerance
 import com.mytuin.gardenplanner.domain.vocabulary.FeedingMethod
+import com.mytuin.gardenplanner.domain.vocabulary.FoodProductionCategory
 import com.mytuin.gardenplanner.domain.vocabulary.FrostSensitivity
 import com.mytuin.gardenplanner.domain.vocabulary.GardenPlantPreferenceKind
 import com.mytuin.gardenplanner.domain.vocabulary.GardenPreferenceKey
 import com.mytuin.gardenplanner.domain.vocabulary.GardenPriority
 import com.mytuin.gardenplanner.domain.vocabulary.GeographicScope
 import com.mytuin.gardenplanner.domain.vocabulary.GeometryType
+import com.mytuin.gardenplanner.domain.vocabulary.GrowingMethod
 import com.mytuin.gardenplanner.domain.vocabulary.GrowingSpaceType
+import com.mytuin.gardenplanner.domain.vocabulary.GrowthHabit
 import com.mytuin.gardenplanner.domain.vocabulary.GrowthRate
 import com.mytuin.gardenplanner.domain.vocabulary.HarvestLossCause
 import com.mytuin.gardenplanner.domain.vocabulary.HarvestLossSeverity
@@ -34,6 +37,8 @@ import com.mytuin.gardenplanner.domain.vocabulary.PlanningStatus
 import com.mytuin.gardenplanner.domain.vocabulary.PlantAliasType
 import com.mytuin.gardenplanner.domain.vocabulary.PlantInstanceLifecycle
 import com.mytuin.gardenplanner.domain.vocabulary.PlantLifecycle
+import com.mytuin.gardenplanner.domain.vocabulary.PlantMultiValueKind
+import com.mytuin.gardenplanner.domain.vocabulary.PlantRole
 import com.mytuin.gardenplanner.domain.vocabulary.PlantingMethod
 import com.mytuin.gardenplanner.domain.vocabulary.PlantingStockType
 import com.mytuin.gardenplanner.domain.vocabulary.PollinationRequirement
@@ -41,8 +46,10 @@ import com.mytuin.gardenplanner.domain.vocabulary.ProblemCategory
 import com.mytuin.gardenplanner.domain.vocabulary.ProblemEvidenceDirection
 import com.mytuin.gardenplanner.domain.vocabulary.ProblemSeverity
 import com.mytuin.gardenplanner.domain.vocabulary.ProblemStatus
+import com.mytuin.gardenplanner.domain.vocabulary.PropagationMethod
 import com.mytuin.gardenplanner.domain.vocabulary.PruningMethod
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
+import com.mytuin.gardenplanner.domain.vocabulary.RootBehaviour
 import com.mytuin.gardenplanner.domain.vocabulary.SalinityTolerance
 import com.mytuin.gardenplanner.domain.vocabulary.ShadeTolerance
 import com.mytuin.gardenplanner.domain.vocabulary.SoilWorkMethod
@@ -461,4 +468,60 @@ class VocabularyConverters {
     fun idToPollinationRequirement(id: String): PollinationRequirement =
         PollinationRequirement.fromId(id)
             ?: error("Unknown PollinationRequirement id stored in database: '$id'")
+
+    @TypeConverter
+    fun plantRoleToId(value: PlantRole): String = value.id
+
+    @TypeConverter
+    fun idToPlantRole(id: String): PlantRole =
+        PlantRole.fromId(id)
+            ?: error("Unknown PlantRole id stored in database: '$id'")
+
+    @TypeConverter
+    fun foodProductionCategoryToId(value: FoodProductionCategory): String = value.id
+
+    @TypeConverter
+    fun idToFoodProductionCategory(id: String): FoodProductionCategory =
+        FoodProductionCategory.fromId(id)
+            ?: error("Unknown FoodProductionCategory id stored in database: '$id'")
+
+    @TypeConverter
+    fun growthHabitToId(value: GrowthHabit): String = value.id
+
+    @TypeConverter
+    fun idToGrowthHabit(id: String): GrowthHabit =
+        GrowthHabit.fromId(id)
+            ?: error("Unknown GrowthHabit id stored in database: '$id'")
+
+    @TypeConverter
+    fun rootBehaviourToId(value: RootBehaviour): String = value.id
+
+    @TypeConverter
+    fun idToRootBehaviour(id: String): RootBehaviour =
+        RootBehaviour.fromId(id)
+            ?: error("Unknown RootBehaviour id stored in database: '$id'")
+
+    @TypeConverter
+    fun growingMethodToId(value: GrowingMethod): String = value.id
+
+    @TypeConverter
+    fun idToGrowingMethod(id: String): GrowingMethod =
+        GrowingMethod.fromId(id)
+            ?: error("Unknown GrowingMethod id stored in database: '$id'")
+
+    @TypeConverter
+    fun propagationMethodToId(value: PropagationMethod): String = value.id
+
+    @TypeConverter
+    fun idToPropagationMethod(id: String): PropagationMethod =
+        PropagationMethod.fromId(id)
+            ?: error("Unknown PropagationMethod id stored in database: '$id'")
+
+    @TypeConverter
+    fun plantMultiValueKindToId(value: PlantMultiValueKind): String = value.id
+
+    @TypeConverter
+    fun idToPlantMultiValueKind(id: String): PlantMultiValueKind =
+        PlantMultiValueKind.fromId(id)
+            ?: error("Unknown PlantMultiValueKind id stored in database: '$id'")
 }

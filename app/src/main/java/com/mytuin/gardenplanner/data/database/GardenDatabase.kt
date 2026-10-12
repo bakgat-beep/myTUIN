@@ -21,6 +21,7 @@ import com.mytuin.gardenplanner.data.dao.PlantAliasDao
 import com.mytuin.gardenplanner.data.dao.PlantDao
 import com.mytuin.gardenplanner.data.dao.PlantInstanceDao
 import com.mytuin.gardenplanner.data.dao.PlantInstanceHistoryDao
+import com.mytuin.gardenplanner.data.dao.PlantMultiValueDao
 import com.mytuin.gardenplanner.data.dao.ProblemDao
 import com.mytuin.gardenplanner.data.dao.ProblemObservationDao
 import com.mytuin.gardenplanner.data.dao.SourceDao
@@ -43,12 +44,13 @@ import com.mytuin.gardenplanner.data.entities.PlantAliasEntity
 import com.mytuin.gardenplanner.data.entities.PlantEntity
 import com.mytuin.gardenplanner.data.entities.PlantInstanceEntity
 import com.mytuin.gardenplanner.data.entities.PlantInstanceHistoryEntity
+import com.mytuin.gardenplanner.data.entities.PlantMultiValueEntity
 import com.mytuin.gardenplanner.data.entities.ProblemEntity
 import com.mytuin.gardenplanner.data.entities.ProblemObservationEntity
 import com.mytuin.gardenplanner.data.entities.SourceEntity
 import com.mytuin.gardenplanner.data.entities.SpatialObjectEntity
 
-const val GARDEN_DATABASE_VERSION: Int = 18
+const val GARDEN_DATABASE_VERSION: Int = 19
 
 /**
  * The V1 Room database.
@@ -74,6 +76,7 @@ const val GARDEN_DATABASE_VERSION: Int = 18
  *   v16 — adds Plan and PlanTarget; adds plan_id to activity (Phase 1 step 3f).
  *   v17 — adds Source (Phase 1 step 3g).
  *   v18 — adds 14 scalar classification columns to plant (Phase 1 step 4a).
+ *   v19 — adds plant_multi_value join table (Phase 1 step 4b).
  *
  * All migrations are @AutoMigration. Room derives the SQL from the
  * schema diff at compile time.
@@ -90,6 +93,7 @@ const val GARDEN_DATABASE_VERSION: Int = 18
         GrowingSpaceEntity::class,
         GrowingSpaceHistoryEntity::class,
         PlantEntity::class,
+        PlantMultiValueEntity::class,
         PlantInstanceEntity::class,
         PlantInstanceHistoryEntity::class,
         PlantAliasEntity::class,
@@ -125,6 +129,7 @@ const val GARDEN_DATABASE_VERSION: Int = 18
         AutoMigration(from = 15, to = 16),
         AutoMigration(from = 16, to = 17),
         AutoMigration(from = 17, to = 18),
+        AutoMigration(from = 18, to = 19),
     ],
 )
 @TypeConverters(VocabularyConverters::class)
@@ -142,6 +147,8 @@ abstract class GardenDatabase : RoomDatabase() {
     abstract fun growingSpaceHistoryDao(): GrowingSpaceHistoryDao
 
     abstract fun plantDao(): PlantDao
+
+    abstract fun plantMultiValueDao(): PlantMultiValueDao
 
     abstract fun plantInstanceDao(): PlantInstanceDao
 

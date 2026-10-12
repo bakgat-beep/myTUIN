@@ -62,6 +62,13 @@ class VocabularyValidatorTest {
             MaturityClassification.entries,
             MaintenanceDemand.entries,
             PollinationRequirement.entries,
+            PlantRole.entries,
+            FoodProductionCategory.entries,
+            GrowthHabit.entries,
+            RootBehaviour.entries,
+            GrowingMethod.entries,
+            PropagationMethod.entries,
+            PlantMultiValueKind.entries,
         )
 
     @Test

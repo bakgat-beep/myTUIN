@@ -18,6 +18,7 @@ import com.mytuin.gardenplanner.data.dao.PlantAliasDao
 import com.mytuin.gardenplanner.data.dao.PlantDao
 import com.mytuin.gardenplanner.data.dao.PlantInstanceDao
 import com.mytuin.gardenplanner.data.dao.PlantInstanceHistoryDao
+import com.mytuin.gardenplanner.data.dao.PlantMultiValueDao
 import com.mytuin.gardenplanner.data.dao.ProblemDao
 import com.mytuin.gardenplanner.data.dao.ProblemObservationDao
 import com.mytuin.gardenplanner.data.dao.SourceDao
@@ -58,6 +59,9 @@ object DatabaseModule {
 
     @Provides
     fun providePlantDao(db: GardenDatabase): PlantDao = db.plantDao()
+
+    @Provides
+    fun providePlantMultiValueDao(db: GardenDatabase): PlantMultiValueDao = db.plantMultiValueDao()
 
     @Provides
     fun providePlantInstanceDao(db: GardenDatabase): PlantInstanceDao = db.plantInstanceDao()

@@ -44,6 +44,7 @@ class GardenDatabaseMigrationTest {
             "plan",
             "plan_target",
             "source",
+            "plant_multi_value",
         )
 
     @Test
@@ -1349,6 +1350,58 @@ class GardenDatabaseMigrationTest {
                 assertEquals("V17 Plant", cursor.getString(0))
                 assertTrue("growth_rate must default to NULL", cursor.isNull(1))
                 assertTrue("container_suitable must default to NULL", cursor.isNull(2))
+            }
+
+        migrated.close()
+    }
+
+    @Test
+    fun fixture_migrates_from_v18_to_current_adding_plant_multi_value_table_with_data_intact() {
+        helper.createDatabase("v18-fixture", 18).apply {
+            execSQL(
+                """
+                INSERT INTO plant (
+                    id, canonical_name, created_at, updated_at, status
+                ) VALUES (
+                    'plant_test_v18',
+                    'V18 Plant',
+                    1700000000000,
+                    1700000000000,
+                    'active'
+                )
+                """.trimIndent(),
+            )
+            close()
+        }
+
+        val migrated = helper.runMigrationsAndValidate("v18-fixture", GARDEN_DATABASE_VERSION, true)
+
+        migrated
+            .query(
+                "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'plant_multi_value'",
+            ).use { cursor ->
+                assertTrue(
+                    "plant_multi_value table must exist after v18 migration",
+                    cursor.moveToFirst(),
+                )
+            }
+
+        // plant_multi_value must have 4 columns.
+        var columnCount = 0
+        migrated
+            .query("PRAGMA table_info(plant_multi_value)")
+            .use { cursor ->
+                while (cursor.moveToNext()) {
+                    columnCount += 1
+                }
+            }
+        assertEquals("plant_multi_value must have 4 columns", 4, columnCount)
+
+        migrated
+            .query("SELECT canonical_name FROM plant WHERE id = 'plant_test_v18'")
+            .use { cursor ->
+                assertTrue("v18 plant row must survive migration", cursor.moveToFirst())
+                assertEquals("V18 Plant", cursor.getString(0))
             }
 
         migrated.close()

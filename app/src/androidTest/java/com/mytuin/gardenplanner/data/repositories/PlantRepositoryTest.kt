@@ -9,15 +9,21 @@ import com.mytuin.gardenplanner.data.database.GardenDatabaseFactory
 import com.mytuin.gardenplanner.data.entities.CultivarEntity
 import com.mytuin.gardenplanner.data.entities.PlantAliasEntity
 import com.mytuin.gardenplanner.data.entities.PlantEntity
+import com.mytuin.gardenplanner.data.entities.PlantMultiValueEntity
+import com.mytuin.gardenplanner.domain.model.plant.PlantMultiValue
 import com.mytuin.gardenplanner.domain.repository.PlantRepository
 import com.mytuin.gardenplanner.domain.vocabulary.PlantAliasType
 import com.mytuin.gardenplanner.domain.vocabulary.PlantLifecycle
+import com.mytuin.gardenplanner.domain.vocabulary.PlantMultiValueKind
+import com.mytuin.gardenplanner.domain.vocabulary.PlantRole
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
+import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -50,6 +56,7 @@ class PlantRepositoryTest {
                 plantDao = db.plantDao(),
                 plantAliasDao = db.plantAliasDao(),
                 cultivarDao = db.cultivarDao(),
+                plantMultiValueDao = db.plantMultiValueDao(),
             )
     }
 
@@ -221,6 +228,93 @@ class PlantRepositoryTest {
             assertEquals(PlantAliasType.SYNONYM, aliases.first().aliasType)
             assertEquals("synonym", aliases.first().aliasType.id)
         }
+
+    @Test
+    fun observeAllMultiValuesForPlant_returns_all_kinds() =
+        runBlocking {
+            val plant = samplePlant()
+            db.plantDao().insert(plant)
+            seedMultiValue(plant.id, PlantMultiValueKind.PLANT_ROLE, "food_crop")
+            seedMultiValue(plant.id, PlantMultiValueKind.PLANT_ROLE, "pollinator_support")
+            seedMultiValue(plant.id, PlantMultiValueKind.GROWTH_HABIT, "climbing")
+            seedMultiValue(plant.id, PlantMultiValueKind.GROWING_METHOD, "raised_bed")
+
+            val values = repository.observeAllMultiValuesForPlant(plant.id).first()
+
+            assertEquals(4, values.size)
+            assertEquals(
+                2,
+                values.filterIsInstance<PlantMultiValue.Role>().size,
+            )
+            assertEquals(
+                1,
+                values.filterIsInstance<PlantMultiValue.Habit>().size,
+            )
+            assertEquals(
+                1,
+                values.filterIsInstance<PlantMultiValue.Growing>().size,
+            )
+        }
+
+    @Test
+    fun observeMultiValuesForPlant_filters_by_kind() =
+        runBlocking {
+            val plant = samplePlant()
+            db.plantDao().insert(plant)
+            seedMultiValue(plant.id, PlantMultiValueKind.PLANT_ROLE, "food_crop")
+            seedMultiValue(plant.id, PlantMultiValueKind.PLANT_ROLE, "herb")
+            seedMultiValue(plant.id, PlantMultiValueKind.GROWTH_HABIT, "climbing")
+
+            val roles =
+                repository
+                    .observeMultiValuesForPlant(plant.id, PlantMultiValueKind.PLANT_ROLE)
+                    .first()
+
+            assertEquals(2, roles.size)
+            assertTrue(roles.all { it is PlantMultiValue.Role })
+            assertEquals(
+                setOf(PlantRole.FOOD_CROP, PlantRole.HERB),
+                roles.filterIsInstance<PlantMultiValue.Role>().map { it.role }.toSet(),
+            )
+        }
+
+    @Test
+    fun multi_value_mapper_rejects_unknown_value_for_kind() =
+        runBlocking {
+            val plant = samplePlant()
+            db.plantDao().insert(plant)
+            // Store a PlantRole id under the GROWTH_HABIT kind: a
+            // data-integrity error that SQLite cannot catch but the
+            // mapper must.
+            db.plantMultiValueDao().upsert(
+                PlantMultiValueEntity(
+                    plant_id = plant.id,
+                    kind = PlantMultiValueKind.GROWTH_HABIT,
+                    value_id = "food_crop",
+                ),
+            )
+
+            try {
+                repository.observeAllMultiValuesForPlant(plant.id).first()
+                fail("Expected IllegalArgumentException; mapper accepted a mismatched value")
+            } catch (expected: IllegalStateException) {
+                // Expected: error(...) throws IllegalStateException.
+            }
+        }
+
+    private suspend fun seedMultiValue(
+        plantId: String,
+        kind: PlantMultiValueKind,
+        valueId: String,
+    ) {
+        db.plantMultiValueDao().upsert(
+            PlantMultiValueEntity(
+                plant_id = plantId,
+                kind = kind,
+                value_id = valueId,
+            ),
+        )
+    }
 
     private fun samplePlant(): PlantEntity =
         PlantEntity(
