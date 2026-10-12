@@ -2,10 +2,10 @@ package com.mytuin.gardenplanner.domain.usecases.activity
 
 import com.mytuin.gardenplanner.domain.model.garden.ActivityDetail
 import com.mytuin.gardenplanner.domain.model.garden.NewActivity
-import com.mytuin.gardenplanner.domain.vocabulary.ActivityQuantityUnit
 import com.mytuin.gardenplanner.domain.vocabulary.ActivityType
 import com.mytuin.gardenplanner.domain.vocabulary.DataOrigin
 import com.mytuin.gardenplanner.domain.vocabulary.PlantingMethod
+import com.mytuin.gardenplanner.domain.vocabulary.QuantityUnit
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
 import com.mytuin.gardenplanner.domain.vocabulary.WateringMethod
 import com.mytuin.gardenplanner.testdoubles.FakeActivityRepository
@@ -97,13 +97,13 @@ class CreateActivityTest {
             createActivity(
                 minimalInput().copy(
                     quantity = 20.0,
-                    unit = ActivityQuantityUnit.LITRE,
+                    unit = QuantityUnit.LITRE,
                 ),
             )
             val activity = repository.snapshot().first()
 
             assertEquals(20.0, activity.quantity!!, 0.0)
-            assertEquals(ActivityQuantityUnit.LITRE, activity.unit)
+            assertEquals(QuantityUnit.LITRE, activity.unit)
         }
 
     @Test

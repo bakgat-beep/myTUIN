@@ -1,7 +1,7 @@
 package com.mytuin.gardenplanner.domain.model.garden
 
-import com.mytuin.gardenplanner.domain.vocabulary.ActivityQuantityUnit
 import com.mytuin.gardenplanner.domain.vocabulary.HarvestSizeCategory
+import com.mytuin.gardenplanner.domain.vocabulary.QuantityUnit
 
 /**
  * Harvest — domain model.
@@ -29,7 +29,7 @@ data class Harvest(
     val gardenId: String,
     val date: KnownDate,
     val quantity: Double,
-    val unit: ActivityQuantityUnit,
+    val unit: QuantityUnit,
     val createdAt: Long,
     val sizeCategory: HarvestSizeCategory?,
     val plantInstanceId: String?,

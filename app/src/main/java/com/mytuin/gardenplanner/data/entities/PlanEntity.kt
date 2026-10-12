@@ -4,10 +4,10 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import com.mytuin.gardenplanner.domain.vocabulary.ActivityQuantityUnit
 import com.mytuin.gardenplanner.domain.vocabulary.ActivityType
 import com.mytuin.gardenplanner.domain.vocabulary.PlanningPriority
 import com.mytuin.gardenplanner.domain.vocabulary.PlanningStatus
+import com.mytuin.gardenplanner.domain.vocabulary.QuantityUnit
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
 
 /**
@@ -60,7 +60,7 @@ data class PlanEntity(
     val planned_end_epoch_day: Int? = null,
     val planned_end_time_of_day_millis: Int? = null,
     val quantity: Double? = null,
-    val unit: ActivityQuantityUnit? = null,
+    val unit: QuantityUnit? = null,
     val priority: PlanningPriority? = null,
     val notes: String? = null,
 )

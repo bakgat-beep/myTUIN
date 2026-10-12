@@ -4,12 +4,12 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import com.mytuin.gardenplanner.domain.vocabulary.ActivityQuantityUnit
 import com.mytuin.gardenplanner.domain.vocabulary.ActivityType
 import com.mytuin.gardenplanner.domain.vocabulary.DataOrigin
 import com.mytuin.gardenplanner.domain.vocabulary.FeedingMethod
 import com.mytuin.gardenplanner.domain.vocabulary.PlantingMethod
 import com.mytuin.gardenplanner.domain.vocabulary.PruningMethod
+import com.mytuin.gardenplanner.domain.vocabulary.QuantityUnit
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
 import com.mytuin.gardenplanner.domain.vocabulary.SoilWorkMethod
 import com.mytuin.gardenplanner.domain.vocabulary.WateringMethod
@@ -101,7 +101,7 @@ data class ActivityEntity(
     val plant_instance_id: String? = null,
     val plan_id: String? = null,
     val quantity: Double? = null,
-    val unit: ActivityQuantityUnit? = null,
+    val unit: QuantityUnit? = null,
     val planting_method: PlantingMethod? = null,
     val watering_method: WateringMethod? = null,
     val feeding_method: FeedingMethod? = null,

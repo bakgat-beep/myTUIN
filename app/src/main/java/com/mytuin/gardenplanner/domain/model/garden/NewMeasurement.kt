@@ -2,7 +2,7 @@ package com.mytuin.gardenplanner.domain.model.garden
 
 import com.mytuin.gardenplanner.domain.vocabulary.Confidence
 import com.mytuin.gardenplanner.domain.vocabulary.MeasurementProperty
-import com.mytuin.gardenplanner.domain.vocabulary.MeasurementUnit
+import com.mytuin.gardenplanner.domain.vocabulary.QuantityUnit
 
 /**
  * User-settable fields for a new Measurement.
@@ -13,7 +13,7 @@ data class NewMeasurement(
     val gardenId: String,
     val property: MeasurementProperty,
     val value: Double,
-    val unit: MeasurementUnit,
+    val unit: QuantityUnit,
     val measuredAt: KnownDate,
     val confidence: Confidence = Confidence.NOT_ASSESSED,
     val areaId: String? = null,

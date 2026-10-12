@@ -15,7 +15,6 @@ import com.mytuin.gardenplanner.domain.error.ValidationError
 import com.mytuin.gardenplanner.domain.model.garden.KnownDate
 import com.mytuin.gardenplanner.domain.model.garden.Plan
 import com.mytuin.gardenplanner.domain.repository.PlanRepository
-import com.mytuin.gardenplanner.domain.vocabulary.ActivityQuantityUnit
 import com.mytuin.gardenplanner.domain.vocabulary.ActivityType
 import com.mytuin.gardenplanner.domain.vocabulary.GrowingSpaceType
 import com.mytuin.gardenplanner.domain.vocabulary.Hemisphere
@@ -23,6 +22,7 @@ import com.mytuin.gardenplanner.domain.vocabulary.PlanTargetType
 import com.mytuin.gardenplanner.domain.vocabulary.PlanningPriority
 import com.mytuin.gardenplanner.domain.vocabulary.PlanningStatus
 import com.mytuin.gardenplanner.domain.vocabulary.PlantLifecycle
+import com.mytuin.gardenplanner.domain.vocabulary.QuantityUnit
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
 import java.time.LocalDate
 import kotlinx.coroutines.flow.first
@@ -408,7 +408,7 @@ class PlanRepositoryTest {
             plannedStart = KnownDate(LocalDate.of(2026, 3, 1)),
             plannedEnd = KnownDate(LocalDate.of(2026, 3, 15)),
             quantity = 20.0,
-            unit = ActivityQuantityUnit.LITRE,
+            unit = QuantityUnit.LITRE,
             priority = PlanningPriority.HIGH,
             notes = "Water the south edge",
         )

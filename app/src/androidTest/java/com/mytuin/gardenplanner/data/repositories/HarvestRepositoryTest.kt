@@ -15,12 +15,12 @@ import com.mytuin.gardenplanner.domain.error.ValidationError
 import com.mytuin.gardenplanner.domain.model.garden.Harvest
 import com.mytuin.gardenplanner.domain.model.garden.KnownDate
 import com.mytuin.gardenplanner.domain.repository.HarvestRepository
-import com.mytuin.gardenplanner.domain.vocabulary.ActivityQuantityUnit
 import com.mytuin.gardenplanner.domain.vocabulary.ActivityType
 import com.mytuin.gardenplanner.domain.vocabulary.GrowingSpaceType
 import com.mytuin.gardenplanner.domain.vocabulary.HarvestSizeCategory
 import com.mytuin.gardenplanner.domain.vocabulary.Hemisphere
 import com.mytuin.gardenplanner.domain.vocabulary.PlantLifecycle
+import com.mytuin.gardenplanner.domain.vocabulary.QuantityUnit
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
 import java.time.LocalDate
 import java.time.LocalTime
@@ -107,7 +107,7 @@ class HarvestRepositoryTest {
             assertEquals(instanceId, activity.plant_instance_id)
             assertEquals(spaceId, activity.growing_space_id)
             assertEquals(5.0, activity.quantity!!, 0.0)
-            assertEquals(ActivityQuantityUnit.COUNT, activity.unit)
+            assertEquals(QuantityUnit.COUNT, activity.unit)
         }
 
     @Test
@@ -220,7 +220,7 @@ class HarvestRepositoryTest {
     @Test
     fun unit_is_stored_as_canonical_id() =
         runBlocking {
-            repository.insert(sampleHarvest().copy(unit = ActivityQuantityUnit.KILOGRAM))
+            repository.insert(sampleHarvest().copy(unit = QuantityUnit.KILOGRAM))
 
             db.openHelper.readableDatabase
                 .query("SELECT unit FROM harvest")
@@ -405,7 +405,7 @@ class HarvestRepositoryTest {
             gardenId = gardenId,
             date = KnownDate(LocalDate.of(2026, 9, 15)),
             quantity = 5.0,
-            unit = ActivityQuantityUnit.COUNT,
+            unit = QuantityUnit.COUNT,
             createdAt = 1_700_000_000_000L,
             sizeCategory = HarvestSizeCategory.REGULAR,
             plantInstanceId = instanceId,

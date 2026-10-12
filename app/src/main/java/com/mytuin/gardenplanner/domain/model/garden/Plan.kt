@@ -1,9 +1,9 @@
 package com.mytuin.gardenplanner.domain.model.garden
 
-import com.mytuin.gardenplanner.domain.vocabulary.ActivityQuantityUnit
 import com.mytuin.gardenplanner.domain.vocabulary.ActivityType
 import com.mytuin.gardenplanner.domain.vocabulary.PlanningPriority
 import com.mytuin.gardenplanner.domain.vocabulary.PlanningStatus
+import com.mytuin.gardenplanner.domain.vocabulary.QuantityUnit
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
 
 /**
@@ -41,7 +41,7 @@ data class Plan(
     val plannedStart: KnownDate?,
     val plannedEnd: KnownDate?,
     val quantity: Double?,
-    val unit: ActivityQuantityUnit?,
+    val unit: QuantityUnit?,
     val priority: PlanningPriority?,
     val notes: String?,
 )

@@ -4,7 +4,7 @@ import com.mytuin.gardenplanner.domain.model.garden.KnownDate
 import com.mytuin.gardenplanner.domain.model.garden.NewMeasurement
 import com.mytuin.gardenplanner.domain.vocabulary.Confidence
 import com.mytuin.gardenplanner.domain.vocabulary.MeasurementProperty
-import com.mytuin.gardenplanner.domain.vocabulary.MeasurementUnit
+import com.mytuin.gardenplanner.domain.vocabulary.QuantityUnit
 import com.mytuin.gardenplanner.testdoubles.FakeClock
 import com.mytuin.gardenplanner.testdoubles.FakeIdGenerator
 import com.mytuin.gardenplanner.testdoubles.FakeMeasurementRepository
@@ -52,7 +52,7 @@ class CreateMeasurementTest {
             assertEquals("garden_test_0001", measurement.gardenId)
             assertEquals(MeasurementProperty.PH, measurement.property)
             assertEquals(6.7, measurement.value, 0.0)
-            assertEquals(MeasurementUnit.PH, measurement.unit)
+            assertEquals(QuantityUnit.PH, measurement.unit)
             assertEquals(Confidence.NOT_ASSESSED, measurement.confidence)
             assertEquals(1_700_000_000_000L, measurement.createdAt)
         }
@@ -150,14 +150,14 @@ class CreateMeasurementTest {
         }
 
     @Test
-    fun invoke_accepts_all_fourteen_units() =
+    fun invoke_accepts_all_quantity_units() =
         runBlocking {
-            MeasurementUnit.entries.forEach { unit ->
+            QuantityUnit.entries.forEach { unit ->
                 createMeasurement(minimalInput().copy(unit = unit))
             }
-            assertEquals(14, repository.snapshot().size)
+            assertEquals(QuantityUnit.entries.size, repository.snapshot().size)
             assertEquals(
-                MeasurementUnit.entries.toSet(),
+                QuantityUnit.entries.toSet(),
                 repository.snapshot().map { it.unit }.toSet(),
             )
         }
@@ -176,7 +176,7 @@ class CreateMeasurementTest {
             gardenId = "garden_test_0001",
             property = MeasurementProperty.PH,
             value = 6.7,
-            unit = MeasurementUnit.PH,
+            unit = QuantityUnit.PH,
             measuredAt = KnownDate(LocalDate.of(2026, 9, 15)),
         )
 }

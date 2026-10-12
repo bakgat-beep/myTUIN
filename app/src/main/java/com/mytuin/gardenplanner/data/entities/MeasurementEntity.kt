@@ -6,7 +6,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.mytuin.gardenplanner.domain.vocabulary.Confidence
 import com.mytuin.gardenplanner.domain.vocabulary.MeasurementProperty
-import com.mytuin.gardenplanner.domain.vocabulary.MeasurementUnit
+import com.mytuin.gardenplanner.domain.vocabulary.QuantityUnit
 
 /**
  * Measurement.
@@ -79,7 +79,7 @@ data class MeasurementEntity(
     val garden_id: String,
     val property: MeasurementProperty,
     val value: Double,
-    val unit: MeasurementUnit,
+    val unit: QuantityUnit,
     val measured_at_epoch_day: Int,
     val confidence: Confidence,
     val created_at: Long,

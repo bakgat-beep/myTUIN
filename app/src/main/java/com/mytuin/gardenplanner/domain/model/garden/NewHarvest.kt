@@ -1,7 +1,7 @@
 package com.mytuin.gardenplanner.domain.model.garden
 
-import com.mytuin.gardenplanner.domain.vocabulary.ActivityQuantityUnit
 import com.mytuin.gardenplanner.domain.vocabulary.HarvestSizeCategory
+import com.mytuin.gardenplanner.domain.vocabulary.QuantityUnit
 
 /**
  * User-settable fields for a new Harvest.
@@ -13,7 +13,7 @@ data class NewHarvest(
     val gardenId: String,
     val date: KnownDate,
     val quantity: Double,
-    val unit: ActivityQuantityUnit,
+    val unit: QuantityUnit,
     val sizeCategory: HarvestSizeCategory? = null,
     val plantInstanceId: String? = null,
     val growingSpaceId: String? = null,

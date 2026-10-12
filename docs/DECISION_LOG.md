@@ -2053,3 +2053,77 @@ Supersedes
 
 No earlier decision. This resolves a latent ambiguity between §30
 and ACTIVITY_VOCABULARIES §3.7.
+
+---
+
+DEC-046 — Unified QuantityUnit vocabulary for activity, measurement and plant numeric facts
+
+Date: October 2026
+Status: Accepted
+Area: Data
+
+Decision
+
+Two previously separate unit vocabularies — ActivityQuantityUnit
+(introduced with Activity in step 3a) and MeasurementUnit
+(introduced with Measurement in step 3c) — are unified into a
+single QuantityUnit vocabulary.
+
+The unified vocabulary contains every value from both prior
+vocabularies, plus three new values needed by Plant §41 numeric
+facts: centimetre, day, week. Twenty-eight values in total.
+
+The hour/hours and minute/minutes collisions (Activity used
+singular; Measurement used plural) are resolved in favour of the
+singular form. A manual database migration
+(Migrations.MIGRATION_19_20) rewrites any existing measurement.unit
+value of 'hours' or 'minutes' to 'hour' or 'minute' respectively.
+
+Rationale
+
+The two vocabularies were created in separate steps before their
+overlap was noticed. They share a substantial value set (litre,
+millilitre, gram, kilogram, metre, etc.) with no semantic
+difference. VOCABULARY_INDEX §13.1 explicitly discourages
+duplicate concepts across vocabularies.
+
+Step 4c (Plant §41 numeric facts) needs a unit vocabulary covering
+the union of both prior sets plus three new units. Creating a third
+vocabulary would have tripled the duplication. Unifying now is
+cheaper than unifying later, and cost-free in data terms: no
+production data exists.
+
+Consequences
+
+- ActivityQuantityUnit and MeasurementUnit enums are deleted.
+  Every Kotlin reference to them becomes a reference to
+  QuantityUnit.
+
+- No SQL schema change. The Activity.unit and Measurement.unit
+  columns are still TEXT; only the set of permitted id values
+  grows, and two existing ids are renamed.
+
+- MIGRATION_19_20 is the project's first non-auto migration. The
+  pattern (a data-only migration registered via Room's
+  addMigrations) is recorded here as the precedent for future
+  data rewrites.
+
+- The unit vocabulary is now stable for future plant facts
+  (step 4c-B), soil records, harvests and any other numeric fact
+  entity. New units are added by extending QuantityUnit.
+
+Rejected alternatives
+
+- Extend MeasurementUnit and use it for plant facts (option A of
+  step 4c). Rejected because Activity would remain on a separate
+  vocabulary, and the naming would become a misnomer.
+
+- Create a new PlantValueUnit just for plant facts (option B of
+  step 4c). Rejected because it duplicates values from two
+  existing vocabularies.
+
+Related documents
+
+docs/V1_DATABASE_SCHEMA.md
+docs/DECISION_LOG.md DEC-040
+docs/vocabularies/ACTIVITY_VOCABULARIES.md §20

@@ -18,8 +18,10 @@ import com.mytuin.gardenplanner.data.database.seed.SeedCallback
  *   - SeedCallback: applies SeedData on first creation
  *     (§11, §30 item 12).
  *
- * Room accepts multiple callbacks; both run on the appropriate
- * lifecycle event.
+ * Manual migrations are registered via addMigrations. AutoMigrations
+ * are declared on the @Database annotation. See Migrations.kt for
+ * the data-only migrations that Room's auto mechanism cannot
+ * express.
  *
  * fallbackToDestructiveMigration is never used.
  */
@@ -37,6 +39,7 @@ object GardenDatabaseFactory {
                 name,
             ).addCallback(foreignKeysCallback)
             .addCallback(SeedCallback)
+            .addMigrations(Migrations.MIGRATION_19_20)
             .build()
 
     val foreignKeysCallback: RoomDatabase.Callback =

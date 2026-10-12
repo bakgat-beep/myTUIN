@@ -1,8 +1,8 @@
 package com.mytuin.gardenplanner.domain.model.garden
 
-import com.mytuin.gardenplanner.domain.vocabulary.ActivityQuantityUnit
 import com.mytuin.gardenplanner.domain.vocabulary.HarvestLossCause
 import com.mytuin.gardenplanner.domain.vocabulary.HarvestLossSeverity
+import com.mytuin.gardenplanner.domain.vocabulary.QuantityUnit
 
 /**
  * User-settable fields for a new HarvestLoss.
@@ -14,7 +14,7 @@ data class NewHarvestLoss(
     val gardenId: String,
     val date: KnownDate,
     val quantity: Double,
-    val unit: ActivityQuantityUnit,
+    val unit: QuantityUnit,
     val activityId: String? = null,
     val cause: HarvestLossCause? = null,
     val severity: HarvestLossSeverity? = null,

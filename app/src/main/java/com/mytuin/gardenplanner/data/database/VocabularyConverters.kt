@@ -1,7 +1,6 @@
 package com.mytuin.gardenplanner.data.database
 
 import androidx.room.TypeConverter
-import com.mytuin.gardenplanner.domain.vocabulary.ActivityQuantityUnit
 import com.mytuin.gardenplanner.domain.vocabulary.ActivityType
 import com.mytuin.gardenplanner.domain.vocabulary.AreaType
 import com.mytuin.gardenplanner.domain.vocabulary.Confidence
@@ -29,7 +28,6 @@ import com.mytuin.gardenplanner.domain.vocabulary.LightRequirement
 import com.mytuin.gardenplanner.domain.vocabulary.MaintenanceDemand
 import com.mytuin.gardenplanner.domain.vocabulary.MaturityClassification
 import com.mytuin.gardenplanner.domain.vocabulary.MeasurementProperty
-import com.mytuin.gardenplanner.domain.vocabulary.MeasurementUnit
 import com.mytuin.gardenplanner.domain.vocabulary.ObservationType
 import com.mytuin.gardenplanner.domain.vocabulary.PlanTargetType
 import com.mytuin.gardenplanner.domain.vocabulary.PlanningPriority
@@ -48,6 +46,7 @@ import com.mytuin.gardenplanner.domain.vocabulary.ProblemSeverity
 import com.mytuin.gardenplanner.domain.vocabulary.ProblemStatus
 import com.mytuin.gardenplanner.domain.vocabulary.PropagationMethod
 import com.mytuin.gardenplanner.domain.vocabulary.PruningMethod
+import com.mytuin.gardenplanner.domain.vocabulary.QuantityUnit
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
 import com.mytuin.gardenplanner.domain.vocabulary.RootBehaviour
 import com.mytuin.gardenplanner.domain.vocabulary.SalinityTolerance
@@ -214,14 +213,6 @@ class VocabularyConverters {
             ?: error("Unknown SoilWorkMethod id stored in database: '$id'")
 
     @TypeConverter
-    fun activityQuantityUnitToId(value: ActivityQuantityUnit): String = value.id
-
-    @TypeConverter
-    fun idToActivityQuantityUnit(id: String): ActivityQuantityUnit =
-        ActivityQuantityUnit.fromId(id)
-            ?: error("Unknown ActivityQuantityUnit id stored in database: '$id'")
-
-    @TypeConverter
     fun dataOriginToId(value: DataOrigin): String = value.id
 
     @TypeConverter
@@ -252,14 +243,6 @@ class VocabularyConverters {
     fun idToMeasurementProperty(id: String): MeasurementProperty =
         MeasurementProperty.fromId(id)
             ?: error("Unknown MeasurementProperty id stored in database: '$id'")
-
-    @TypeConverter
-    fun measurementUnitToId(value: MeasurementUnit): String = value.id
-
-    @TypeConverter
-    fun idToMeasurementUnit(id: String): MeasurementUnit =
-        MeasurementUnit.fromId(id)
-            ?: error("Unknown MeasurementUnit id stored in database: '$id'")
 
     @TypeConverter
     fun harvestSizeCategoryToId(value: HarvestSizeCategory): String = value.id
@@ -524,4 +507,12 @@ class VocabularyConverters {
     fun idToPlantMultiValueKind(id: String): PlantMultiValueKind =
         PlantMultiValueKind.fromId(id)
             ?: error("Unknown PlantMultiValueKind id stored in database: '$id'")
+
+    @TypeConverter
+    fun quantityUnitToId(value: QuantityUnit): String = value.id
+
+    @TypeConverter
+    fun idToQuantityUnit(id: String): QuantityUnit =
+        QuantityUnit.fromId(id)
+            ?: error("Unknown QuantityUnit id stored in database: '$id'")
 }

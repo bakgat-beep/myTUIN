@@ -2,7 +2,7 @@ package com.mytuin.gardenplanner.domain.usecases.harvest
 
 import com.mytuin.gardenplanner.domain.model.garden.Harvest
 import com.mytuin.gardenplanner.domain.model.garden.KnownDate
-import com.mytuin.gardenplanner.domain.vocabulary.ActivityQuantityUnit
+import com.mytuin.gardenplanner.domain.vocabulary.QuantityUnit
 import com.mytuin.gardenplanner.testdoubles.FakeClock
 import com.mytuin.gardenplanner.testdoubles.FakeHarvestRepository
 import java.time.LocalDate
@@ -28,7 +28,7 @@ class ArchiveHarvestTest {
                     gardenId = "garden_test_0001",
                     date = KnownDate(LocalDate.of(2026, 9, 15)),
                     quantity = 5.0,
-                    unit = ActivityQuantityUnit.COUNT,
+                    unit = QuantityUnit.COUNT,
                     createdAt = 1_700_000_000_000L,
                     sizeCategory = null,
                     plantInstanceId = null,
@@ -62,7 +62,7 @@ class ArchiveHarvestTest {
 
             val harvest = repository.snapshot().single()
             assertEquals(harvestId, harvest.id)
-            assertEquals(ActivityQuantityUnit.COUNT, harvest.unit)
+            assertEquals(QuantityUnit.COUNT, harvest.unit)
             assertEquals(LocalDate.of(2026, 9, 15), harvest.date.date)
         }
 }

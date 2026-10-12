@@ -1,9 +1,9 @@
 package com.mytuin.gardenplanner.domain.model.garden
 
-import com.mytuin.gardenplanner.domain.vocabulary.ActivityQuantityUnit
 import com.mytuin.gardenplanner.domain.vocabulary.ActivityType
 import com.mytuin.gardenplanner.domain.vocabulary.PlanningPriority
 import com.mytuin.gardenplanner.domain.vocabulary.PlanningStatus
+import com.mytuin.gardenplanner.domain.vocabulary.QuantityUnit
 
 /**
  * User-settable fields for a new Plan.
@@ -19,7 +19,7 @@ data class NewPlan(
     val plannedStart: KnownDate? = null,
     val plannedEnd: KnownDate? = null,
     val quantity: Double? = null,
-    val unit: ActivityQuantityUnit? = null,
+    val unit: QuantityUnit? = null,
     val priority: PlanningPriority? = null,
     val notes: String? = null,
 )

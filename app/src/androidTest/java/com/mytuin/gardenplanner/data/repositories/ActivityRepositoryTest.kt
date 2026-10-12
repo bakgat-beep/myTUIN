@@ -18,7 +18,6 @@ import com.mytuin.gardenplanner.domain.error.ValidationError
 import com.mytuin.gardenplanner.domain.model.garden.Activity
 import com.mytuin.gardenplanner.domain.model.garden.ActivityDetail
 import com.mytuin.gardenplanner.domain.repository.ActivityRepository
-import com.mytuin.gardenplanner.domain.vocabulary.ActivityQuantityUnit
 import com.mytuin.gardenplanner.domain.vocabulary.ActivityType
 import com.mytuin.gardenplanner.domain.vocabulary.AreaType
 import com.mytuin.gardenplanner.domain.vocabulary.DataOrigin
@@ -29,6 +28,7 @@ import com.mytuin.gardenplanner.domain.vocabulary.InfrastructureType
 import com.mytuin.gardenplanner.domain.vocabulary.PlanningStatus
 import com.mytuin.gardenplanner.domain.vocabulary.PlantLifecycle
 import com.mytuin.gardenplanner.domain.vocabulary.PruningMethod
+import com.mytuin.gardenplanner.domain.vocabulary.QuantityUnit
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
 import com.mytuin.gardenplanner.domain.vocabulary.WateringMethod
 import kotlinx.coroutines.flow.first
@@ -237,13 +237,13 @@ class ActivityRepositoryTest {
             val activity =
                 sampleActivity().copy(
                     quantity = 12.5,
-                    unit = ActivityQuantityUnit.KILOGRAM,
+                    unit = QuantityUnit.KILOGRAM,
                 )
             repository.insert(activity)
 
             val retrieved = repository.getActivity(activity.id)!!
             assertEquals(12.5, retrieved.quantity!!, 0.0)
-            assertEquals(ActivityQuantityUnit.KILOGRAM, retrieved.unit)
+            assertEquals(QuantityUnit.KILOGRAM, retrieved.unit)
         }
 
     @Test
@@ -534,7 +534,7 @@ class ActivityRepositoryTest {
             plantInstanceId = instanceId,
             planId = null,
             quantity = 5.0,
-            unit = ActivityQuantityUnit.LITRE,
+            unit = QuantityUnit.LITRE,
             detail = ActivityDetail.Watering(WateringMethod.WATERING_CAN),
             dataOrigin = DataOrigin.USER_OBSERVED,
             status = RecordStatus.ACTIVE,

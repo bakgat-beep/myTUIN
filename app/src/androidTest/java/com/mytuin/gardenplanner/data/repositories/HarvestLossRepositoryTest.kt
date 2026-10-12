@@ -15,13 +15,13 @@ import com.mytuin.gardenplanner.domain.error.ValidationError
 import com.mytuin.gardenplanner.domain.model.garden.HarvestLoss
 import com.mytuin.gardenplanner.domain.model.garden.KnownDate
 import com.mytuin.gardenplanner.domain.repository.HarvestLossRepository
-import com.mytuin.gardenplanner.domain.vocabulary.ActivityQuantityUnit
 import com.mytuin.gardenplanner.domain.vocabulary.ActivityType
 import com.mytuin.gardenplanner.domain.vocabulary.GrowingSpaceType
 import com.mytuin.gardenplanner.domain.vocabulary.HarvestLossCause
 import com.mytuin.gardenplanner.domain.vocabulary.HarvestLossSeverity
 import com.mytuin.gardenplanner.domain.vocabulary.Hemisphere
 import com.mytuin.gardenplanner.domain.vocabulary.PlantLifecycle
+import com.mytuin.gardenplanner.domain.vocabulary.QuantityUnit
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
 import java.time.LocalDate
 import java.time.LocalTime
@@ -387,7 +387,7 @@ class HarvestLossRepositoryTest {
             gardenId = gardenId,
             date = KnownDate(LocalDate.of(2026, 9, 15)),
             quantity = 3.0,
-            unit = ActivityQuantityUnit.COUNT,
+            unit = QuantityUnit.COUNT,
             createdAt = 1_700_000_000_000L,
             activityId = activityId,
             cause = HarvestLossCause.ROT,

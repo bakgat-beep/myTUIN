@@ -2,8 +2,8 @@ package com.mytuin.gardenplanner.domain.usecases.harvest
 
 import com.mytuin.gardenplanner.domain.model.garden.KnownDate
 import com.mytuin.gardenplanner.domain.model.garden.NewHarvest
-import com.mytuin.gardenplanner.domain.vocabulary.ActivityQuantityUnit
 import com.mytuin.gardenplanner.domain.vocabulary.HarvestSizeCategory
+import com.mytuin.gardenplanner.domain.vocabulary.QuantityUnit
 import com.mytuin.gardenplanner.testdoubles.FakeClock
 import com.mytuin.gardenplanner.testdoubles.FakeHarvestRepository
 import com.mytuin.gardenplanner.testdoubles.FakeIdGenerator
@@ -74,13 +74,13 @@ class CreateHarvestTest {
             createHarvest(
                 minimalInput().copy(
                     quantity = 12.0,
-                    unit = ActivityQuantityUnit.COUNT,
+                    unit = QuantityUnit.COUNT,
                 ),
             )
             val harvest = repository.snapshot().first()
 
             assertEquals(12.0, harvest.quantity, 0.0)
-            assertEquals(ActivityQuantityUnit.COUNT, harvest.unit)
+            assertEquals(QuantityUnit.COUNT, harvest.unit)
         }
 
     @Test
@@ -163,6 +163,6 @@ class CreateHarvestTest {
             gardenId = "garden_test_0001",
             date = KnownDate(LocalDate.of(2026, 9, 15)),
             quantity = 5.0,
-            unit = ActivityQuantityUnit.COUNT,
+            unit = QuantityUnit.COUNT,
         )
 }

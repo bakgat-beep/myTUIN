@@ -2,10 +2,10 @@ package com.mytuin.gardenplanner.domain.usecases.plan
 
 import com.mytuin.gardenplanner.domain.model.garden.KnownDate
 import com.mytuin.gardenplanner.domain.model.garden.NewPlan
-import com.mytuin.gardenplanner.domain.vocabulary.ActivityQuantityUnit
 import com.mytuin.gardenplanner.domain.vocabulary.ActivityType
 import com.mytuin.gardenplanner.domain.vocabulary.PlanningPriority
 import com.mytuin.gardenplanner.domain.vocabulary.PlanningStatus
+import com.mytuin.gardenplanner.domain.vocabulary.QuantityUnit
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
 import com.mytuin.gardenplanner.testdoubles.FakeClock
 import com.mytuin.gardenplanner.testdoubles.FakeIdGenerator
@@ -82,7 +82,7 @@ class CreatePlanTest {
                     plannedStart = KnownDate(LocalDate.of(2026, 3, 1)),
                     plannedEnd = KnownDate(LocalDate.of(2026, 3, 15)),
                     quantity = 20.0,
-                    unit = ActivityQuantityUnit.LITRE,
+                    unit = QuantityUnit.LITRE,
                     priority = PlanningPriority.HIGH,
                     notes = "Water along the south edge",
                 ),
@@ -92,7 +92,7 @@ class CreatePlanTest {
             assertEquals(LocalDate.of(2026, 3, 1), plan.plannedStart?.date)
             assertEquals(LocalDate.of(2026, 3, 15), plan.plannedEnd?.date)
             assertEquals(20.0, plan.quantity!!, 0.0)
-            assertEquals(ActivityQuantityUnit.LITRE, plan.unit)
+            assertEquals(QuantityUnit.LITRE, plan.unit)
             assertEquals(PlanningPriority.HIGH, plan.priority)
             assertEquals("Water along the south edge", plan.notes)
         }

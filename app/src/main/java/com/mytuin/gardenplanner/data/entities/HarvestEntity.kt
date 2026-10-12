@@ -4,8 +4,8 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import com.mytuin.gardenplanner.domain.vocabulary.ActivityQuantityUnit
 import com.mytuin.gardenplanner.domain.vocabulary.HarvestSizeCategory
+import com.mytuin.gardenplanner.domain.vocabulary.QuantityUnit
 
 /**
  * Harvest.
@@ -71,7 +71,7 @@ data class HarvestEntity(
     val activity_id: String,
     val date_epoch_day: Int,
     val quantity: Double,
-    val unit: ActivityQuantityUnit,
+    val unit: QuantityUnit,
     val created_at: Long,
     val date_time_of_day_millis: Int? = null,
     val size_category: HarvestSizeCategory? = null,

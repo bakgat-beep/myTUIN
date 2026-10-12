@@ -51,7 +51,7 @@ class GardenDatabaseMigrationTest {
     fun empty_database_fixture_migrates_from_v1_to_current() {
         helper.createDatabase("empty-fixture", 1).close()
 
-        val migrated = helper.runMigrationsAndValidate("empty-fixture", GARDEN_DATABASE_VERSION, true)
+        val migrated = helper.runMigrationsAndValidate("empty-fixture", GARDEN_DATABASE_VERSION, true, Migrations.MIGRATION_19_20)
 
         expectedTables.forEach { table ->
             migrated
@@ -84,7 +84,7 @@ class GardenDatabaseMigrationTest {
             close()
         }
 
-        val migrated = helper.runMigrationsAndValidate("minimal-garden-fixture", GARDEN_DATABASE_VERSION, true)
+        val migrated = helper.runMigrationsAndValidate("minimal-garden-fixture", GARDEN_DATABASE_VERSION, true, Migrations.MIGRATION_19_20)
 
         migrated
             .query("SELECT name FROM garden WHERE id = 'garden_test_minimal'")
@@ -124,7 +124,13 @@ class GardenDatabaseMigrationTest {
             close()
         }
 
-        val migrated = helper.runMigrationsAndValidate("representative-garden-fixture", GARDEN_DATABASE_VERSION, true)
+        val migrated =
+            helper.runMigrationsAndValidate(
+                "representative-garden-fixture",
+                GARDEN_DATABASE_VERSION,
+                true,
+                Migrations.MIGRATION_19_20,
+            )
 
         migrated
             .query(
@@ -190,7 +196,7 @@ class GardenDatabaseMigrationTest {
             close()
         }
 
-        val migrated = helper.runMigrationsAndValidate("v2-fixture", GARDEN_DATABASE_VERSION, true)
+        val migrated = helper.runMigrationsAndValidate("v2-fixture", GARDEN_DATABASE_VERSION, true, Migrations.MIGRATION_19_20)
 
         migrated
             .query(
@@ -261,7 +267,7 @@ class GardenDatabaseMigrationTest {
             close()
         }
 
-        val migrated = helper.runMigrationsAndValidate("v3-fixture", GARDEN_DATABASE_VERSION, true)
+        val migrated = helper.runMigrationsAndValidate("v3-fixture", GARDEN_DATABASE_VERSION, true, Migrations.MIGRATION_19_20)
 
         migrated
             .query(
@@ -316,7 +322,7 @@ class GardenDatabaseMigrationTest {
             close()
         }
 
-        val migrated = helper.runMigrationsAndValidate("v4-fixture", GARDEN_DATABASE_VERSION, true)
+        val migrated = helper.runMigrationsAndValidate("v4-fixture", GARDEN_DATABASE_VERSION, true, Migrations.MIGRATION_19_20)
 
         migrated
             .query("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'area'")
@@ -377,7 +383,7 @@ class GardenDatabaseMigrationTest {
             close()
         }
 
-        val migrated = helper.runMigrationsAndValidate("v5-fixture", GARDEN_DATABASE_VERSION, true)
+        val migrated = helper.runMigrationsAndValidate("v5-fixture", GARDEN_DATABASE_VERSION, true, Migrations.MIGRATION_19_20)
 
         migrated
             .query(
@@ -435,7 +441,7 @@ class GardenDatabaseMigrationTest {
             close()
         }
 
-        val migrated = helper.runMigrationsAndValidate("v6-fixture", GARDEN_DATABASE_VERSION, true)
+        val migrated = helper.runMigrationsAndValidate("v6-fixture", GARDEN_DATABASE_VERSION, true, Migrations.MIGRATION_19_20)
 
         var areaIdPresent = false
         migrated
@@ -519,7 +525,7 @@ class GardenDatabaseMigrationTest {
             close()
         }
 
-        val migrated = helper.runMigrationsAndValidate("v7-fixture", GARDEN_DATABASE_VERSION, true)
+        val migrated = helper.runMigrationsAndValidate("v7-fixture", GARDEN_DATABASE_VERSION, true, Migrations.MIGRATION_19_20)
 
         migrated
             .query(
@@ -591,7 +597,7 @@ class GardenDatabaseMigrationTest {
             close()
         }
 
-        val migrated = helper.runMigrationsAndValidate("v8-fixture", GARDEN_DATABASE_VERSION, true)
+        val migrated = helper.runMigrationsAndValidate("v8-fixture", GARDEN_DATABASE_VERSION, true, Migrations.MIGRATION_19_20)
 
         migrated
             .query(
@@ -658,7 +664,7 @@ class GardenDatabaseMigrationTest {
             close()
         }
 
-        val migrated = helper.runMigrationsAndValidate("v9-fixture", GARDEN_DATABASE_VERSION, true)
+        val migrated = helper.runMigrationsAndValidate("v9-fixture", GARDEN_DATABASE_VERSION, true, Migrations.MIGRATION_19_20)
 
         migrated
             .query(
@@ -715,7 +721,7 @@ class GardenDatabaseMigrationTest {
             close()
         }
 
-        val migrated = helper.runMigrationsAndValidate("v10-fixture", GARDEN_DATABASE_VERSION, true)
+        val migrated = helper.runMigrationsAndValidate("v10-fixture", GARDEN_DATABASE_VERSION, true, Migrations.MIGRATION_19_20)
 
         migrated
             .query(
@@ -788,7 +794,7 @@ class GardenDatabaseMigrationTest {
             close()
         }
 
-        val migrated = helper.runMigrationsAndValidate("v11-fixture", GARDEN_DATABASE_VERSION, true)
+        val migrated = helper.runMigrationsAndValidate("v11-fixture", GARDEN_DATABASE_VERSION, true, Migrations.MIGRATION_19_20)
 
         migrated
             .query(
@@ -847,7 +853,7 @@ class GardenDatabaseMigrationTest {
             close()
         }
 
-        val migrated = helper.runMigrationsAndValidate("v12-fixture", GARDEN_DATABASE_VERSION, true)
+        val migrated = helper.runMigrationsAndValidate("v12-fixture", GARDEN_DATABASE_VERSION, true, Migrations.MIGRATION_19_20)
 
         migrated
             .query(
@@ -939,7 +945,7 @@ class GardenDatabaseMigrationTest {
             close()
         }
 
-        val migrated = helper.runMigrationsAndValidate("v13-fixture", GARDEN_DATABASE_VERSION, true)
+        val migrated = helper.runMigrationsAndValidate("v13-fixture", GARDEN_DATABASE_VERSION, true, Migrations.MIGRATION_19_20)
 
         migrated
             .query(
@@ -1014,7 +1020,7 @@ class GardenDatabaseMigrationTest {
             close()
         }
 
-        val migrated = helper.runMigrationsAndValidate("v14-fixture", GARDEN_DATABASE_VERSION, true)
+        val migrated = helper.runMigrationsAndValidate("v14-fixture", GARDEN_DATABASE_VERSION, true, Migrations.MIGRATION_19_20)
 
         migrated
             .query(
@@ -1112,7 +1118,7 @@ class GardenDatabaseMigrationTest {
             close()
         }
 
-        val migrated = helper.runMigrationsAndValidate("v15-fixture", GARDEN_DATABASE_VERSION, true)
+        val migrated = helper.runMigrationsAndValidate("v15-fixture", GARDEN_DATABASE_VERSION, true, Migrations.MIGRATION_19_20)
 
         migrated
             .query(
@@ -1225,7 +1231,7 @@ class GardenDatabaseMigrationTest {
             close()
         }
 
-        val migrated = helper.runMigrationsAndValidate("v16-fixture", GARDEN_DATABASE_VERSION, true)
+        val migrated = helper.runMigrationsAndValidate("v16-fixture", GARDEN_DATABASE_VERSION, true, Migrations.MIGRATION_19_20)
 
         migrated
             .query(
@@ -1284,7 +1290,7 @@ class GardenDatabaseMigrationTest {
             close()
         }
 
-        val migrated = helper.runMigrationsAndValidate("v17-fixture", GARDEN_DATABASE_VERSION, true)
+        val migrated = helper.runMigrationsAndValidate("v17-fixture", GARDEN_DATABASE_VERSION, true, Migrations.MIGRATION_19_20)
 
         // plant must now have 25 columns (11 original + 14 new).
         var columnCount = 0
@@ -1374,7 +1380,7 @@ class GardenDatabaseMigrationTest {
             close()
         }
 
-        val migrated = helper.runMigrationsAndValidate("v18-fixture", GARDEN_DATABASE_VERSION, true)
+        val migrated = helper.runMigrationsAndValidate("v18-fixture", GARDEN_DATABASE_VERSION, true, Migrations.MIGRATION_19_20)
 
         migrated
             .query(
@@ -1402,6 +1408,89 @@ class GardenDatabaseMigrationTest {
             .use { cursor ->
                 assertTrue("v18 plant row must survive migration", cursor.moveToFirst())
                 assertEquals("V18 Plant", cursor.getString(0))
+            }
+
+        migrated.close()
+    }
+
+    @Test
+    fun fixture_migrates_from_v19_to_current_rewriting_plural_unit_ids_in_measurement() {
+        helper.createDatabase("v19-fixture", 19).apply {
+            execSQL(
+                """
+                INSERT INTO garden (
+                    id, name, created_at, updated_at, status, hemisphere
+                ) VALUES (
+                    'garden_test_v19',
+                    'V19 Garden',
+                    1700000000000,
+                    1700000000000,
+                    'draft',
+                    'unknown'
+                )
+                """.trimIndent(),
+            )
+            // A measurement whose unit is the plural form that the
+            // unification renames.
+            execSQL(
+                """
+                INSERT INTO measurement (
+                    id, garden_id, property, value, unit,
+                    measured_at_epoch_day, confidence, created_at
+                ) VALUES (
+                    'measurement_test_v19_hours',
+                    'garden_test_v19',
+                    'drainage_time',
+                    6.0,
+                    'hours',
+                    20000,
+                    'moderate',
+                    1700000000000
+                )
+                """.trimIndent(),
+            )
+            execSQL(
+                """
+                INSERT INTO measurement (
+                    id, garden_id, property, value, unit,
+                    measured_at_epoch_day, confidence, created_at
+                ) VALUES (
+                    'measurement_test_v19_minutes',
+                    'garden_test_v19',
+                    'drainage_time',
+                    30.0,
+                    'minutes',
+                    20000,
+                    'moderate',
+                    1700000000000
+                )
+                """.trimIndent(),
+            )
+            close()
+        }
+
+        val migrated =
+            helper.runMigrationsAndValidate(
+                "v19-fixture",
+                GARDEN_DATABASE_VERSION,
+                true,
+                Migrations.MIGRATION_19_20,
+            )
+
+        migrated
+            .query(
+                "SELECT unit FROM measurement WHERE id = 'measurement_test_v19_hours'",
+            ).use { cursor ->
+                assertTrue(cursor.moveToFirst())
+                assertEquals("hour", cursor.getString(0))
+            }
+
+        migrated
+            .query(
+                "SELECT unit FROM measurement WHERE id = 'measurement_test_v19_minutes'",
+            ).use { cursor ->
+                assertTrue(cursor.moveToFirst())
+                assertEquals("minute", cursor.getString(0))
             }
 
         migrated.close()

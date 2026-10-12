@@ -23,8 +23,8 @@ import com.mytuin.gardenplanner.domain.vocabulary.GrowingSpaceType
 import com.mytuin.gardenplanner.domain.vocabulary.Hemisphere
 import com.mytuin.gardenplanner.domain.vocabulary.InfrastructureType
 import com.mytuin.gardenplanner.domain.vocabulary.MeasurementProperty
-import com.mytuin.gardenplanner.domain.vocabulary.MeasurementUnit
 import com.mytuin.gardenplanner.domain.vocabulary.PlantLifecycle
+import com.mytuin.gardenplanner.domain.vocabulary.QuantityUnit
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
 import java.time.LocalDate
 import java.time.LocalTime
@@ -194,7 +194,7 @@ class MeasurementRepositoryTest {
     @Test
     fun measurement_unit_is_stored_as_canonical_id() =
         runBlocking {
-            repository.insert(sampleMeasurement().copy(unit = MeasurementUnit.CELSIUS))
+            repository.insert(sampleMeasurement().copy(unit = QuantityUnit.CELSIUS))
 
             db.openHelper.readableDatabase
                 .query("SELECT unit FROM measurement")
@@ -407,7 +407,7 @@ class MeasurementRepositoryTest {
             gardenId = gardenId,
             property = MeasurementProperty.PH,
             value = 6.7,
-            unit = MeasurementUnit.PH,
+            unit = QuantityUnit.PH,
             measuredAt = KnownDate(LocalDate.of(2026, 9, 15)),
             confidence = Confidence.HIGH,
             createdAt = 1_700_000_000_000L,

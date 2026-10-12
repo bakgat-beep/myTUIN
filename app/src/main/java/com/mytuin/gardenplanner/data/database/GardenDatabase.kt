@@ -50,7 +50,7 @@ import com.mytuin.gardenplanner.data.entities.ProblemObservationEntity
 import com.mytuin.gardenplanner.data.entities.SourceEntity
 import com.mytuin.gardenplanner.data.entities.SpatialObjectEntity
 
-const val GARDEN_DATABASE_VERSION: Int = 19
+const val GARDEN_DATABASE_VERSION: Int = 20
 
 /**
  * The V1 Room database.
@@ -77,6 +77,8 @@ const val GARDEN_DATABASE_VERSION: Int = 19
  *   v17 — adds Source (Phase 1 step 3g).
  *   v18 — adds 14 scalar classification columns to plant (Phase 1 step 4a).
  *   v19 — adds plant_multi_value join table (Phase 1 step 4b).
+ *   v20 — unit vocabulary unification; MIGRATION_19_20 rewrites
+ *         the two plural ids in measurement (Phase 1 step 4c-A).
  *
  * All migrations are @AutoMigration. Room derives the SQL from the
  * schema diff at compile time.

@@ -1,8 +1,8 @@
 package com.mytuin.gardenplanner.domain.model.garden
 
-import com.mytuin.gardenplanner.domain.vocabulary.ActivityQuantityUnit
 import com.mytuin.gardenplanner.domain.vocabulary.HarvestLossCause
 import com.mytuin.gardenplanner.domain.vocabulary.HarvestLossSeverity
+import com.mytuin.gardenplanner.domain.vocabulary.QuantityUnit
 
 /**
  * HarvestLoss — domain model.
@@ -29,7 +29,7 @@ data class HarvestLoss(
     val gardenId: String,
     val date: KnownDate,
     val quantity: Double,
-    val unit: ActivityQuantityUnit,
+    val unit: QuantityUnit,
     val createdAt: Long,
     val activityId: String?,
     val cause: HarvestLossCause?,

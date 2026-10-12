@@ -1,8 +1,8 @@
 package com.mytuin.gardenplanner.domain.model.garden
 
-import com.mytuin.gardenplanner.domain.vocabulary.ActivityQuantityUnit
 import com.mytuin.gardenplanner.domain.vocabulary.ActivityType
 import com.mytuin.gardenplanner.domain.vocabulary.DataOrigin
+import com.mytuin.gardenplanner.domain.vocabulary.QuantityUnit
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
 
 /**
@@ -39,7 +39,7 @@ data class Activity(
     val plantInstanceId: String?,
     val planId: String?,
     val quantity: Double?,
-    val unit: ActivityQuantityUnit?,
+    val unit: QuantityUnit?,
     val detail: ActivityDetail,
     val dataOrigin: DataOrigin?,
     val status: RecordStatus?,

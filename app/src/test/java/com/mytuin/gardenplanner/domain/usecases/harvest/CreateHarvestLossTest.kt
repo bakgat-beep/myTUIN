@@ -2,9 +2,9 @@ package com.mytuin.gardenplanner.domain.usecases.harvest
 
 import com.mytuin.gardenplanner.domain.model.garden.KnownDate
 import com.mytuin.gardenplanner.domain.model.garden.NewHarvestLoss
-import com.mytuin.gardenplanner.domain.vocabulary.ActivityQuantityUnit
 import com.mytuin.gardenplanner.domain.vocabulary.HarvestLossCause
 import com.mytuin.gardenplanner.domain.vocabulary.HarvestLossSeverity
+import com.mytuin.gardenplanner.domain.vocabulary.QuantityUnit
 import com.mytuin.gardenplanner.testdoubles.FakeClock
 import com.mytuin.gardenplanner.testdoubles.FakeHarvestLossRepository
 import com.mytuin.gardenplanner.testdoubles.FakeIdGenerator
@@ -167,6 +167,6 @@ class CreateHarvestLossTest {
             gardenId = "garden_test_0001",
             date = KnownDate(LocalDate.of(2026, 9, 15)),
             quantity = 3.0,
-            unit = ActivityQuantityUnit.COUNT,
+            unit = QuantityUnit.COUNT,
         )
 }

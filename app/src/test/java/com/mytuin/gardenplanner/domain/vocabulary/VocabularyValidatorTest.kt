@@ -30,12 +30,10 @@ class VocabularyValidatorTest {
             FeedingMethod.entries,
             PruningMethod.entries,
             SoilWorkMethod.entries,
-            ActivityQuantityUnit.entries,
             DataOrigin.entries,
             ObservationType.entries,
             Confidence.entries,
             MeasurementProperty.entries,
-            MeasurementUnit.entries,
             HarvestSizeCategory.entries,
             HarvestLossCause.entries,
             HarvestLossSeverity.entries,
@@ -69,6 +67,7 @@ class VocabularyValidatorTest {
             GrowingMethod.entries,
             PropagationMethod.entries,
             PlantMultiValueKind.entries,
+            QuantityUnit.entries,
         )
 
     @Test
