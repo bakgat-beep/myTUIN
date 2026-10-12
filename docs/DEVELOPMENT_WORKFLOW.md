@@ -110,19 +110,19 @@ Check that a device or emulator is attached (`adb devices`). A failure
 that is not about device availability is a real failure.
 
 **`kspReleaseKotlin` or `kspDebugKotlin` fails with "Empty schema file".**
+
 A previous build was interrupted while Room was writing the schema
 JSON for the current version. The file under
 `app/schemas/com.mytuin.gardenplanner.data.database.GardenDatabase/`
 for the current version is zero-length or truncated.
 
-Fix: list the directory, identify the file whose size is zero or
-far smaller than its neighbours, and delete it. Room regenerates
-it on the next successful run. Do not commit a regenerated schema
-file without confirming its size is comparable to the earlier
-versions.
+Fix: list the directory, identify the file whose size is zero or far
+smaller than its neighbours, and delete it. **Then clean the build
+before rerunning.**
 
-This failure mode recurs after any interrupted build. It is not a
-code problem.
+```powershell
+.\gradlew clean
+.\gradlew check
 
 ---
 

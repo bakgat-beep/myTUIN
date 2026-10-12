@@ -36,7 +36,10 @@ import com.mytuin.gardenplanner.domain.vocabulary.PlantAliasType
 import com.mytuin.gardenplanner.domain.vocabulary.PlantInstanceLifecycle
 import com.mytuin.gardenplanner.domain.vocabulary.PlantLifecycle
 import com.mytuin.gardenplanner.domain.vocabulary.PlantMultiValueKind
+import com.mytuin.gardenplanner.domain.vocabulary.PlantNoteKind
+import com.mytuin.gardenplanner.domain.vocabulary.PlantNumericFactKind
 import com.mytuin.gardenplanner.domain.vocabulary.PlantRole
+import com.mytuin.gardenplanner.domain.vocabulary.PlantTemporalFactKind
 import com.mytuin.gardenplanner.domain.vocabulary.PlantingMethod
 import com.mytuin.gardenplanner.domain.vocabulary.PlantingStockType
 import com.mytuin.gardenplanner.domain.vocabulary.PollinationRequirement
@@ -50,12 +53,16 @@ import com.mytuin.gardenplanner.domain.vocabulary.QuantityUnit
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
 import com.mytuin.gardenplanner.domain.vocabulary.RootBehaviour
 import com.mytuin.gardenplanner.domain.vocabulary.SalinityTolerance
+import com.mytuin.gardenplanner.domain.vocabulary.Season
 import com.mytuin.gardenplanner.domain.vocabulary.ShadeTolerance
+import com.mytuin.gardenplanner.domain.vocabulary.SoilDrainage
+import com.mytuin.gardenplanner.domain.vocabulary.SoilTexture
 import com.mytuin.gardenplanner.domain.vocabulary.SoilWorkMethod
 import com.mytuin.gardenplanner.domain.vocabulary.SourceStatus
 import com.mytuin.gardenplanner.domain.vocabulary.SourceType
 import com.mytuin.gardenplanner.domain.vocabulary.SupportRequirement
 import com.mytuin.gardenplanner.domain.vocabulary.TemperatureClass
+import com.mytuin.gardenplanner.domain.vocabulary.WaterRequirement
 import com.mytuin.gardenplanner.domain.vocabulary.WateringMethod
 import com.mytuin.gardenplanner.domain.vocabulary.WaterloggingTolerance
 
@@ -515,4 +522,60 @@ class VocabularyConverters {
     fun idToQuantityUnit(id: String): QuantityUnit =
         QuantityUnit.fromId(id)
             ?: error("Unknown QuantityUnit id stored in database: '$id'")
+
+    @TypeConverter
+    fun seasonToId(value: Season): String = value.id
+
+    @TypeConverter
+    fun idToSeason(id: String): Season =
+        Season.fromId(id)
+            ?: error("Unknown Season id stored in database: '$id'")
+
+    @TypeConverter
+    fun waterRequirementToId(value: WaterRequirement): String = value.id
+
+    @TypeConverter
+    fun idToWaterRequirement(id: String): WaterRequirement =
+        WaterRequirement.fromId(id)
+            ?: error("Unknown WaterRequirement id stored in database: '$id'")
+
+    @TypeConverter
+    fun soilTextureToId(value: SoilTexture): String = value.id
+
+    @TypeConverter
+    fun idToSoilTexture(id: String): SoilTexture =
+        SoilTexture.fromId(id)
+            ?: error("Unknown SoilTexture id stored in database: '$id'")
+
+    @TypeConverter
+    fun soilDrainageToId(value: SoilDrainage): String = value.id
+
+    @TypeConverter
+    fun idToSoilDrainage(id: String): SoilDrainage =
+        SoilDrainage.fromId(id)
+            ?: error("Unknown SoilDrainage id stored in database: '$id'")
+
+    @TypeConverter
+    fun plantNumericFactKindToId(value: PlantNumericFactKind): String = value.id
+
+    @TypeConverter
+    fun idToPlantNumericFactKind(id: String): PlantNumericFactKind =
+        PlantNumericFactKind.fromId(id)
+            ?: error("Unknown PlantNumericFactKind id stored in database: '$id'")
+
+    @TypeConverter
+    fun plantTemporalFactKindToId(value: PlantTemporalFactKind): String = value.id
+
+    @TypeConverter
+    fun idToPlantTemporalFactKind(id: String): PlantTemporalFactKind =
+        PlantTemporalFactKind.fromId(id)
+            ?: error("Unknown PlantTemporalFactKind id stored in database: '$id'")
+
+    @TypeConverter
+    fun plantNoteKindToId(value: PlantNoteKind): String = value.id
+
+    @TypeConverter
+    fun idToPlantNoteKind(id: String): PlantNoteKind =
+        PlantNoteKind.fromId(id)
+            ?: error("Unknown PlantNoteKind id stored in database: '$id'")
 }

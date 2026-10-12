@@ -66,8 +66,15 @@ class VocabularyValidatorTest {
             RootBehaviour.entries,
             GrowingMethod.entries,
             PropagationMethod.entries,
-            PlantMultiValueKind.entries,
             QuantityUnit.entries,
+            PlantMultiValueKind.entries,
+            Season.entries,
+            WaterRequirement.entries,
+            SoilTexture.entries,
+            SoilDrainage.entries,
+            PlantNumericFactKind.entries,
+            PlantTemporalFactKind.entries,
+            PlantNoteKind.entries,
         )
 
     @Test

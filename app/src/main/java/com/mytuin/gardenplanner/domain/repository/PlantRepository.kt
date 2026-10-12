@@ -4,22 +4,17 @@ import com.mytuin.gardenplanner.domain.model.plant.Cultivar
 import com.mytuin.gardenplanner.domain.model.plant.Plant
 import com.mytuin.gardenplanner.domain.model.plant.PlantAlias
 import com.mytuin.gardenplanner.domain.model.plant.PlantMultiValue
+import com.mytuin.gardenplanner.domain.model.plant.PlantNote
+import com.mytuin.gardenplanner.domain.model.plant.PlantNumericFact
+import com.mytuin.gardenplanner.domain.model.plant.PlantTemporalFact
 import com.mytuin.gardenplanner.domain.vocabulary.PlantMultiValueKind
 import kotlinx.coroutines.flow.Flow
 
 /**
  * Repository interface for Plant knowledge.
  *
- * V1_TECHNICAL_ARCHITECTURE §9. The interface lives in the domain so
- * the application layer can depend on it without depending on Room
- * (A21). The implementation lives in data/ (A22).
- *
- * List queries return Flow; point lookups return suspend (A24;
- * V1_TECHNICAL_ARCHITECTURE §55).
- *
- * Step 4b adds multi-value classification reads. No write path in
- * this step (P41B-6); the write side arrives with the Plant Library
- * feature or the plant seed loader.
+ * Step 4c-B adds reads for numeric facts, temporal facts and notes.
+ * No write path in this step (P41C-8).
  */
 interface PlantRepository {
     fun observePlants(): Flow<List<Plant>>
@@ -36,4 +31,10 @@ interface PlantRepository {
         plantId: String,
         kind: PlantMultiValueKind,
     ): Flow<List<PlantMultiValue>>
+
+    fun observeNumericFactsForPlant(plantId: String): Flow<List<PlantNumericFact>>
+
+    fun observeTemporalFactsForPlant(plantId: String): Flow<List<PlantTemporalFact>>
+
+    fun observeNotesForPlant(plantId: String): Flow<List<PlantNote>>
 }

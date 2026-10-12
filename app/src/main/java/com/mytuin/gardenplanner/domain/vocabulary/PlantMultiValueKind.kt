@@ -3,12 +3,11 @@ package com.mytuin.gardenplanner.domain.vocabulary
 /**
  * PlantMultiValueKind.
  *
- * Discriminator for the plant_multi_value join table (P41B-5). Each
- * kind names the vocabulary whose canonical ids populate the
- * `value_id` column for rows of that kind.
+ * Discriminator for the plant_multi_value join table (P41B-5).
  *
- * Adding a kind is a schema change; the mapper's kind dispatch and
- * the entity's semantics must be updated together.
+ * Step 4c-B adds three kinds: WATER_REQUIREMENT, PREFERRED_SOIL and
+ * SOIL_DRAINAGE, filling §41 fields that fit the multi-value shape
+ * (P41C-2).
  */
 enum class PlantMultiValueKind(
     override val id: String,
@@ -20,6 +19,9 @@ enum class PlantMultiValueKind(
     GROWING_METHOD("growing_method"),
     PROPAGATION_METHOD("propagation_method"),
     PLANTING_STOCK("planting_stock"),
+    WATER_REQUIREMENT("water_requirement"),
+    PREFERRED_SOIL("preferred_soil"),
+    SOIL_DRAINAGE("soil_drainage"),
     ;
 
     companion object {

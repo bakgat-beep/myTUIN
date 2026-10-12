@@ -45,6 +45,9 @@ class GardenDatabaseMigrationTest {
             "plan_target",
             "source",
             "plant_multi_value",
+            "plant_numeric_fact",
+            "plant_temporal_fact",
+            "plant_note",
         )
 
     @Test
@@ -1491,6 +1494,76 @@ class GardenDatabaseMigrationTest {
             ).use { cursor ->
                 assertTrue(cursor.moveToFirst())
                 assertEquals("minute", cursor.getString(0))
+            }
+
+        migrated.close()
+    }
+
+    @Test
+    fun fixture_migrates_from_v20_to_current_adding_plant_fact_tables_with_data_intact() {
+        helper.createDatabase("v20-fixture", 20).apply {
+            execSQL(
+                """
+                INSERT INTO plant (
+                    id, canonical_name, created_at, updated_at, status
+                ) VALUES (
+                    'plant_test_v20',
+                    'V20 Plant',
+                    1700000000000,
+                    1700000000000,
+                    'active'
+                )
+                """.trimIndent(),
+            )
+            close()
+        }
+
+        val migrated = helper.runMigrationsAndValidate("v20-fixture", GARDEN_DATABASE_VERSION, true)
+
+        listOf("plant_numeric_fact", "plant_temporal_fact", "plant_note").forEach { table ->
+            migrated
+                .query(
+                    "SELECT name FROM sqlite_master WHERE type = 'table' AND name = '$table'",
+                ).use { cursor ->
+                    assertTrue("$table must exist after v20 migration", cursor.moveToFirst())
+                }
+        }
+
+        var numericColumns = 0
+        migrated
+            .query("PRAGMA table_info(plant_numeric_fact)")
+            .use { cursor ->
+                while (cursor.moveToNext()) {
+                    numericColumns += 1
+                }
+            }
+        assertEquals("plant_numeric_fact must have 7 columns", 7, numericColumns)
+
+        var temporalColumns = 0
+        migrated
+            .query("PRAGMA table_info(plant_temporal_fact)")
+            .use { cursor ->
+                while (cursor.moveToNext()) {
+                    temporalColumns += 1
+                }
+            }
+        assertEquals("plant_temporal_fact must have 10 columns", 10, temporalColumns)
+
+        var noteColumns = 0
+        migrated
+            .query("PRAGMA table_info(plant_note)")
+            .use { cursor ->
+                while (cursor.moveToNext()) {
+                    noteColumns += 1
+                }
+            }
+        assertEquals("plant_note must have 3 columns", 3, noteColumns)
+
+        migrated
+            .query("SELECT canonical_name FROM plant WHERE id = 'plant_test_v20'")
+            .use { cursor ->
+                assertTrue("v20 plant row must survive migration", cursor.moveToFirst())
+                assertEquals("V20 Plant", cursor.getString(0))
             }
 
         migrated.close()

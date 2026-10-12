@@ -7,6 +7,9 @@ import com.mytuin.gardenplanner.domain.vocabulary.PlantRole
 import com.mytuin.gardenplanner.domain.vocabulary.PlantingStockType
 import com.mytuin.gardenplanner.domain.vocabulary.PropagationMethod
 import com.mytuin.gardenplanner.domain.vocabulary.RootBehaviour
+import com.mytuin.gardenplanner.domain.vocabulary.SoilDrainage
+import com.mytuin.gardenplanner.domain.vocabulary.SoilTexture
+import com.mytuin.gardenplanner.domain.vocabulary.WaterRequirement
 
 /**
  * A multi-valued classification attached to a Plant.
@@ -14,15 +17,8 @@ import com.mytuin.gardenplanner.domain.vocabulary.RootBehaviour
  * PLANT_VOCABULARIES §41 (multi-value fields). Stored in the
  * plant_multi_value join table with a kind discriminator (P41B-4).
  *
- * The sealed hierarchy gives the caller typed access to the decoded
- * value. The mapper enforces the kind-to-value correspondence; a
- * stored value_id that is not legal for its kind is a
- * data-integrity error, not a silently dropped row.
- *
- * PlantInstance.plantingStock is a distinct concept (P41B-3): that
- * records what was actually planted for one instance, whereas
- * PlantMultiValue.Stock records the forms in which a plant can
- * commonly be established.
+ * Step 4c-B added three variants: WaterRequirement, PreferredSoil
+ * and SoilDrainage (P41C-2).
  */
 sealed interface PlantMultiValue {
     val plantId: String
@@ -67,6 +63,24 @@ sealed interface PlantMultiValue {
     data class Stock(
         override val plantId: String,
         val stock: PlantingStockType,
+        override val notes: String?,
+    ) : PlantMultiValue
+
+    data class WaterRequirementLevel(
+        override val plantId: String,
+        val requirement: WaterRequirement,
+        override val notes: String?,
+    ) : PlantMultiValue
+
+    data class PreferredSoil(
+        override val plantId: String,
+        val texture: SoilTexture,
+        override val notes: String?,
+    ) : PlantMultiValue
+
+    data class SoilDrainagePreference(
+        override val plantId: String,
+        val drainage: SoilDrainage,
         override val notes: String?,
     ) : PlantMultiValue
 }

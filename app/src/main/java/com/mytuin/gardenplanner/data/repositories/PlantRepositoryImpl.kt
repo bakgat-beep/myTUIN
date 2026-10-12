@@ -4,10 +4,16 @@ import com.mytuin.gardenplanner.data.dao.CultivarDao
 import com.mytuin.gardenplanner.data.dao.PlantAliasDao
 import com.mytuin.gardenplanner.data.dao.PlantDao
 import com.mytuin.gardenplanner.data.dao.PlantMultiValueDao
+import com.mytuin.gardenplanner.data.dao.PlantNoteDao
+import com.mytuin.gardenplanner.data.dao.PlantNumericFactDao
+import com.mytuin.gardenplanner.data.dao.PlantTemporalFactDao
 import com.mytuin.gardenplanner.domain.model.plant.Cultivar
 import com.mytuin.gardenplanner.domain.model.plant.Plant
 import com.mytuin.gardenplanner.domain.model.plant.PlantAlias
 import com.mytuin.gardenplanner.domain.model.plant.PlantMultiValue
+import com.mytuin.gardenplanner.domain.model.plant.PlantNote
+import com.mytuin.gardenplanner.domain.model.plant.PlantNumericFact
+import com.mytuin.gardenplanner.domain.model.plant.PlantTemporalFact
 import com.mytuin.gardenplanner.domain.repository.PlantRepository
 import com.mytuin.gardenplanner.domain.vocabulary.PlantMultiValueKind
 import javax.inject.Inject
@@ -21,6 +27,9 @@ class PlantRepositoryImpl
         private val plantAliasDao: PlantAliasDao,
         private val cultivarDao: CultivarDao,
         private val plantMultiValueDao: PlantMultiValueDao,
+        private val plantNumericFactDao: PlantNumericFactDao,
+        private val plantTemporalFactDao: PlantTemporalFactDao,
+        private val plantNoteDao: PlantNoteDao,
     ) : PlantRepository {
         override fun observePlants(): Flow<List<Plant>> = plantDao.observeAll().map { rows -> rows.map { it.toDomain() } }
 
@@ -47,5 +56,20 @@ class PlantRepositoryImpl
         ): Flow<List<PlantMultiValue>> =
             plantMultiValueDao
                 .observeForPlantByKind(plantId, kind)
+                .map { rows -> rows.map { it.toDomain() } }
+
+        override fun observeNumericFactsForPlant(plantId: String): Flow<List<PlantNumericFact>> =
+            plantNumericFactDao
+                .observeForPlant(plantId)
+                .map { rows -> rows.map { it.toDomain() } }
+
+        override fun observeTemporalFactsForPlant(plantId: String): Flow<List<PlantTemporalFact>> =
+            plantTemporalFactDao
+                .observeForPlant(plantId)
+                .map { rows -> rows.map { it.toDomain() } }
+
+        override fun observeNotesForPlant(plantId: String): Flow<List<PlantNote>> =
+            plantNoteDao
+                .observeForPlant(plantId)
                 .map { rows -> rows.map { it.toDomain() } }
     }

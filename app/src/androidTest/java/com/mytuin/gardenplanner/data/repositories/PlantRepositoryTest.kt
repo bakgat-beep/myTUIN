@@ -10,13 +10,21 @@ import com.mytuin.gardenplanner.data.entities.CultivarEntity
 import com.mytuin.gardenplanner.data.entities.PlantAliasEntity
 import com.mytuin.gardenplanner.data.entities.PlantEntity
 import com.mytuin.gardenplanner.data.entities.PlantMultiValueEntity
+import com.mytuin.gardenplanner.data.entities.PlantNoteEntity
+import com.mytuin.gardenplanner.data.entities.PlantNumericFactEntity
+import com.mytuin.gardenplanner.data.entities.PlantTemporalFactEntity
 import com.mytuin.gardenplanner.domain.model.plant.PlantMultiValue
 import com.mytuin.gardenplanner.domain.repository.PlantRepository
 import com.mytuin.gardenplanner.domain.vocabulary.PlantAliasType
 import com.mytuin.gardenplanner.domain.vocabulary.PlantLifecycle
 import com.mytuin.gardenplanner.domain.vocabulary.PlantMultiValueKind
+import com.mytuin.gardenplanner.domain.vocabulary.PlantNoteKind
+import com.mytuin.gardenplanner.domain.vocabulary.PlantNumericFactKind
 import com.mytuin.gardenplanner.domain.vocabulary.PlantRole
+import com.mytuin.gardenplanner.domain.vocabulary.PlantTemporalFactKind
+import com.mytuin.gardenplanner.domain.vocabulary.QuantityUnit
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
+import com.mytuin.gardenplanner.domain.vocabulary.Season
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -57,6 +65,9 @@ class PlantRepositoryTest {
                 plantAliasDao = db.plantAliasDao(),
                 cultivarDao = db.cultivarDao(),
                 plantMultiValueDao = db.plantMultiValueDao(),
+                plantNumericFactDao = db.plantNumericFactDao(),
+                plantTemporalFactDao = db.plantTemporalFactDao(),
+                plantNoteDao = db.plantNoteDao(),
             )
     }
 
@@ -360,4 +371,187 @@ class PlantRepositoryTest {
             updated_at = 1_700_000_000_000L,
             status = RecordStatus.ACTIVE,
         )
+
+    @Test
+    fun observeNumericFactsForPlant_returns_all_kinds() =
+        runBlocking {
+            val plant = samplePlant()
+            db.plantDao().insert(plant)
+            db.plantNumericFactDao().upsert(
+                PlantNumericFactEntity(
+                    plant_id = plant.id,
+                    fact_kind = PlantNumericFactKind.PREFERRED_PH,
+                    min_value = 6.0,
+                    max_value = 6.8,
+                    typical_value = 6.5,
+                    unit = QuantityUnit.PH,
+                    notes = null,
+                ),
+            )
+            db.plantNumericFactDao().upsert(
+                PlantNumericFactEntity(
+                    plant_id = plant.id,
+                    fact_kind = PlantNumericFactKind.DAYS_TO_MATURITY,
+                    typical_value = 70.0,
+                    unit = QuantityUnit.DAY,
+                    notes = null,
+                ),
+            )
+
+            val facts = repository.observeNumericFactsForPlant(plant.id).first()
+
+            assertEquals(2, facts.size)
+            assertEquals(
+                setOf(PlantNumericFactKind.PREFERRED_PH, PlantNumericFactKind.DAYS_TO_MATURITY),
+                facts.map { it.factKind }.toSet(),
+            )
+            val phFact = facts.first { it.factKind == PlantNumericFactKind.PREFERRED_PH }
+            assertEquals(6.0, phFact.minValue!!, 0.0)
+            assertEquals(6.8, phFact.maxValue!!, 0.0)
+            assertEquals(6.5, phFact.typicalValue!!, 0.0)
+            assertEquals(QuantityUnit.PH, phFact.unit)
+        }
+
+    @Test
+    fun numeric_fact_mapper_rejects_value_less_row() =
+        runBlocking {
+            val plant = samplePlant()
+            db.plantDao().insert(plant)
+            db.plantNumericFactDao().upsert(
+                PlantNumericFactEntity(
+                    plant_id = plant.id,
+                    fact_kind = PlantNumericFactKind.PREFERRED_PH,
+                ),
+            )
+
+            try {
+                repository.observeNumericFactsForPlant(plant.id).first()
+                fail("Expected IllegalArgumentException; mapper accepted a value-less row")
+            } catch (expected: IllegalArgumentException) {
+                // Expected.
+            }
+        }
+
+    @Test
+    fun numeric_fact_mapper_rejects_min_greater_than_max() =
+        runBlocking {
+            val plant = samplePlant()
+            db.plantDao().insert(plant)
+            db.plantNumericFactDao().upsert(
+                PlantNumericFactEntity(
+                    plant_id = plant.id,
+                    fact_kind = PlantNumericFactKind.PREFERRED_PH,
+                    min_value = 7.0,
+                    max_value = 6.0,
+                ),
+            )
+
+            try {
+                repository.observeNumericFactsForPlant(plant.id).first()
+                fail("Expected IllegalArgumentException; mapper accepted min > max")
+            } catch (expected: IllegalArgumentException) {
+                // Expected.
+            }
+        }
+
+    @Test
+    fun observeTemporalFactsForPlant_returns_all_kinds() =
+        runBlocking {
+            val plant = samplePlant()
+            db.plantDao().insert(plant)
+            db.plantTemporalFactDao().upsert(
+                PlantTemporalFactEntity(
+                    plant_id = plant.id,
+                    fact_kind = PlantTemporalFactKind.SOWING_PERIOD,
+                    start_month = 3,
+                    end_month = 5,
+                    season = Season.SPRING,
+                    hemisphere = null,
+                    geographic_scope = null,
+                    notes = null,
+                ),
+            )
+
+            val facts = repository.observeTemporalFactsForPlant(plant.id).first()
+
+            assertEquals(1, facts.size)
+            val fact = facts.single()
+            assertEquals(PlantTemporalFactKind.SOWING_PERIOD, fact.factKind)
+            assertEquals(3, fact.startMonth)
+            assertEquals(5, fact.endMonth)
+            assertEquals(Season.SPRING, fact.season)
+        }
+
+    @Test
+    fun observeNotesForPlant_returns_all_kinds() =
+        runBlocking {
+            val plant = samplePlant()
+            db.plantDao().insert(plant)
+            db.plantNoteDao().upsert(
+                PlantNoteEntity(
+                    plant_id = plant.id,
+                    note_kind = PlantNoteKind.WATERING,
+                    text = "Water deeply once a week in dry weather.",
+                ),
+            )
+            db.plantNoteDao().upsert(
+                PlantNoteEntity(
+                    plant_id = plant.id,
+                    note_kind = PlantNoteKind.STORAGE,
+                    text = "Store in a cool, dark place.",
+                ),
+            )
+
+            val notes = repository.observeNotesForPlant(plant.id).first()
+
+            assertEquals(2, notes.size)
+            assertEquals(
+                setOf(PlantNoteKind.WATERING, PlantNoteKind.STORAGE),
+                notes.map { it.noteKind }.toSet(),
+            )
+        }
+
+    @Test
+    fun multi_value_mapper_decodes_new_soil_kinds() =
+        runBlocking {
+            val plant = samplePlant()
+            db.plantDao().insert(plant)
+            db.plantMultiValueDao().upsert(
+                PlantMultiValueEntity(
+                    plant_id = plant.id,
+                    kind = PlantMultiValueKind.PREFERRED_SOIL,
+                    value_id = "loam",
+                ),
+            )
+            db.plantMultiValueDao().upsert(
+                PlantMultiValueEntity(
+                    plant_id = plant.id,
+                    kind = PlantMultiValueKind.SOIL_DRAINAGE,
+                    value_id = "fast",
+                ),
+            )
+            db.plantMultiValueDao().upsert(
+                PlantMultiValueEntity(
+                    plant_id = plant.id,
+                    kind = PlantMultiValueKind.WATER_REQUIREMENT,
+                    value_id = "high",
+                ),
+            )
+
+            val values = repository.observeAllMultiValuesForPlant(plant.id).first()
+
+            assertEquals(3, values.size)
+            assertEquals(
+                1,
+                values.filterIsInstance<PlantMultiValue.PreferredSoil>().size,
+            )
+            assertEquals(
+                1,
+                values.filterIsInstance<PlantMultiValue.SoilDrainagePreference>().size,
+            )
+            assertEquals(
+                1,
+                values.filterIsInstance<PlantMultiValue.WaterRequirementLevel>().size,
+            )
+        }
 }

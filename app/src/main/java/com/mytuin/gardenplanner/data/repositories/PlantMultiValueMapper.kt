@@ -10,72 +10,162 @@ import com.mytuin.gardenplanner.domain.vocabulary.PlantRole
 import com.mytuin.gardenplanner.domain.vocabulary.PlantingStockType
 import com.mytuin.gardenplanner.domain.vocabulary.PropagationMethod
 import com.mytuin.gardenplanner.domain.vocabulary.RootBehaviour
+import com.mytuin.gardenplanner.domain.vocabulary.SoilDrainage
+import com.mytuin.gardenplanner.domain.vocabulary.SoilTexture
+import com.mytuin.gardenplanner.domain.vocabulary.WaterRequirement
 
 /**
  * Decodes a PlantMultiValueEntity row into a typed PlantMultiValue
  * variant, based on the kind discriminator.
  *
  * A stored value_id that is not a legal value for its kind is a
- * data-integrity error and throws. This is the analogue of
- * ActivityMapper's subtype validation (Step 3a) and
- * PlanRepositoryImpl.requireTargetExists (Step 3f): the database
- * cannot enforce the pair, so the mapper does.
+ * data-integrity error and throws.
+ *
+ * Each kind has a small dedicated decoder, so the when block stays
+ * flat as kinds are added.
  */
-fun PlantMultiValueEntity.toDomain(): PlantMultiValue =
-    when (kind) {
-        PlantMultiValueKind.PLANT_ROLE ->
-            PlantMultiValue.Role(
-                plantId = plant_id,
-                role = decodeOrThrow(value_id, "PlantRole", PlantRole::fromId),
-                notes = notes,
-            )
-        PlantMultiValueKind.FOOD_PRODUCTION_CATEGORY ->
-            PlantMultiValue.FoodProduction(
-                plantId = plant_id,
-                category =
-                    decodeOrThrow(
-                        value_id,
-                        "FoodProductionCategory",
-                        FoodProductionCategory::fromId,
-                    ),
-                notes = notes,
-            )
-        PlantMultiValueKind.GROWTH_HABIT ->
-            PlantMultiValue.Habit(
-                plantId = plant_id,
-                habit = decodeOrThrow(value_id, "GrowthHabit", GrowthHabit::fromId),
-                notes = notes,
-            )
-        PlantMultiValueKind.ROOT_BEHAVIOUR ->
-            PlantMultiValue.Root(
-                plantId = plant_id,
-                behaviour = decodeOrThrow(value_id, "RootBehaviour", RootBehaviour::fromId),
-                notes = notes,
-            )
-        PlantMultiValueKind.GROWING_METHOD ->
-            PlantMultiValue.Growing(
-                plantId = plant_id,
-                method = decodeOrThrow(value_id, "GrowingMethod", GrowingMethod::fromId),
-                notes = notes,
-            )
-        PlantMultiValueKind.PROPAGATION_METHOD ->
-            PlantMultiValue.Propagation(
-                plantId = plant_id,
-                method =
-                    decodeOrThrow(
-                        value_id,
-                        "PropagationMethod",
-                        PropagationMethod::fromId,
-                    ),
-                notes = notes,
-            )
-        PlantMultiValueKind.PLANTING_STOCK ->
-            PlantMultiValue.Stock(
-                plantId = plant_id,
-                stock = decodeOrThrow(value_id, "PlantingStockType", PlantingStockType::fromId),
-                notes = notes,
-            )
+fun PlantMultiValueEntity.toDomain(): PlantMultiValue {
+    val id = plant_id
+    val v = value_id
+    val n = notes
+    return when (kind) {
+        PlantMultiValueKind.PLANT_ROLE -> decodeRole(id, v, n)
+        PlantMultiValueKind.FOOD_PRODUCTION_CATEGORY -> decodeFoodProduction(id, v, n)
+        PlantMultiValueKind.GROWTH_HABIT -> decodeHabit(id, v, n)
+        PlantMultiValueKind.ROOT_BEHAVIOUR -> decodeRoot(id, v, n)
+        PlantMultiValueKind.GROWING_METHOD -> decodeGrowing(id, v, n)
+        PlantMultiValueKind.PROPAGATION_METHOD -> decodePropagation(id, v, n)
+        PlantMultiValueKind.PLANTING_STOCK -> decodeStock(id, v, n)
+        PlantMultiValueKind.WATER_REQUIREMENT -> decodeWater(id, v, n)
+        PlantMultiValueKind.PREFERRED_SOIL -> decodePreferredSoil(id, v, n)
+        PlantMultiValueKind.SOIL_DRAINAGE -> decodeDrainage(id, v, n)
     }
+}
+
+private fun decodeRole(
+    plantId: String,
+    valueId: String,
+    notes: String?,
+): PlantMultiValue =
+    PlantMultiValue.Role(
+        plantId = plantId,
+        role = decodeOrThrow(valueId, "PlantRole", PlantRole::fromId),
+        notes = notes,
+    )
+
+private fun decodeFoodProduction(
+    plantId: String,
+    valueId: String,
+    notes: String?,
+): PlantMultiValue =
+    PlantMultiValue.FoodProduction(
+        plantId = plantId,
+        category =
+            decodeOrThrow(
+                valueId,
+                "FoodProductionCategory",
+                FoodProductionCategory::fromId,
+            ),
+        notes = notes,
+    )
+
+private fun decodeHabit(
+    plantId: String,
+    valueId: String,
+    notes: String?,
+): PlantMultiValue =
+    PlantMultiValue.Habit(
+        plantId = plantId,
+        habit = decodeOrThrow(valueId, "GrowthHabit", GrowthHabit::fromId),
+        notes = notes,
+    )
+
+private fun decodeRoot(
+    plantId: String,
+    valueId: String,
+    notes: String?,
+): PlantMultiValue =
+    PlantMultiValue.Root(
+        plantId = plantId,
+        behaviour = decodeOrThrow(valueId, "RootBehaviour", RootBehaviour::fromId),
+        notes = notes,
+    )
+
+private fun decodeGrowing(
+    plantId: String,
+    valueId: String,
+    notes: String?,
+): PlantMultiValue =
+    PlantMultiValue.Growing(
+        plantId = plantId,
+        method = decodeOrThrow(valueId, "GrowingMethod", GrowingMethod::fromId),
+        notes = notes,
+    )
+
+private fun decodePropagation(
+    plantId: String,
+    valueId: String,
+    notes: String?,
+): PlantMultiValue =
+    PlantMultiValue.Propagation(
+        plantId = plantId,
+        method =
+            decodeOrThrow(
+                valueId,
+                "PropagationMethod",
+                PropagationMethod::fromId,
+            ),
+        notes = notes,
+    )
+
+private fun decodeStock(
+    plantId: String,
+    valueId: String,
+    notes: String?,
+): PlantMultiValue =
+    PlantMultiValue.Stock(
+        plantId = plantId,
+        stock = decodeOrThrow(valueId, "PlantingStockType", PlantingStockType::fromId),
+        notes = notes,
+    )
+
+private fun decodeWater(
+    plantId: String,
+    valueId: String,
+    notes: String?,
+): PlantMultiValue =
+    PlantMultiValue.WaterRequirementLevel(
+        plantId = plantId,
+        requirement =
+            decodeOrThrow(
+                valueId,
+                "WaterRequirement",
+                WaterRequirement::fromId,
+            ),
+        notes = notes,
+    )
+
+private fun decodePreferredSoil(
+    plantId: String,
+    valueId: String,
+    notes: String?,
+): PlantMultiValue =
+    PlantMultiValue.PreferredSoil(
+        plantId = plantId,
+        texture = decodeOrThrow(valueId, "SoilTexture", SoilTexture::fromId),
+        notes = notes,
+    )
+
+private fun decodeDrainage(
+    plantId: String,
+    valueId: String,
+    notes: String?,
+): PlantMultiValue =
+    PlantMultiValue.SoilDrainagePreference(
+        plantId = plantId,
+        drainage = decodeOrThrow(valueId, "SoilDrainage", SoilDrainage::fromId),
+        notes = notes,
+    )
 
 private fun <T> decodeOrThrow(
     valueId: String,
