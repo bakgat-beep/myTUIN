@@ -31,6 +31,21 @@
 .PARAMETER Include
     File pattern for directory searches. Default: *.kt.
 
+.PARAMETER Exclude
+    One or more .NET regex patterns matched against each file's full
+    path (with backslashes normalised to forward slashes). Any file
+    whose path matches any pattern is skipped entirely, as though it
+    did not exist. Use this to exclude subtrees that legitimately
+    contain matching symbols.
+
+    Typical use: the snake_case schema-identifier check matches
+    vocabulary ids inside domain/vocabulary/, because a vocabulary
+    enum's id string is snake_case by design and occasionally
+    coincides with a schema column name. Callers exclude that
+    directory:
+
+        -Exclude 'domain/vocabulary'
+
 .PARAMETER IgnoreCase
     Perform case-insensitive matching. Default: case-sensitive.
 
@@ -42,9 +57,11 @@
 
 .EXAMPLE
     # Snake_case schema identifiers must not leak into the domain.
+    # Excludes domain/vocabulary, whose ids are snake_case by design.
     .\tools\Verify-CodeSymbols.ps1 `
       -Path app/src/main/java/com/mytuin/gardenplanner/domain `
-      -Pattern '\b(canonical_name|scientific_name|created_at|updated_at|garden_id|space_type)\b'
+      -Exclude 'domain/vocabulary' `
+      -Pattern '\b(canonical_name|scientific_name|...)\b'
 
 .EXAMPLE
     # Uppercase enum constant names must not appear as string literals.
@@ -90,6 +107,8 @@ param(
 
     [string]$Include = '*.kt',
 
+    [string[]]$Exclude = @(),
+
     [switch]$IgnoreCase
 )
 
@@ -105,16 +124,46 @@ foreach ($p in $Pattern) {
     }
 }
 
+# --- Exclusion helper ---------------------------------------------------
+
+function Test-Excluded {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$FilePath,
+
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyCollection()]
+        [string[]]$Patterns
+    )
+
+    if ($Patterns.Count -eq 0) { return $false }
+
+    # Normalise separators to forward slashes so patterns written
+    # with / work on all platforms.
+    $normalised = $FilePath -replace '\\', '/'
+
+    foreach ($pattern in $Patterns) {
+        if ($normalised -match $pattern) { return $true }
+    }
+    return $false
+}
+
 # --- Expand paths to files ----------------------------------------------
 
 $files = New-Object System.Collections.Generic.List[System.IO.FileInfo]
 foreach ($p in $Path) {
     if (Test-Path -LiteralPath $p -PathType Container) {
         Get-ChildItem -LiteralPath $p -Recurse -File -Filter $Include |
+            Where-Object {
+                -not (Test-Excluded -FilePath $_.FullName -Patterns $Exclude)
+            } |
             ForEach-Object { [void]$files.Add($_) }
     }
     elseif (Test-Path -LiteralPath $p -PathType Leaf) {
-        [void]$files.Add((Get-Item -LiteralPath $p))
+        $file = Get-Item -LiteralPath $p
+        if (-not (Test-Excluded -FilePath $file.FullName -Patterns $Exclude)) {
+            [void]$files.Add($file)
+        }
     }
     else {
         Write-Host "ERROR: path not found: $p" -ForegroundColor Red

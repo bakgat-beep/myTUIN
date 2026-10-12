@@ -252,17 +252,26 @@ principle. No file under domain/ may import any of those packages.
 ```powershell
 .\tools\Verify-CodeSymbols.ps1 `
   -Path app/src/main/java/com/mytuin/gardenplanner/domain `
+  -Exclude 'domain/vocabulary' `
   -Pattern '\b(canonical_name|scientific_name|created_at|updated_at|...)\b'
 ```
 
 PHASE_0_PROJECT_FOUNDATION §31 (Architecture).
-
 V1_TECHNICAL_ARCHITECTURE §79. Room entity properties use snake_case
 to match the schema document; the domain model uses camelCase. The
-mapper in data/repositories/ bridges them. A snake_case identifier
+mapper in `data/repositories/` bridges them. A snake_case identifier
 appearing in the domain means the mapper has been bypassed.
 
-Rule for this pattern list: snake_case only. Every entry must
+**Exclude `domain/vocabulary`.** A vocabulary enum's id string is
+snake_case by design — `PlantMultiValueKind.PLANTING_STOCK("planting_stock")`
+is correct code, not a leak. When a vocabulary id coincides with a
+schema column name, the pattern list would otherwise have to be
+trimmed, which weakens the check. Excluding the directory once keeps
+the check active everywhere else in `domain/`, including
+`domain/model/` and `domain/repository/`, where leaks would actually
+matter.
+
+**Rule for this pattern list: snake_case only.** Every entry must
 contain at least one underscore. A single-word column name has the
 same spelling in the schema and the domain, so including it produces
 false positives on legitimate domain fields and on standard JVM
@@ -271,16 +280,26 @@ schema, do not add it to this list.
 
 The full current pattern list:
 
-canonical_name, scientific_name, created_at, updated_at,
-garden_id, space_type, area_type, object_type, geometry_type,
-geometry_data, area_id, plant_id, cultivar_id, growing_space_id,
-spatial_object_id, planting_stock, plant_instance_id, valid_from,
-valid_to, recorded_at, activity_type, activity_id, occurred_at,
-data_origin, planting_method, watering_method, feeding_method,
-pruning_method, soil_work_method, observed_at, observation_type,
-structured_values, measured_at, measured_at_epoch_day,
-measured_at_time_of_day_millis, date_epoch_day,
-date_time_of_day_millis, size_category
+    canonical_name, scientific_name, created_at, updated_at,
+    garden_id, space_type, area_type, object_type, geometry_type,
+    geometry_data, area_id, plant_id, cultivar_id, growing_space_id,
+    spatial_object_id, plant_instance_id, valid_from,
+    valid_to, recorded_at, activity_type, activity_id, occurred_at,
+    data_origin, planting_method, watering_method, feeding_method,
+    pruning_method, soil_work_method, observed_at, observation_type,
+    structured_values, measured_at, measured_at_epoch_day,
+    measured_at_time_of_day_millis, date_epoch_day,
+    date_time_of_day_millis, size_category, problem_type,
+    record_status, evidence_direction, plan_id, plan_type,
+    target_type, target_id, completed_at, planned_start, planned_end,
+    planned_start_epoch_day, planned_end_epoch_day, source_type,
+    author_or_organisation, publication_date, access_date,
+    geographic_scope, publication_date_epoch_day,
+    access_date_epoch_day, growth_rate, support_requirement,
+    light_requirement, shade_tolerance, temperature_class,
+    frost_sensitivity, heat_tolerance, drought_tolerance,
+    salinity_tolerance, waterlogging_tolerance, maintenance_demand,
+    pollination_requirement, container_suitable, value_id
 
 ---
 
