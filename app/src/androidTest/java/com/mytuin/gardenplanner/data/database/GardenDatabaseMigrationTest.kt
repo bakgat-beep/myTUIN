@@ -48,6 +48,9 @@ class GardenDatabaseMigrationTest {
             "plant_numeric_fact",
             "plant_temporal_fact",
             "plant_note",
+            "plant_relationship",
+            "plant_problem_relationship",
+            "plant_source",
         )
 
     @Test
@@ -1564,6 +1567,80 @@ class GardenDatabaseMigrationTest {
             .use { cursor ->
                 assertTrue("v20 plant row must survive migration", cursor.moveToFirst())
                 assertEquals("V20 Plant", cursor.getString(0))
+            }
+
+        migrated.close()
+    }
+
+    @Test
+    fun fixture_migrates_from_v21_to_current_adding_plant_relationship_tables_with_data_intact() {
+        helper.createDatabase("v21-fixture", 21).apply {
+            execSQL(
+                """
+                INSERT INTO plant (
+                    id, canonical_name, created_at, updated_at, status
+                ) VALUES (
+                    'plant_test_v21',
+                    'V21 Plant',
+                    1700000000000,
+                    1700000000000,
+                    'active'
+                )
+                """.trimIndent(),
+            )
+            close()
+        }
+
+        val migrated = helper.runMigrationsAndValidate("v21-fixture", GARDEN_DATABASE_VERSION, true)
+
+        listOf(
+            "plant_relationship",
+            "plant_problem_relationship",
+            "plant_source",
+        ).forEach { table ->
+            migrated
+                .query(
+                    "SELECT name FROM sqlite_master WHERE type = 'table' AND name = '$table'",
+                ).use { cursor ->
+                    assertTrue("$table must exist after v21 migration", cursor.moveToFirst())
+                }
+        }
+
+        var relColumns = 0
+        migrated
+            .query("PRAGMA table_info(plant_relationship)")
+            .use { cursor ->
+                while (cursor.moveToNext()) {
+                    relColumns += 1
+                }
+            }
+        assertEquals("plant_relationship must have 8 columns", 8, relColumns)
+
+        var probRelColumns = 0
+        migrated
+            .query("PRAGMA table_info(plant_problem_relationship)")
+            .use { cursor ->
+                while (cursor.moveToNext()) {
+                    probRelColumns += 1
+                }
+            }
+        assertEquals("plant_problem_relationship must have 11 columns", 11, probRelColumns)
+
+        var sourceColumns = 0
+        migrated
+            .query("PRAGMA table_info(plant_source)")
+            .use { cursor ->
+                while (cursor.moveToNext()) {
+                    sourceColumns += 1
+                }
+            }
+        assertEquals("plant_source must have 4 columns", 4, sourceColumns)
+
+        migrated
+            .query("SELECT canonical_name FROM plant WHERE id = 'plant_test_v21'")
+            .use { cursor ->
+                assertTrue("v21 plant row must survive migration", cursor.moveToFirst())
+                assertEquals("V21 Plant", cursor.getString(0))
             }
 
         migrated.close()

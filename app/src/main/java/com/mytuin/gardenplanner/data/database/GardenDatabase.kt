@@ -24,6 +24,9 @@ import com.mytuin.gardenplanner.data.dao.PlantInstanceHistoryDao
 import com.mytuin.gardenplanner.data.dao.PlantMultiValueDao
 import com.mytuin.gardenplanner.data.dao.PlantNoteDao
 import com.mytuin.gardenplanner.data.dao.PlantNumericFactDao
+import com.mytuin.gardenplanner.data.dao.PlantProblemRelationshipDao
+import com.mytuin.gardenplanner.data.dao.PlantRelationshipDao
+import com.mytuin.gardenplanner.data.dao.PlantSourceDao
 import com.mytuin.gardenplanner.data.dao.PlantTemporalFactDao
 import com.mytuin.gardenplanner.data.dao.ProblemDao
 import com.mytuin.gardenplanner.data.dao.ProblemObservationDao
@@ -50,13 +53,16 @@ import com.mytuin.gardenplanner.data.entities.PlantInstanceHistoryEntity
 import com.mytuin.gardenplanner.data.entities.PlantMultiValueEntity
 import com.mytuin.gardenplanner.data.entities.PlantNoteEntity
 import com.mytuin.gardenplanner.data.entities.PlantNumericFactEntity
+import com.mytuin.gardenplanner.data.entities.PlantProblemRelationshipEntity
+import com.mytuin.gardenplanner.data.entities.PlantRelationshipEntity
+import com.mytuin.gardenplanner.data.entities.PlantSourceEntity
 import com.mytuin.gardenplanner.data.entities.PlantTemporalFactEntity
 import com.mytuin.gardenplanner.data.entities.ProblemEntity
 import com.mytuin.gardenplanner.data.entities.ProblemObservationEntity
 import com.mytuin.gardenplanner.data.entities.SourceEntity
 import com.mytuin.gardenplanner.data.entities.SpatialObjectEntity
 
-const val GARDEN_DATABASE_VERSION: Int = 21
+const val GARDEN_DATABASE_VERSION: Int = 22
 
 /**
  * The V1 Room database.
@@ -83,6 +89,7 @@ const val GARDEN_DATABASE_VERSION: Int = 21
  *   v19 — adds plant_multi_value join table (Phase 1 step 4b).
  *   v20 — unit vocabulary unification; MIGRATION_19_20 rewrites the two plural ids in measurement (Phase 1 step 4c-A).
  *   v21 — adds PlantNumericFact, PlantTemporalFact and PlantNote (Phase 1 step 4c-B).
+ *   v22 — adds PlantRelationship, PlantProblemRelationship and PlantSource (Phase 1 step 4d).
  *
  * All migrations are @AutoMigration. Room derives the SQL from the
  * schema diff at compile time.
@@ -103,6 +110,9 @@ const val GARDEN_DATABASE_VERSION: Int = 21
         PlantNumericFactEntity::class,
         PlantTemporalFactEntity::class,
         PlantNoteEntity::class,
+        PlantRelationshipEntity::class,
+        PlantProblemRelationshipEntity::class,
+        PlantSourceEntity::class,
         PlantInstanceEntity::class,
         PlantInstanceHistoryEntity::class,
         PlantAliasEntity::class,
@@ -140,6 +150,7 @@ const val GARDEN_DATABASE_VERSION: Int = 21
         AutoMigration(from = 17, to = 18),
         AutoMigration(from = 18, to = 19),
         AutoMigration(from = 20, to = 21),
+        AutoMigration(from = 21, to = 22),
     ],
 )
 @TypeConverters(VocabularyConverters::class)
@@ -193,4 +204,10 @@ abstract class GardenDatabase : RoomDatabase() {
     abstract fun plantTemporalFactDao(): PlantTemporalFactDao
 
     abstract fun plantNoteDao(): PlantNoteDao
+
+    abstract fun plantRelationshipDao(): PlantRelationshipDao
+
+    abstract fun plantProblemRelationshipDao(): PlantProblemRelationshipDao
+
+    abstract fun plantSourceDao(): PlantSourceDao
 }

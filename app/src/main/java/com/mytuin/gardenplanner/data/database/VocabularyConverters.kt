@@ -18,6 +18,7 @@ import com.mytuin.gardenplanner.domain.vocabulary.GrowingMethod
 import com.mytuin.gardenplanner.domain.vocabulary.GrowingSpaceType
 import com.mytuin.gardenplanner.domain.vocabulary.GrowthHabit
 import com.mytuin.gardenplanner.domain.vocabulary.GrowthRate
+import com.mytuin.gardenplanner.domain.vocabulary.GrowthStage
 import com.mytuin.gardenplanner.domain.vocabulary.HarvestLossCause
 import com.mytuin.gardenplanner.domain.vocabulary.HarvestLossSeverity
 import com.mytuin.gardenplanner.domain.vocabulary.HarvestSizeCategory
@@ -38,6 +39,8 @@ import com.mytuin.gardenplanner.domain.vocabulary.PlantLifecycle
 import com.mytuin.gardenplanner.domain.vocabulary.PlantMultiValueKind
 import com.mytuin.gardenplanner.domain.vocabulary.PlantNoteKind
 import com.mytuin.gardenplanner.domain.vocabulary.PlantNumericFactKind
+import com.mytuin.gardenplanner.domain.vocabulary.PlantProblemRelationshipType
+import com.mytuin.gardenplanner.domain.vocabulary.PlantRelationshipType
 import com.mytuin.gardenplanner.domain.vocabulary.PlantRole
 import com.mytuin.gardenplanner.domain.vocabulary.PlantTemporalFactKind
 import com.mytuin.gardenplanner.domain.vocabulary.PlantingMethod
@@ -45,6 +48,7 @@ import com.mytuin.gardenplanner.domain.vocabulary.PlantingStockType
 import com.mytuin.gardenplanner.domain.vocabulary.PollinationRequirement
 import com.mytuin.gardenplanner.domain.vocabulary.ProblemCategory
 import com.mytuin.gardenplanner.domain.vocabulary.ProblemEvidenceDirection
+import com.mytuin.gardenplanner.domain.vocabulary.ProblemResponse
 import com.mytuin.gardenplanner.domain.vocabulary.ProblemSeverity
 import com.mytuin.gardenplanner.domain.vocabulary.ProblemStatus
 import com.mytuin.gardenplanner.domain.vocabulary.PropagationMethod
@@ -58,6 +62,7 @@ import com.mytuin.gardenplanner.domain.vocabulary.ShadeTolerance
 import com.mytuin.gardenplanner.domain.vocabulary.SoilDrainage
 import com.mytuin.gardenplanner.domain.vocabulary.SoilTexture
 import com.mytuin.gardenplanner.domain.vocabulary.SoilWorkMethod
+import com.mytuin.gardenplanner.domain.vocabulary.SourceRelationship
 import com.mytuin.gardenplanner.domain.vocabulary.SourceStatus
 import com.mytuin.gardenplanner.domain.vocabulary.SourceType
 import com.mytuin.gardenplanner.domain.vocabulary.SupportRequirement
@@ -578,4 +583,44 @@ class VocabularyConverters {
     fun idToPlantNoteKind(id: String): PlantNoteKind =
         PlantNoteKind.fromId(id)
             ?: error("Unknown PlantNoteKind id stored in database: '$id'")
+
+    @TypeConverter
+    fun plantRelationshipTypeToId(value: PlantRelationshipType): String = value.id
+
+    @TypeConverter
+    fun idToPlantRelationshipType(id: String): PlantRelationshipType =
+        PlantRelationshipType.fromId(id)
+            ?: error("Unknown PlantRelationshipType id stored in database: '$id'")
+
+    @TypeConverter
+    fun plantProblemRelationshipTypeToId(value: PlantProblemRelationshipType): String = value.id
+
+    @TypeConverter
+    fun idToPlantProblemRelationshipType(id: String): PlantProblemRelationshipType =
+        PlantProblemRelationshipType.fromId(id)
+            ?: error("Unknown PlantProblemRelationshipType id stored in database: '$id'")
+
+    @TypeConverter
+    fun problemResponseToId(value: ProblemResponse): String = value.id
+
+    @TypeConverter
+    fun idToProblemResponse(id: String): ProblemResponse =
+        ProblemResponse.fromId(id)
+            ?: error("Unknown ProblemResponse id stored in database: '$id'")
+
+    @TypeConverter
+    fun sourceRelationshipToId(value: SourceRelationship): String = value.id
+
+    @TypeConverter
+    fun idToSourceRelationship(id: String): SourceRelationship =
+        SourceRelationship.fromId(id)
+            ?: error("Unknown SourceRelationship id stored in database: '$id'")
+
+    @TypeConverter
+    fun growthStageToId(value: GrowthStage): String = value.id
+
+    @TypeConverter
+    fun idToGrowthStage(id: String): GrowthStage =
+        GrowthStage.fromId(id)
+            ?: error("Unknown GrowthStage id stored in database: '$id'")
 }

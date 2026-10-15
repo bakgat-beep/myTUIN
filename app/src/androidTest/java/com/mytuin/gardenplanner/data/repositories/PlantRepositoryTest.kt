@@ -7,24 +7,36 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.mytuin.gardenplanner.data.database.GardenDatabase
 import com.mytuin.gardenplanner.data.database.GardenDatabaseFactory
 import com.mytuin.gardenplanner.data.entities.CultivarEntity
+import com.mytuin.gardenplanner.data.entities.GardenEntity
 import com.mytuin.gardenplanner.data.entities.PlantAliasEntity
 import com.mytuin.gardenplanner.data.entities.PlantEntity
 import com.mytuin.gardenplanner.data.entities.PlantMultiValueEntity
 import com.mytuin.gardenplanner.data.entities.PlantNoteEntity
 import com.mytuin.gardenplanner.data.entities.PlantNumericFactEntity
+import com.mytuin.gardenplanner.data.entities.PlantProblemRelationshipEntity
+import com.mytuin.gardenplanner.data.entities.PlantRelationshipEntity
+import com.mytuin.gardenplanner.data.entities.PlantSourceEntity
 import com.mytuin.gardenplanner.data.entities.PlantTemporalFactEntity
 import com.mytuin.gardenplanner.domain.model.plant.PlantMultiValue
 import com.mytuin.gardenplanner.domain.repository.PlantRepository
+import com.mytuin.gardenplanner.domain.vocabulary.Confidence
+import com.mytuin.gardenplanner.domain.vocabulary.GrowthStage
+import com.mytuin.gardenplanner.domain.vocabulary.Hemisphere
 import com.mytuin.gardenplanner.domain.vocabulary.PlantAliasType
 import com.mytuin.gardenplanner.domain.vocabulary.PlantLifecycle
 import com.mytuin.gardenplanner.domain.vocabulary.PlantMultiValueKind
 import com.mytuin.gardenplanner.domain.vocabulary.PlantNoteKind
 import com.mytuin.gardenplanner.domain.vocabulary.PlantNumericFactKind
+import com.mytuin.gardenplanner.domain.vocabulary.PlantProblemRelationshipType
+import com.mytuin.gardenplanner.domain.vocabulary.PlantRelationshipType
 import com.mytuin.gardenplanner.domain.vocabulary.PlantRole
 import com.mytuin.gardenplanner.domain.vocabulary.PlantTemporalFactKind
+import com.mytuin.gardenplanner.domain.vocabulary.ProblemResponse
+import com.mytuin.gardenplanner.domain.vocabulary.ProblemSeverity
 import com.mytuin.gardenplanner.domain.vocabulary.QuantityUnit
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
 import com.mytuin.gardenplanner.domain.vocabulary.Season
+import com.mytuin.gardenplanner.domain.vocabulary.SourceRelationship
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -68,6 +80,9 @@ class PlantRepositoryTest {
                 plantNumericFactDao = db.plantNumericFactDao(),
                 plantTemporalFactDao = db.plantTemporalFactDao(),
                 plantNoteDao = db.plantNoteDao(),
+                plantRelationshipDao = db.plantRelationshipDao(),
+                plantProblemRelationshipDao = db.plantProblemRelationshipDao(),
+                plantSourceDao = db.plantSourceDao(),
             )
     }
 
@@ -554,4 +569,139 @@ class PlantRepositoryTest {
                 values.filterIsInstance<PlantMultiValue.WaterRequirementLevel>().size,
             )
         }
+
+    @Test
+    fun observeRelationshipsForPlant_returns_all_rows() =
+        runBlocking {
+            val plant = samplePlant()
+            db.plantDao().insert(plant)
+            db.plantDao().insert(
+                samplePlant().copy(
+                    id = "plant_00000000-0000-0000-0000-000000000002",
+                    canonical_name = "Companion plant",
+                ),
+            )
+            db.plantRelationshipDao().upsert(
+                PlantRelationshipEntity(
+                    plant_id = plant.id,
+                    related_plant_id = "plant_00000000-0000-0000-0000-000000000002",
+                    relationship_type = PlantRelationshipType.COMPANION,
+                    notes = "Documented companion",
+                ),
+            )
+
+            val relationships = repository.observeRelationshipsForPlant(plant.id).first()
+
+            assertEquals(1, relationships.size)
+            val rel = relationships.single()
+            assertEquals(PlantRelationshipType.COMPANION, rel.relationshipType)
+            assertEquals("plant_00000000-0000-0000-0000-000000000002", rel.relatedPlantId)
+        }
+
+    @Test
+    fun plant_relationship_mapper_rejects_self_reference() =
+        runBlocking {
+            val plant = samplePlant()
+            db.plantDao().insert(plant)
+            // Manually bypass the DAO to construct a self-referencing
+            // row, which the DAO insert would allow but the mapper
+            // must reject.
+            db.plantRelationshipDao().upsert(
+                PlantRelationshipEntity(
+                    plant_id = plant.id,
+                    related_plant_id = plant.id,
+                    relationship_type = PlantRelationshipType.COMPANION,
+                ),
+            )
+
+            try {
+                repository.observeRelationshipsForPlant(plant.id).first()
+                fail("Expected IllegalArgumentException; mapper accepted self-reference")
+            } catch (expected: IllegalArgumentException) {
+                // Expected.
+            }
+        }
+
+    @Test
+    fun observeProblemRelationshipsForPlant_returns_all_rows() =
+        runBlocking {
+            val plant = samplePlant()
+            db.plantDao().insert(plant)
+            db.gardenDao().insert(sampleGarden())
+            db.problemDao().insert(
+                com.mytuin.gardenplanner.data.entities.ProblemEntity(
+                    id = "problem_00000000-0000-0000-0000-000000000001",
+                    garden_id = "garden_00000000-0000-0000-0000-000000000001",
+                    name = "Aphids",
+                    problem_type = com.mytuin.gardenplanner.domain.vocabulary.ProblemCategory.PEST,
+                    status = com.mytuin.gardenplanner.domain.vocabulary.ProblemStatus.SUSPECTED,
+                    created_at = 1_700_000_000_000L,
+                    updated_at = 1_700_000_000_000L,
+                ),
+            )
+            db.plantProblemRelationshipDao().upsert(
+                PlantProblemRelationshipEntity(
+                    plant_id = plant.id,
+                    problem_id = "problem_00000000-0000-0000-0000-000000000001",
+                    relationship_type = PlantProblemRelationshipType.SUSCEPTIBLE_TO,
+                    response_characteristic = ProblemResponse.SUSCEPTIBLE,
+                    growth_stage = GrowthStage.SEEDLING,
+                    severity = ProblemSeverity.MODERATE,
+                    confidence = Confidence.MODERATE,
+                ),
+            )
+
+            val relationships = repository.observeProblemRelationshipsForPlant(plant.id).first()
+
+            assertEquals(1, relationships.size)
+            val rel = relationships.single()
+            assertEquals(PlantProblemRelationshipType.SUSCEPTIBLE_TO, rel.relationshipType)
+            assertEquals(ProblemResponse.SUSCEPTIBLE, rel.responseCharacteristic)
+            assertEquals(GrowthStage.SEEDLING, rel.growthStage)
+            assertEquals(ProblemSeverity.MODERATE, rel.severity)
+        }
+
+    @Test
+    fun observeSourcesForPlant_returns_all_rows() =
+        runBlocking {
+            val plant = samplePlant()
+            db.plantDao().insert(plant)
+            db.sourceDao().insert(
+                com.mytuin.gardenplanner.data.entities.SourceEntity(
+                    id = "source_00000000-0000-0000-0000-000000000001",
+                    source_type = com.mytuin.gardenplanner.domain.vocabulary.SourceType.GOVERNMENT,
+                    status = com.mytuin.gardenplanner.domain.vocabulary.SourceStatus.VERIFIED,
+                    created_at = 1_700_000_000_000L,
+                ),
+            )
+            db.plantSourceDao().upsert(
+                PlantSourceEntity(
+                    plant_id = plant.id,
+                    source_id = "source_00000000-0000-0000-0000-000000000001",
+                    source_relationship = SourceRelationship.DIRECT,
+                ),
+            )
+
+            val sources = repository.observeSourcesForPlant(plant.id).first()
+
+            assertEquals(1, sources.size)
+            assertEquals(SourceRelationship.DIRECT, sources.single().sourceRelationship)
+        }
+
+    private fun sampleGarden(): GardenEntity =
+        GardenEntity(
+            id = "garden_00000000-0000-0000-0000-000000000001",
+            name = "Test Garden",
+            description = null,
+            country_code = null,
+            region = null,
+            locality = null,
+            latitude = null,
+            longitude = null,
+            timezone = null,
+            hemisphere = Hemisphere.UNKNOWN,
+            status = RecordStatus.DRAFT,
+            created_at = 1_700_000_000_000L,
+            updated_at = 1_700_000_000_000L,
+        )
 }

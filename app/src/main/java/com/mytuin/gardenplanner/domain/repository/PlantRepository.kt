@@ -6,6 +6,9 @@ import com.mytuin.gardenplanner.domain.model.plant.PlantAlias
 import com.mytuin.gardenplanner.domain.model.plant.PlantMultiValue
 import com.mytuin.gardenplanner.domain.model.plant.PlantNote
 import com.mytuin.gardenplanner.domain.model.plant.PlantNumericFact
+import com.mytuin.gardenplanner.domain.model.plant.PlantProblemRelationship
+import com.mytuin.gardenplanner.domain.model.plant.PlantRelationship
+import com.mytuin.gardenplanner.domain.model.plant.PlantSource
 import com.mytuin.gardenplanner.domain.model.plant.PlantTemporalFact
 import com.mytuin.gardenplanner.domain.vocabulary.PlantMultiValueKind
 import kotlinx.coroutines.flow.Flow
@@ -13,8 +16,9 @@ import kotlinx.coroutines.flow.Flow
 /**
  * Repository interface for Plant knowledge.
  *
- * Step 4c-B adds reads for numeric facts, temporal facts and notes.
- * No write path in this step (P41C-8).
+ * Step 4d adds reads for plant-to-plant relationships,
+ * plant-to-problem relationships, and plant-to-source links. No
+ * write path in this step (P41D-9).
  */
 interface PlantRepository {
     fun observePlants(): Flow<List<Plant>>
@@ -37,4 +41,10 @@ interface PlantRepository {
     fun observeTemporalFactsForPlant(plantId: String): Flow<List<PlantTemporalFact>>
 
     fun observeNotesForPlant(plantId: String): Flow<List<PlantNote>>
+
+    fun observeRelationshipsForPlant(plantId: String): Flow<List<PlantRelationship>>
+
+    fun observeProblemRelationshipsForPlant(plantId: String): Flow<List<PlantProblemRelationship>>
+
+    fun observeSourcesForPlant(plantId: String): Flow<List<PlantSource>>
 }

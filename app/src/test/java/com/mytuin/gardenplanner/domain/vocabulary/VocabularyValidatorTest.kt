@@ -75,6 +75,11 @@ class VocabularyValidatorTest {
             PlantNumericFactKind.entries,
             PlantTemporalFactKind.entries,
             PlantNoteKind.entries,
+            PlantRelationshipType.entries,
+            PlantProblemRelationshipType.entries,
+            ProblemResponse.entries,
+            SourceRelationship.entries,
+            GrowthStage.entries,
         )
 
     @Test
