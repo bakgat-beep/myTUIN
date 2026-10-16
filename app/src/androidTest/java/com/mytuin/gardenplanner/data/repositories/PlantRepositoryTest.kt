@@ -704,4 +704,45 @@ class PlantRepositoryTest {
             created_at = 1_700_000_000_000L,
             updated_at = 1_700_000_000_000L,
         )
+
+    @Test
+    fun multi_value_mapper_decodes_rotation_group_kind() =
+        runBlocking {
+            val plant = samplePlant()
+            db.plantDao().insert(plant)
+            db.plantMultiValueDao().upsert(
+                PlantMultiValueEntity(
+                    plant_id = plant.id,
+                    kind = PlantMultiValueKind.ROTATION_GROUP,
+                    value_id = "rotationgroup_00000000-0000-0000-0000-000000000001",
+                ),
+            )
+
+            val values = repository.observeAllMultiValuesForPlant(plant.id).first()
+
+            assertEquals(1, values.size)
+            val rotation = values.single() as PlantMultiValue.Rotation
+            assertEquals(
+                "rotationgroup_00000000-0000-0000-0000-000000000001",
+                rotation.rotationGroupId,
+            )
+        }
+
+    @Test
+    fun rotation_notes_is_a_valid_note_kind() =
+        runBlocking {
+            val plant = samplePlant()
+            db.plantDao().insert(plant)
+            db.plantNoteDao().upsert(
+                PlantNoteEntity(
+                    plant_id = plant.id,
+                    note_kind = PlantNoteKind.ROTATION_NOTES,
+                    text = "Do not follow with other Solanaceae.",
+                ),
+            )
+
+            val notes = repository.observeNotesForPlant(plant.id).first()
+            assertEquals(1, notes.size)
+            assertEquals(PlantNoteKind.ROTATION_NOTES, notes.single().noteKind)
+        }
 }

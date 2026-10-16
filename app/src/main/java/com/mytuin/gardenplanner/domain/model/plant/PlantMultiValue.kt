@@ -14,11 +14,11 @@ import com.mytuin.gardenplanner.domain.vocabulary.WaterRequirement
 /**
  * A multi-valued classification attached to a Plant.
  *
- * PLANT_VOCABULARIES §41 (multi-value fields). Stored in the
- * plant_multi_value join table with a kind discriminator (P41B-4).
- *
- * Step 4c-B added three variants: WaterRequirement, PreferredSoil
- * and SoilDrainage (P41C-2).
+ * Most variants carry a decoded vocabulary value. The Rotation
+ * variant is different: its value_id is a RotationGroup id, not a
+ * vocabulary id (P41E-2 (b)). It carries the id as a String; callers
+ * that need the full RotationGroup fetch it via
+ * RotationGroupRepository.getGroup(id).
  */
 sealed interface PlantMultiValue {
     val plantId: String
@@ -81,6 +81,12 @@ sealed interface PlantMultiValue {
     data class SoilDrainagePreference(
         override val plantId: String,
         val drainage: SoilDrainage,
+        override val notes: String?,
+    ) : PlantMultiValue
+
+    data class Rotation(
+        override val plantId: String,
+        val rotationGroupId: String,
         override val notes: String?,
     ) : PlantMultiValue
 }

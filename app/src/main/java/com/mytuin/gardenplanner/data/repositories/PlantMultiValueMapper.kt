@@ -18,11 +18,8 @@ import com.mytuin.gardenplanner.domain.vocabulary.WaterRequirement
  * Decodes a PlantMultiValueEntity row into a typed PlantMultiValue
  * variant, based on the kind discriminator.
  *
- * A stored value_id that is not a legal value for its kind is a
- * data-integrity error and throws.
- *
- * Each kind has a small dedicated decoder, so the when block stays
- * flat as kinds are added.
+ * Most kinds decode value_id to a vocabulary value. ROTATION_GROUP
+ * passes the value_id through as a RotationGroup id (P41E-2 (b)).
  */
 fun PlantMultiValueEntity.toDomain(): PlantMultiValue {
     val id = plant_id
@@ -39,6 +36,7 @@ fun PlantMultiValueEntity.toDomain(): PlantMultiValue {
         PlantMultiValueKind.WATER_REQUIREMENT -> decodeWater(id, v, n)
         PlantMultiValueKind.PREFERRED_SOIL -> decodePreferredSoil(id, v, n)
         PlantMultiValueKind.SOIL_DRAINAGE -> decodeDrainage(id, v, n)
+        PlantMultiValueKind.ROTATION_GROUP -> decodeRotation(id, v, n)
     }
 }
 
@@ -164,6 +162,22 @@ private fun decodeDrainage(
     PlantMultiValue.SoilDrainagePreference(
         plantId = plantId,
         drainage = decodeOrThrow(valueId, "SoilDrainage", SoilDrainage::fromId),
+        notes = notes,
+    )
+
+/**
+ * ROTATION_GROUP does not decode a vocabulary id. The value_id is a
+ * RotationGroup id (P41E-2 (b)); it is passed through unchanged.
+ * Existence of the referenced group is not validated here.
+ */
+private fun decodeRotation(
+    plantId: String,
+    valueId: String,
+    notes: String?,
+): PlantMultiValue =
+    PlantMultiValue.Rotation(
+        plantId = plantId,
+        rotationGroupId = valueId,
         notes = notes,
     )
 

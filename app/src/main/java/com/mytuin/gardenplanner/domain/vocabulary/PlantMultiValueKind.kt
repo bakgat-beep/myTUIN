@@ -3,11 +3,12 @@ package com.mytuin.gardenplanner.domain.vocabulary
 /**
  * PlantMultiValueKind.
  *
- * Discriminator for the plant_multi_value join table (P41B-5).
+ * Discriminator for the plant_multi_value join table.
  *
- * Step 4c-B adds three kinds: WATER_REQUIREMENT, PREFERRED_SOIL and
- * SOIL_DRAINAGE, filling §41 fields that fit the multi-value shape
- * (P41C-2).
+ * Step 4c-B added WATER_REQUIREMENT, PREFERRED_SOIL and SOIL_DRAINAGE.
+ * Step 4e adds ROTATION_GROUP (P41E-2 (b)): the value_id for that
+ * kind is a RotationGroup id, not a vocabulary id. The mapper passes
+ * it through unchanged.
  */
 enum class PlantMultiValueKind(
     override val id: String,
@@ -22,6 +23,7 @@ enum class PlantMultiValueKind(
     WATER_REQUIREMENT("water_requirement"),
     PREFERRED_SOIL("preferred_soil"),
     SOIL_DRAINAGE("soil_drainage"),
+    ROTATION_GROUP("rotation_group"),
     ;
 
     companion object {

@@ -3,11 +3,10 @@ package com.mytuin.gardenplanner.domain.vocabulary
 /**
  * PlantNoteKind.
  *
- * Discriminator for the plant_note table (step 4c-B). Each kind
- * names one of the §41 free-text guidance fields.
+ * Discriminator for the plant_note table (step 4c-B).
  *
- * `rotation_notes` is deliberately absent: it is deferred to step 4e
- * alongside the rotation_group reference entity (P41C-9).
+ * Step 4e adds ROTATION_NOTES (P41E-3 (a)), resolving the P41C-9
+ * deferral.
  */
 enum class PlantNoteKind(
     override val id: String,
@@ -25,6 +24,7 @@ enum class PlantNoteKind(
     REGIONAL_NOTES("regional_notes"),
     CLIMATE_NOTES("climate_notes"),
     SAFETY_NOTES("safety_notes"),
+    ROTATION_NOTES("rotation_notes"),
     ;
 
     companion object {

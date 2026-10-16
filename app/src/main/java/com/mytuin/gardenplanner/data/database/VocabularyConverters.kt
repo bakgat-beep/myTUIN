@@ -56,6 +56,7 @@ import com.mytuin.gardenplanner.domain.vocabulary.PruningMethod
 import com.mytuin.gardenplanner.domain.vocabulary.QuantityUnit
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
 import com.mytuin.gardenplanner.domain.vocabulary.RootBehaviour
+import com.mytuin.gardenplanner.domain.vocabulary.RotationGroupType
 import com.mytuin.gardenplanner.domain.vocabulary.SalinityTolerance
 import com.mytuin.gardenplanner.domain.vocabulary.Season
 import com.mytuin.gardenplanner.domain.vocabulary.ShadeTolerance
@@ -623,4 +624,12 @@ class VocabularyConverters {
     fun idToGrowthStage(id: String): GrowthStage =
         GrowthStage.fromId(id)
             ?: error("Unknown GrowthStage id stored in database: '$id'")
+
+    @TypeConverter
+    fun rotationGroupTypeToId(value: RotationGroupType): String = value.id
+
+    @TypeConverter
+    fun idToRotationGroupType(id: String): RotationGroupType =
+        RotationGroupType.fromId(id)
+            ?: error("Unknown RotationGroupType id stored in database: '$id'")
 }

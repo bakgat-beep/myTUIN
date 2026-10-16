@@ -80,6 +80,7 @@ class VocabularyValidatorTest {
             ProblemResponse.entries,
             SourceRelationship.entries,
             GrowthStage.entries,
+            RotationGroupType.entries,
         )
 
     @Test

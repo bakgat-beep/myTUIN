@@ -30,6 +30,7 @@ import com.mytuin.gardenplanner.data.dao.PlantSourceDao
 import com.mytuin.gardenplanner.data.dao.PlantTemporalFactDao
 import com.mytuin.gardenplanner.data.dao.ProblemDao
 import com.mytuin.gardenplanner.data.dao.ProblemObservationDao
+import com.mytuin.gardenplanner.data.dao.RotationGroupDao
 import com.mytuin.gardenplanner.data.dao.SourceDao
 import com.mytuin.gardenplanner.data.dao.SpatialObjectDao
 import com.mytuin.gardenplanner.data.entities.ActivityEntity
@@ -59,10 +60,11 @@ import com.mytuin.gardenplanner.data.entities.PlantSourceEntity
 import com.mytuin.gardenplanner.data.entities.PlantTemporalFactEntity
 import com.mytuin.gardenplanner.data.entities.ProblemEntity
 import com.mytuin.gardenplanner.data.entities.ProblemObservationEntity
+import com.mytuin.gardenplanner.data.entities.RotationGroupEntity
 import com.mytuin.gardenplanner.data.entities.SourceEntity
 import com.mytuin.gardenplanner.data.entities.SpatialObjectEntity
 
-const val GARDEN_DATABASE_VERSION: Int = 22
+const val GARDEN_DATABASE_VERSION: Int = 23
 
 /**
  * The V1 Room database.
@@ -90,6 +92,7 @@ const val GARDEN_DATABASE_VERSION: Int = 22
  *   v20 — unit vocabulary unification; MIGRATION_19_20 rewrites the two plural ids in measurement (Phase 1 step 4c-A).
  *   v21 — adds PlantNumericFact, PlantTemporalFact and PlantNote (Phase 1 step 4c-B).
  *   v22 — adds PlantRelationship, PlantProblemRelationship and PlantSource (Phase 1 step 4d).
+ *   v23 — adds RotationGroup (Phase 1 step 4e).
  *
  * All migrations are @AutoMigration. Room derives the SQL from the
  * schema diff at compile time.
@@ -113,6 +116,7 @@ const val GARDEN_DATABASE_VERSION: Int = 22
         PlantRelationshipEntity::class,
         PlantProblemRelationshipEntity::class,
         PlantSourceEntity::class,
+        RotationGroupEntity::class,
         PlantInstanceEntity::class,
         PlantInstanceHistoryEntity::class,
         PlantAliasEntity::class,
@@ -151,6 +155,7 @@ const val GARDEN_DATABASE_VERSION: Int = 22
         AutoMigration(from = 18, to = 19),
         AutoMigration(from = 20, to = 21),
         AutoMigration(from = 21, to = 22),
+        AutoMigration(from = 22, to = 23),
     ],
 )
 @TypeConverters(VocabularyConverters::class)
@@ -210,4 +215,6 @@ abstract class GardenDatabase : RoomDatabase() {
     abstract fun plantProblemRelationshipDao(): PlantProblemRelationshipDao
 
     abstract fun plantSourceDao(): PlantSourceDao
+
+    abstract fun rotationGroupDao(): RotationGroupDao
 }
