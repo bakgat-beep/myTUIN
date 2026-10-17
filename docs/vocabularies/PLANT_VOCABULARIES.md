@@ -1,9 +1,9 @@
 # Garden Planner & Manager — Plant Controlled Vocabularies
 
 **Document:** `docs/vocabularies/PLANT_VOCABULARIES.md`
-**Version:** 0.5
+**Version:** 0.6
 **Status:** Working specification
-**Last updated:** September 2026
+**Last updated:** October 2026
 
 ---
 
@@ -958,90 +958,237 @@ The vocabulary system should remain:
 * useful to planning and recommendations;
 * separate from detailed horticultural knowledge.
 
-## 41. Plant database field set
+## 41. Plant field set and storage structure
 
-| Field                     | Brief descriptor                                                                 |
-| ------------------------- |----------------------------------------------------------------------------------|
-| `id`                      | Stable unique identifier for the plant record.                                   |
-| `common_name`             | Primary common name used by myTUIN.                                              |
-| `other_common_names`      | Other recognised common names.                                                   |
-| `scientific_name`         | Accepted scientific/botanical name.                                              |
-| `family`                  | Botanical family.                                                                |
-| `description`             | Concise general description of the plant.                                        |
-| `roles`                   | One or more plant roles from the controlled vocabulary.                          |
-| `lifecycle`               | Annual, biennial or perennial classification.                                    |
-| `growth_habit`            | General physical growth form/behaviour.                                          |
-| `growth_rate`             | Broad growth-rate classification.                                                |
-| `mature_height`           | Typical mature height, preferably as a structured range.                         |
-| `mature_width`            | Typical mature width/spread, preferably as a structured range.                   |
-| `root_behaviour`          | Broad root-growth classification.                                                |
-| `root_depth`              | Typical root depth/range where meaningful.                                       |
-| `support_requirement`     | Degree of physical support normally required or beneficial.                      |
-| `support_type`            | Types of support appropriate to the plant.                                       |
-| `light_requirement`       | Preferred light level.                                                           |
-| `shade_tolerance`         | Tolerance of reduced light.                                                      |
-| `temperature_class`       | Broad cool-/warm-season classification.                                          |
-| `minimum_temperature`     | Approximate minimum temperature tolerated where sufficiently established.        |
-| `maximum_temperature`     | Approximate upper temperature limit where sufficiently established.              |
-| `frost_sensitivity`       | Relative frost sensitivity.                                                      |
-| `heat_tolerance`          | Relative heat tolerance.                                                         |
-| `drought_tolerance`       | Relative drought tolerance.                                                      |
-| `salinity_tolerance`      | Relative tolerance of saline conditions.                                         |
-| `waterlogging_tolerance`  | Relative tolerance of prolonged saturated conditions.                            |
-| `water_requirement`       | Typical water requirement, represented as structured knowledge.                  |
-| `preferred_soil`          | Suitable/preferred soil characteristics.                                         |
-| `soil_drainage`           | Preferred/tolerated drainage conditions.                                         |
-| `preferred_ph`            | Preferred soil pH range.                                                         |
-| `fertility_requirement`   | Broad fertility/nutrient requirement.                                            |
-| `growing_methods`         | Suitable cultivation methods.                                                    |
-| `propagation_methods`     | Supported propagation methods.                                                   |
-| `planting_stock`          | Common forms of planting material.                                               |
-| `seed_depth`              | Recommended sowing depth/range.                                                  |
-| `germination_temperature` | Suitable germination temperature/range.                                          |
-| `germination_time`        | Typical germination time/range.                                                  |
-| `transplanting_notes`     | Important transplanting considerations.                                          |
-| `spacing`                 | Recommended plant spacing/range.                                                 |
-| `row_spacing`             | Recommended row spacing/range where applicable.                                  |
-| `container_suitable`      | Whether container cultivation is suitable.                                       |
-| `container_size`          | Appropriate container size/range where relevant.                                 |
-| `sowing_period`           | Suitable sowing periods, expressed contextually by region/season.                |
-| `transplanting_period`    | Suitable transplanting periods.                                                  |
-| `planting_period`         | Suitable planting periods.                                                       |
-| `flowering_period`        | Typical flowering period.                                                        |
-| `fruiting_period`         | Typical fruiting period where applicable.                                        |
-| `harvest_period`          | Typical harvest period.                                                          |
-| `days_to_maturity`        | Typical time from the defined starting point to maturity, where meaningful.      |
-| `maturity`                | Broad early/mid-season/late classification.                                      |
-| `maintenance_demand`      | Broad overall maintenance demand.                                                |
-| `feeding`                 | Feeding/fertilisation requirements.                                              |
-| `watering`                | Practical watering requirements or guidance.                                     |
-| `pruning`                 | Pruning requirements and timing.                                                 |
-| `other_maintenance`       | Other significant maintenance requirements.                                      |
-| `harvestable_parts`       | Edible/harvested plant parts. Uses Food-production category values.              |
-| `harvest_indicators`      | Signs that the crop is ready to harvest.                                         |
-| `harvest_method`          | How the harvest is normally performed.                                           |
-| `harvest_frequency`       | Typical frequency or repeat-harvest behaviour.                                   |
-| `yield`                   | Typical yield information/range where meaningful.                                |
-| `storage`                 | Storage requirements and characteristics.                                        |
-| `culinary_uses`           | Common culinary uses.                                                            |
-| `preservation_methods`    | Suitable preservation methods.                                                   |
-| `pollination_requirement` | Broad pollination requirement classification.                                    |
-| `pollination_method`      | Broad pollination mechanism.                                                     |
-| `pollination_partners`    | Plants/cultivars that provide useful compatible cross-pollination.               |
-| `pollination_notes`       | Additional relevant pollination information.                                     |
-| `common_pests`            | Common associated pests.                                                         |
-| `common_diseases`         | Common associated diseases.                                                      |
-| `common_problems`         | Other common cultivation problems.                                               |
-| `susceptibilities`        | Problem-specific susceptibility relationships.                                   |
-| `resistances`             | Problem-specific resistance/tolerance relationships.                             |
-| `companion_plants`        | Plants with a documented beneficial association.                                 |
-| `plants_to_avoid`         | Plants with a documented undesirable association.                                |
-| `rotation_group`          | Crop-rotation grouping where applicable.                                         |
-| `rotation_notes`          | Relevant rotation considerations.                                                |
-| `native_status`           | Regional native/introduced status, rather than a universal plant classification. |
-| `regional_notes`          | Region-specific plant information.                                               |
-| `climate_notes`           | Important climate-dependent considerations.                                      |
-| `toxicity`                | General toxicity/safety classification.                                          |
-| `toxic_parts`             | Plant parts associated with toxicity.                                            |
-| `safety_notes`            | Important safety information.                                                    |
-| `sources`                 | Sources supporting the plant record and its information.                         |
+The information the application holds about a plant is described
+by the field list this section previously presented. That list has
+been reorganised by storage category. Each category reflects the
+shape of the fields it contains: a scalar classification, a
+value that may hold multiple entries, a numeric range with a unit,
+a recurring window, free text, a relationship to another entity, or
+a reference to system data.
+
+The storage structures themselves are defined in
+`docs/V1_DATABASE_SCHEMA.md`. This section names the tables so the
+two documents can be read together, but the schema document remains
+authoritative for column types, constraints and indexes.
+
+### 41.1 Scalar classifications on `plant`
+
+Each of these fields holds at most one value per plant. They are
+stored as typed columns on the `plant` table.
+
+| Field | Vocabulary |
+| --- | --- |
+| `growth_rate` | Growth rate (§8) |
+| `support_requirement` | Support requirement (§23) |
+| `light_requirement` | Light requirement (§17) |
+| `shade_tolerance` | Shade tolerance (§18) |
+| `temperature_class` | Plant temperature classification (§19) |
+| `frost_sensitivity` | Frost sensitivity (§12) |
+| `heat_tolerance` | Heat tolerance (§13) |
+| `drought_tolerance` | Drought tolerance (§14) |
+| `salinity_tolerance` | Salinity tolerance (§16) |
+| `waterlogging_tolerance` | Waterlogging tolerance (§15) |
+| `maturity` | Maturity classification (§11) |
+| `maintenance_demand` | Maintenance demand (§21) |
+| `pollination_requirement` | Pollination requirement (§24) |
+| `container_suitable` | (none — nullable Boolean) |
+
+All fields are nullable. `null` means "not recorded"; the `unknown`
+value within a vocabulary means "recorded as unknown"
+(CORE_VOCABULARIES §4). `container_suitable` is a nullable Boolean
+because §41 does not provide a vocabulary for it and a three-value
+enum would be indistinguishable from the nullable Boolean.
+
+### 41.2 Multi-value classifications in `plant_multi_value`
+
+Each of these fields may hold zero or more values per plant. They
+are stored as rows in the `plant_multi_value` join table, one row
+per (plant, kind, value). The `kind` column is the discriminator
+that names which of the following fields the row represents.
+
+| Field | Vocabulary |
+| --- | --- |
+| `roles` | Plant role (§4) |
+| `food_production_category` | Food-production category (§5) |
+| `growth_habit` | Growth habit (§7) |
+| `root_behaviour` | Root behaviour (§22) |
+| `growing_methods` | Growing method (§9) |
+| `propagation_methods` | Propagation method (§10) |
+| `planting_stock` | Planting stock type (§26) |
+| `water_requirement` | Water requirement |
+| `preferred_soil` | Soil texture (SOIL_VOCABULARIES §3) |
+| `soil_drainage` | Soil drainage (SOIL_VOCABULARIES §5) |
+| `rotation_group` | Rotation group (see §41.7) |
+
+`planting_stock` here is distinct from the single-value
+`PlantInstance.plantingStock`: this field records the forms in which
+the plant can commonly be established, whereas the instance records
+what was actually planted for one specific plant instance.
+
+The `rotation_group` kind is different from the others: its
+`value_id` is a RotationGroup entity id, not a vocabulary id. See
+§41.7.
+
+### 41.3 Numeric facts in `plant_numeric_fact`
+
+Each of these fields holds a numeric value, a range, or both, with
+an optional unit. They are stored as rows in the
+`plant_numeric_fact` table, one row per (plant, kind).
+
+| Field | Typical unit |
+| --- | --- |
+| `mature_height` | Length |
+| `mature_width` | Length |
+| `root_depth` | Length |
+| `minimum_temperature` | Temperature |
+| `maximum_temperature` | Temperature |
+| `preferred_ph` | pH |
+| `spacing` | Length |
+| `row_spacing` | Length |
+| `seed_depth` | Length |
+| `germination_temperature` | Temperature |
+| `germination_time` | Time |
+| `days_to_maturity` | Days |
+| `yield` | Mass or count |
+| `container_size` | Volume |
+| `harvest_frequency` | Time |
+
+Each row carries `min_value`, `max_value` and `typical_value`, all
+nullable, of which at least one must be non-null. If both `min_value`
+and `max_value` are set, `min_value` must not exceed `max_value`.
+This shape lets a fact be a single number, a range, or a range with
+a preferred typical value.
+
+Units come from `QuantityUnit` (see
+`docs/vocabularies/ACTIVITY_VOCABULARIES.md` for the origin values
+and DEC-046 for the unification).
+
+### 41.4 Temporal facts in `plant_temporal_fact`
+
+Each of these fields describes a recurring annual window. They are
+stored as rows in the `plant_temporal_fact` table, one row per
+(plant, kind).
+
+| Field |
+| --- |
+| `sowing_period` |
+| `transplanting_period` |
+| `planting_period` |
+| `flowering_period` |
+| `fruiting_period` |
+| `harvest_period` |
+
+Each row carries `start_month`, `start_day`, `end_month` and
+`end_day`, plus an optional `season` classification. No year is
+stored. The window is a recurring annual one.
+
+Rows may carry optional `hemisphere` and `geographic_scope` context
+to indicate which region the window applies to. A generic "typical
+temperate climate" row leaves both null. If a plant has materially
+different windows in different hemispheres, that distinction is a
+follow-up; V1 permits one row per (plant, kind).
+
+### 41.5 Free-text notes in `plant_note`
+
+Each of these fields holds free text. They are stored as rows in the
+`plant_note` table, one row per (plant, kind).
+
+| Field |
+| --- |
+| `transplanting_notes` |
+| `feeding` |
+| `watering` |
+| `pruning` |
+| `other_maintenance` |
+| `harvest_indicators` |
+| `harvest_method` |
+| `storage` |
+| `culinary_uses` |
+| `pollination_notes` |
+| `rotation_notes` |
+| `regional_notes` |
+| `climate_notes` |
+| `safety_notes` |
+
+One note per kind. If a plant genuinely needs multiple notes per
+kind, a single note with subheadings is the V1 answer. Text is
+user-entered and receives strong preservation guarantees; no length
+limit and no content validation.
+
+### 41.6 Relationships
+
+Three fields of §41 are relationships to other entities, not
+attributes of the plant itself. Each is stored in its own table.
+
+| Field | Table | Target |
+| --- | --- | --- |
+| `companion_plants`, `plants_to_avoid`, `pollination_partners` | `plant_relationship` | Another Plant |
+| `common_pests`, `common_diseases`, `common_problems`, `susceptibilities`, `resistances` | `plant_problem_relationship` | A Problem |
+| `sources` | `plant_source` | A Source |
+
+`plant_relationship` uses `PlantRelationshipType` (§29 of
+`V1_DATABASE_SCHEMA.md`) to classify the nature of the link between
+two plants.
+
+`plant_problem_relationship` carries both a relationship type
+(`associated_with`, `susceptible_to`, `resistant_to`) and an
+optional finer response characteristic (see §27). It may also carry
+an optional cultivar, growth stage and severity.
+
+`plant_source` records that a source supports knowledge about the
+plant, with an optional source relationship (direct, adapted,
+derived, summarised, inferred, unknown; see
+PROVENANCE_VOCABULARIES §8).
+
+### 41.7 Reference data
+
+`rotation_group` names a crop-rotation classification. Unlike the
+other §41 fields, its values are not fixed vocabulary entries: a
+rotation group is a reference entity with its own id, name, type
+(system or user-defined) and garden scope. System rotation groups
+are application-wide; user-defined rotation groups belong to one
+garden.
+
+A plant's association to a rotation group is stored as a
+`plant_multi_value` row with kind `rotation_group` (see §41.2). The
+`value_id` for that row is the rotation group's id, not a vocabulary
+id.
+
+The `rotation_group` entity itself is described in
+`docs/V1_DATABASE_SCHEMA.md` and
+`docs/vocabularies/PLANNING_VOCABULARIES.md` §17.
+
+### 41.8 Fields deferred
+
+The following §41 fields are not yet represented. Each requires a
+controlled vocabulary that has not been authored.
+
+| Field | Reason |
+| --- | --- |
+| `fertility_requirement` | No vocabulary. A bounded qualitative scale would be needed, matching the pattern of `drought_tolerance`. |
+| `toxicity` | No vocabulary. |
+| `toxic_parts` | No vocabulary. Depends on `toxicity`. |
+| `preservation_methods` | No vocabulary. |
+| `support_type` | No vocabulary. §23 gives illustrative examples but no authoritative list. |
+
+Each of these fields will be added when its vocabulary is authored,
+using whichever storage category fits the field's shape.
+
+### 41.9 Adding a new §41 field
+
+When a new field is added to this list, choose the category that
+matches its shape:
+
+- A single value per plant, drawn from a vocabulary → §41.1.
+- Zero or more values per plant, drawn from a vocabulary → §41.2.
+- A number, a range, or a number with a unit → §41.3.
+- A recurring annual window → §41.4.
+- Free text → §41.5.
+- A relationship to another entity → §41.6.
+- Reference data with its own identity → §41.7.
+
+If a new field does not fit any category, that is a signal that the
+category list itself needs review. Record such a case as a decision
+rather than forcing the field into a category that does not match.

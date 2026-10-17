@@ -2127,3 +2127,120 @@ Related documents
 docs/V1_DATABASE_SCHEMA.md
 docs/DECISION_LOG.md DEC-040
 docs/vocabularies/ACTIVITY_VOCABULARIES.md §20
+
+---
+
+DEC-047 — Plant §41 field set is stored across seven categories
+
+Date: October 2026
+Status: Accepted
+Area: Data
+
+Decision
+
+The field set that PLANT_VOCABULARIES §41 presents as a flat list of
+approximately 80 fields is stored across seven categories, each
+chosen for the shape of the fields it contains:
+
+§41.1  Scalar classifications on `plant` (14 fields)
+§41.2  Multi-value classifications in `plant_multi_value`
+(11 kinds)
+§41.3  Numeric facts in `plant_numeric_fact` (15 kinds)
+§41.4  Temporal facts in `plant_temporal_fact` (6 kinds)
+§41.5  Free-text notes in `plant_note` (14 kinds)
+§41.6  Relationships in `plant_relationship`,
+`plant_problem_relationship`, `plant_source` (9 fields)
+§41.7  Reference data (`rotation_group` entity)
+
+PLANT_VOCABULARIES §41 is rewritten to reflect this structure. The
+flat field list it previously presented is removed.
+
+Rationale
+
+Three documents were in tension.
+
+PLANT_VOCABULARIES §41 lists ~80 fields for the Plant record and
+reads, on first encounter, as a request for an 80-column table.
+
+PLANT_VOCABULARIES §29 states that most of those fields are "plant
+knowledge, reference data, measurements, ranges or relationships
+rather than vocabulary values."
+
+V1_DATABASE_SCHEMA §21 states that "a lightweight generic knowledge
+structure may be used where appropriate rather than creating a
+separate table for every type of horticultural fact," and adds that
+"the implementation may split frequently queried knowledge types
+into specialised tables where this materially improves validation
+or performance."
+
+Reading §41 literally yields an unwieldy single table. Reading §21
+alone yields an entity-attribute-value table with no compile-time
+type safety, awkward range support, and expensive full-plant loads.
+Neither reading serves the codebase.
+
+The seven-category structure preserves the intent of §21 — no
+separate table per fact type, extensible without schema churn for
+the numeric, temporal and note categories — while keeping the type
+safety and validation the rest of the codebase relies on for the
+scalar and multi-value fields.
+
+Rejected alternatives
+
+Pure flat columns.
+
+Put every §41 field on the `plant` table. Rejected because it
+produces an ~80-column entity; makes ranges and ranges-with-
+typical-values impossible without two or three columns per
+numeric field; forces null-everywhere rows for plants that do
+not populate the many optional fields; and makes the entity
+unusable for any purpose that needs only a small subset of the
+data.
+
+Pure generic knowledge structure.
+
+A single table with `subject_type`, `subject_id`,
+`knowledge_type`, `value`, `unit` and the other fields listed in
+§21. Rejected because it loses compile-time type safety; makes
+range semantics (min/max/typical) awkward to express; makes
+partial loads expensive; and reduces the ability to validate a
+value against its expected type in the mapper.
+
+Consequences
+
+- PLANT_VOCABULARIES §41 is rewritten around the seven categories.
+  The rewritten section documents each category, lists its fields,
+  names the table where applicable, and explains why each field
+  belongs where it does.
+
+- V1_DATABASE_SCHEMA §16 gains a one-sentence reference to
+  PLANT_VOCABULARIES §41 for the full plant field set. The schema
+  document continues to own the table definitions themselves.
+
+- Adding a new §41 field follows the "pick the category that fits"
+  rule recorded in the rewritten §41. A field that does not fit any
+  category triggers a decision review rather than being forced into
+  an unsuitable one.
+
+- Five §41 fields remain deferred because their vocabularies have
+  not been authored: `fertility_requirement`, `toxicity`,
+  `toxic_parts`, `preservation_methods`, `support_type`. The
+  rewritten §41 records them explicitly so the gap is visible.
+
+- The category structure is extensible. If a future requirement
+  introduces a field whose shape does not fit any of the seven
+  categories — for example, a per-region set of rows rather than a
+  single row with optional context — that is a signal to review the
+  category list, not to force the field into an ill-fitting one.
+
+Related documents
+
+docs/vocabularies/PLANT_VOCABULARIES.md §41
+docs/V1_DATABASE_SCHEMA.md §16, §21
+docs/DECISION_LOG.md DEC-046
+docs/DECISION_LOG.md DEC-040
+
+Supersedes
+
+No earlier decision. This is the first formal record of the §41
+storage structure. The implementation that this decision documents
+was produced incrementally across Phase 1 steps 4a–4e.

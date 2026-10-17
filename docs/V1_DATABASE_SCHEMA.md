@@ -1,9 +1,9 @@
 Garden Planner & Manager — V1 Database Schema
 
 Document: docs/V1_DATABASE_SCHEMA.md
-Version: 0.4
+Version: 0.6
 Status: Working specification
-Last updated: September 2026
+Last updated: October 2026
 
 
 ---
@@ -673,48 +673,40 @@ Represents a canonical plant knowledge entity.
 Examples:
 
 Tomato
-
 Carrot
-
 Lettuce
-
 Apple
-
 Basil
 
 
 Required fields
 
 id
-
 canonical_name
-
 created_at
-
 updated_at
-
 status
-
 
 Optional fields
 
 scientific_name
-
 genus
-
 species
-
 family
-
 lifecycle
-
 description
-
 
 Plant identity is reference data.
 
-A Plant record does not represent something growing in the user's garden.
+A Plant record does not represent something growing in the user's
+garden.
 
+The plant record carries additional classifications and knowledge
+beyond the fields listed here. The full plant field set and the
+structures that store it are described in
+PLANT_VOCABULARIES.md §41; the storage structure itself is recorded
+in DEC-047. This section lists the identity and classification
+columns only.
 
 ---
 
