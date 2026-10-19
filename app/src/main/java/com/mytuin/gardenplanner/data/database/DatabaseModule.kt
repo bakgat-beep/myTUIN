@@ -28,6 +28,7 @@ import com.mytuin.gardenplanner.data.dao.PlantTemporalFactDao
 import com.mytuin.gardenplanner.data.dao.ProblemDao
 import com.mytuin.gardenplanner.data.dao.ProblemObservationDao
 import com.mytuin.gardenplanner.data.dao.RotationGroupDao
+import com.mytuin.gardenplanner.data.dao.SoilRecordDao
 import com.mytuin.gardenplanner.data.dao.SourceDao
 import com.mytuin.gardenplanner.data.dao.SpatialObjectDao
 import dagger.Module
@@ -90,6 +91,9 @@ object DatabaseModule {
 
     @Provides
     fun provideRotationGroupDao(db: GardenDatabase): RotationGroupDao = db.rotationGroupDao()
+
+    @Provides
+    fun provideSoilRecordDao(db: GardenDatabase): SoilRecordDao = db.soilRecordDao()
 
     @Provides
     fun providePlantInstanceDao(db: GardenDatabase): PlantInstanceDao = db.plantInstanceDao()

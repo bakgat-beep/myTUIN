@@ -39,4 +39,6 @@ interface IdGenerator {
     fun newPlanId(): String
 
     fun newSourceId(): String
+
+    fun newSoilRecordId(): String
 }

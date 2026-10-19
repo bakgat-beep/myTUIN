@@ -52,6 +52,7 @@ class GardenDatabaseMigrationTest {
             "plant_problem_relationship",
             "plant_source",
             "rotation_group",
+            "soil_record",
         )
 
     @Test
@@ -1693,6 +1694,58 @@ class GardenDatabaseMigrationTest {
             .use { cursor ->
                 assertTrue("v22 plant row must survive migration", cursor.moveToFirst())
                 assertEquals("V22 Plant", cursor.getString(0))
+            }
+
+        migrated.close()
+    }
+
+    @Test
+    fun fixture_migrates_from_v23_to_current_adding_soil_record_table_with_data_intact() {
+        helper.createDatabase("v23-fixture", 23).apply {
+            execSQL(
+                """
+                INSERT INTO garden (
+                    id, name, created_at, updated_at, status, hemisphere
+                ) VALUES (
+                    'garden_test_v23',
+                    'V23 Garden',
+                    1700000000000,
+                    1700000000000,
+                    'draft',
+                    'unknown'
+                )
+                """.trimIndent(),
+            )
+            close()
+        }
+
+        val migrated = helper.runMigrationsAndValidate("v23-fixture", GARDEN_DATABASE_VERSION, true)
+
+        migrated
+            .query(
+                "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'soil_record'",
+            ).use { cursor ->
+                assertTrue(
+                    "soil_record table must exist after v23 migration",
+                    cursor.moveToFirst(),
+                )
+            }
+
+        var columnCount = 0
+        migrated
+            .query("PRAGMA table_info(soil_record)")
+            .use { cursor ->
+                while (cursor.moveToNext()) {
+                    columnCount += 1
+                }
+            }
+        assertEquals("soil_record must have 9 columns", 9, columnCount)
+
+        migrated
+            .query("SELECT name FROM garden WHERE id = 'garden_test_v23'")
+            .use { cursor ->
+                assertTrue("v23 garden row must survive migration", cursor.moveToFirst())
+                assertEquals("V23 Garden", cursor.getString(0))
             }
 
         migrated.close()

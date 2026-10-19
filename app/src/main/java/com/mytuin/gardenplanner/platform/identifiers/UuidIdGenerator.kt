@@ -36,4 +36,6 @@ class UuidIdGenerator
         override fun newPlanId(): String = "plan_${UUID.randomUUID()}"
 
         override fun newSourceId(): String = "source_${UUID.randomUUID()}"
+
+        override fun newSoilRecordId(): String = "soilrecord_${UUID.randomUUID()}"
     }
