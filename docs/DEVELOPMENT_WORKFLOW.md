@@ -109,20 +109,57 @@ dependency; they run in a few seconds.
 Check that a device or emulator is attached (`adb devices`). A failure
 that is not about device availability is a real failure.
 
-**`kspReleaseKotlin` or `kspDebugKotlin` fails with "Empty schema file".**
+**`kspReleaseKotlin` or `kspDebugKotlin` fails with "Empty schema
+file" or a `JsonSyntaxException` / `EOFException` pointing into a
+schema `.json`.**
 
 A previous build was interrupted while Room was writing the schema
 JSON for the current version. The file under
 `app/schemas/com.mytuin.gardenplanner.data.database.GardenDatabase/`
-for the current version is zero-length or truncated.
+is zero-length (first error) or truncated (second).
 
-Fix: list the directory, identify the file whose size is zero or far
-smaller than its neighbours, and delete it. **Then clean the build
-before rerunning.**
+Run the repair script:
+
+```powershell
+.\tools\Repair-RoomSchemas.ps1
+```
+
+It scans every `*.json` in the schema directory, flags any that is
+empty, not valid JSON, or has a `database.version` that does not
+match its filename, and lets you delete or back up the corrupt
+files. Detection is based on JSON validity, not file size: a
+truncated file may be several KB, and a valid file may be small.
+
+Then:
 
 ```powershell
 .\gradlew clean
 .\gradlew check
+```
+
+The clean is not optional. Room writes the schema file as a side
+effect of KSP, but the file is not declared as a Gradle task output.
+Gradle therefore cannot detect that the file was deleted and will
+consider the KSP tasks up-to-date, skipping them. The schema file
+never gets regenerated without a clean or `--rerun-tasks`.
+
+`-Mode Force` deletes without prompting. `-Backup` moves corrupt
+files to a timestamped folder instead of deleting them.
+`-ThenCheck` runs `gradlew clean check` immediately after repair.
+
+**Related failure: `MigrationTestHelper` cannot find
+`<version>.json`.**
+
+Same root cause. A schema file was deleted (to fix a previous
+failure) but KSP was not rerun, so the file is missing from the
+test APK's assets. Symptoms: every migration test fails with
+`java.io.FileNotFoundException: Cannot find the schema file in the
+assets folder`. Fix is the same: run the repair script, then clean,
+then rerun.
+
+Do not commit a regenerated schema file without running the repair
+script against it first. The script's checks are the same ones
+Room performs on load.
 
 ---
 
