@@ -50,9 +50,9 @@ complexity:
     # The count is dictated by the query, not by design choice.
     excludes: ['**/data/dao/**', '**/data/repositories/**', '**/ui/garden/debug/**']
 
-  # Three files under data/database/ grow their function count
-  # linearly with the number of schema entities, not with
-  # complexity. In each case the shape is dictated by a framework:
+  # Five files grow their function count linearly with the number of
+  # schema entities, not with complexity. In each case the shape is
+  # dictated by a framework or by the entity set:
   #
   #   VocabularyConverters.kt  — a Room @TypeConverters class holds
   #                              two functions per vocabulary.
@@ -60,11 +60,15 @@ complexity:
   #                              abstract DAO accessor per entity.
   #   DatabaseModule.kt        — a Hilt @Module object holds one
   #                              @Provides for each of those DAOs.
+  #   IdGenerator.kt           — the domain ID factory interface
+  #                              holds one newXId() per entity type.
+  #   UuidIdGenerator.kt       — its implementation mirrors it 1:1.
   #
   # Splitting any of them would break the framework contract (the
-  # first two) or fragment a cohesive concern for no gain (the
-  # third). Excluded per-file rather than per-directory so the rule
-  # remains active for anything else that lands there.
+  # first two), fragment a cohesive concern for no gain (the third
+  # and fourth), or duplicate the interface shape in every caller
+  # (the fifth). Excluded per-file rather than per-directory so the
+  # rule remains active for anything else that lands there.
   #
   # Test source sets are also excluded: test classes count functions
   # by coverage, not by class complexity. Same reasoning as
@@ -84,6 +88,8 @@ complexity:
       - '**/data/database/VocabularyConverters.kt'
       - '**/data/database/GardenDatabase.kt'
       - '**/data/database/DatabaseModule.kt'
+      - '**/domain/identifiers/IdGenerator.kt'
+      - '**/platform/identifiers/UuidIdGenerator.kt'
       - '**/src/test/**'
       - '**/src/androidTest/**'
 

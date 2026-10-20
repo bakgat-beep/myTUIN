@@ -30,10 +30,14 @@ import com.mytuin.gardenplanner.data.dao.PlantSourceDao
 import com.mytuin.gardenplanner.data.dao.PlantTemporalFactDao
 import com.mytuin.gardenplanner.data.dao.ProblemDao
 import com.mytuin.gardenplanner.data.dao.ProblemObservationDao
+import com.mytuin.gardenplanner.data.dao.RecommendationDao
+import com.mytuin.gardenplanner.data.dao.RecommendationEvidenceDao
+import com.mytuin.gardenplanner.data.dao.RecommendationFactorDao
 import com.mytuin.gardenplanner.data.dao.RotationGroupDao
 import com.mytuin.gardenplanner.data.dao.SoilRecordDao
 import com.mytuin.gardenplanner.data.dao.SourceDao
 import com.mytuin.gardenplanner.data.dao.SpatialObjectDao
+import com.mytuin.gardenplanner.data.dao.UserDecisionDao
 import com.mytuin.gardenplanner.data.entities.ActivityEntity
 import com.mytuin.gardenplanner.data.entities.AreaEntity
 import com.mytuin.gardenplanner.data.entities.CultivarEntity
@@ -61,12 +65,16 @@ import com.mytuin.gardenplanner.data.entities.PlantSourceEntity
 import com.mytuin.gardenplanner.data.entities.PlantTemporalFactEntity
 import com.mytuin.gardenplanner.data.entities.ProblemEntity
 import com.mytuin.gardenplanner.data.entities.ProblemObservationEntity
+import com.mytuin.gardenplanner.data.entities.RecommendationEntity
+import com.mytuin.gardenplanner.data.entities.RecommendationEvidenceEntity
+import com.mytuin.gardenplanner.data.entities.RecommendationFactorEntity
 import com.mytuin.gardenplanner.data.entities.RotationGroupEntity
 import com.mytuin.gardenplanner.data.entities.SoilRecordEntity
 import com.mytuin.gardenplanner.data.entities.SourceEntity
 import com.mytuin.gardenplanner.data.entities.SpatialObjectEntity
+import com.mytuin.gardenplanner.data.entities.UserDecisionEntity
 
-const val GARDEN_DATABASE_VERSION: Int = 24
+const val GARDEN_DATABASE_VERSION: Int = 25
 
 /**
  * The V1 Room database.
@@ -96,6 +104,7 @@ const val GARDEN_DATABASE_VERSION: Int = 24
  *   v22 — adds PlantRelationship, PlantProblemRelationship and PlantSource (Phase 1 step 4d).
  *   v23 — adds RotationGroup (Phase 1 step 4e).
  *   v24 — adds SoilRecord (Phase 1 step 5).
+ *   v25 — adds Recommendation, RecommendationFactor, RecommendationEvidence and UserDecision (Phase 1 step 6).
  *
  * All migrations are @AutoMigration. Room derives the SQL from the
  * schema diff at compile time.
@@ -121,6 +130,10 @@ const val GARDEN_DATABASE_VERSION: Int = 24
         PlantSourceEntity::class,
         RotationGroupEntity::class,
         SoilRecordEntity::class,
+        RecommendationEntity::class,
+        RecommendationFactorEntity::class,
+        RecommendationEvidenceEntity::class,
+        UserDecisionEntity::class,
         PlantInstanceEntity::class,
         PlantInstanceHistoryEntity::class,
         PlantAliasEntity::class,
@@ -161,6 +174,7 @@ const val GARDEN_DATABASE_VERSION: Int = 24
         AutoMigration(from = 21, to = 22),
         AutoMigration(from = 22, to = 23),
         AutoMigration(from = 23, to = 24),
+        AutoMigration(from = 24, to = 25),
     ],
 )
 @TypeConverters(VocabularyConverters::class)
@@ -224,4 +238,12 @@ abstract class GardenDatabase : RoomDatabase() {
     abstract fun rotationGroupDao(): RotationGroupDao
 
     abstract fun soilRecordDao(): SoilRecordDao
+
+    abstract fun recommendationDao(): RecommendationDao
+
+    abstract fun recommendationFactorDao(): RecommendationFactorDao
+
+    abstract fun recommendationEvidenceDao(): RecommendationEvidenceDao
+
+    abstract fun userDecisionDao(): UserDecisionDao
 }

@@ -54,6 +54,12 @@ import com.mytuin.gardenplanner.domain.vocabulary.ProblemStatus
 import com.mytuin.gardenplanner.domain.vocabulary.PropagationMethod
 import com.mytuin.gardenplanner.domain.vocabulary.PruningMethod
 import com.mytuin.gardenplanner.domain.vocabulary.QuantityUnit
+import com.mytuin.gardenplanner.domain.vocabulary.RecommendationEvidenceRole
+import com.mytuin.gardenplanner.domain.vocabulary.RecommendationEvidenceSourceType
+import com.mytuin.gardenplanner.domain.vocabulary.RecommendationFactorResult
+import com.mytuin.gardenplanner.domain.vocabulary.RecommendationReasonType
+import com.mytuin.gardenplanner.domain.vocabulary.RecommendationStatus
+import com.mytuin.gardenplanner.domain.vocabulary.RecommendationSubjectType
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
 import com.mytuin.gardenplanner.domain.vocabulary.RootBehaviour
 import com.mytuin.gardenplanner.domain.vocabulary.RotationGroupType
@@ -66,8 +72,10 @@ import com.mytuin.gardenplanner.domain.vocabulary.SoilWorkMethod
 import com.mytuin.gardenplanner.domain.vocabulary.SourceRelationship
 import com.mytuin.gardenplanner.domain.vocabulary.SourceStatus
 import com.mytuin.gardenplanner.domain.vocabulary.SourceType
+import com.mytuin.gardenplanner.domain.vocabulary.SuitabilityDimension
 import com.mytuin.gardenplanner.domain.vocabulary.SupportRequirement
 import com.mytuin.gardenplanner.domain.vocabulary.TemperatureClass
+import com.mytuin.gardenplanner.domain.vocabulary.UserDecisionType
 import com.mytuin.gardenplanner.domain.vocabulary.WaterRequirement
 import com.mytuin.gardenplanner.domain.vocabulary.WateringMethod
 import com.mytuin.gardenplanner.domain.vocabulary.WaterloggingTolerance
@@ -632,4 +640,68 @@ class VocabularyConverters {
     fun idToRotationGroupType(id: String): RotationGroupType =
         RotationGroupType.fromId(id)
             ?: error("Unknown RotationGroupType id stored in database: '$id'")
+
+    @TypeConverter
+    fun recommendationStatusToId(value: RecommendationStatus): String = value.id
+
+    @TypeConverter
+    fun idToRecommendationStatus(id: String): RecommendationStatus =
+        RecommendationStatus.fromId(id)
+            ?: error("Unknown RecommendationStatus id stored in database: '$id'")
+
+    @TypeConverter
+    fun recommendationFactorResultToId(value: RecommendationFactorResult): String = value.id
+
+    @TypeConverter
+    fun idToRecommendationFactorResult(id: String): RecommendationFactorResult =
+        RecommendationFactorResult.fromId(id)
+            ?: error("Unknown RecommendationFactorResult id stored in database: '$id'")
+
+    @TypeConverter
+    fun suitabilityDimensionToId(value: SuitabilityDimension): String = value.id
+
+    @TypeConverter
+    fun idToSuitabilityDimension(id: String): SuitabilityDimension =
+        SuitabilityDimension.fromId(id)
+            ?: error("Unknown SuitabilityDimension id stored in database: '$id'")
+
+    @TypeConverter
+    fun recommendationReasonTypeToId(value: RecommendationReasonType): String = value.id
+
+    @TypeConverter
+    fun idToRecommendationReasonType(id: String): RecommendationReasonType =
+        RecommendationReasonType.fromId(id)
+            ?: error("Unknown RecommendationReasonType id stored in database: '$id'")
+
+    @TypeConverter
+    fun userDecisionTypeToId(value: UserDecisionType): String = value.id
+
+    @TypeConverter
+    fun idToUserDecisionType(id: String): UserDecisionType =
+        UserDecisionType.fromId(id)
+            ?: error("Unknown UserDecisionType id stored in database: '$id'")
+
+    @TypeConverter
+    fun recommendationSubjectTypeToId(value: RecommendationSubjectType): String = value.id
+
+    @TypeConverter
+    fun idToRecommendationSubjectType(id: String): RecommendationSubjectType =
+        RecommendationSubjectType.fromId(id)
+            ?: error("Unknown RecommendationSubjectType id stored in database: '$id'")
+
+    @TypeConverter
+    fun recommendationEvidenceSourceTypeToId(value: RecommendationEvidenceSourceType): String = value.id
+
+    @TypeConverter
+    fun idToRecommendationEvidenceSourceType(id: String): RecommendationEvidenceSourceType =
+        RecommendationEvidenceSourceType.fromId(id)
+            ?: error("Unknown RecommendationEvidenceSourceType id stored in database: '$id'")
+
+    @TypeConverter
+    fun recommendationEvidenceRoleToId(value: RecommendationEvidenceRole): String = value.id
+
+    @TypeConverter
+    fun idToRecommendationEvidenceRole(id: String): RecommendationEvidenceRole =
+        RecommendationEvidenceRole.fromId(id)
+            ?: error("Unknown RecommendationEvidenceRole id stored in database: '$id'")
 }

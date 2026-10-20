@@ -41,4 +41,12 @@ interface IdGenerator {
     fun newSourceId(): String
 
     fun newSoilRecordId(): String
+
+    fun newRecommendationId(): String
+
+    fun newRecommendationFactorId(): String
+
+    fun newRecommendationEvidenceId(): String
+
+    fun newUserDecisionId(): String
 }

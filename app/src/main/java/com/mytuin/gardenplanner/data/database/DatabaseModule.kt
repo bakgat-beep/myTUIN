@@ -27,10 +27,14 @@ import com.mytuin.gardenplanner.data.dao.PlantSourceDao
 import com.mytuin.gardenplanner.data.dao.PlantTemporalFactDao
 import com.mytuin.gardenplanner.data.dao.ProblemDao
 import com.mytuin.gardenplanner.data.dao.ProblemObservationDao
+import com.mytuin.gardenplanner.data.dao.RecommendationDao
+import com.mytuin.gardenplanner.data.dao.RecommendationEvidenceDao
+import com.mytuin.gardenplanner.data.dao.RecommendationFactorDao
 import com.mytuin.gardenplanner.data.dao.RotationGroupDao
 import com.mytuin.gardenplanner.data.dao.SoilRecordDao
 import com.mytuin.gardenplanner.data.dao.SourceDao
 import com.mytuin.gardenplanner.data.dao.SpatialObjectDao
+import com.mytuin.gardenplanner.data.dao.UserDecisionDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -136,4 +140,16 @@ object DatabaseModule {
 
     @Provides
     fun provideSourceDao(db: GardenDatabase): SourceDao = db.sourceDao()
+
+    @Provides
+    fun provideRecommendationDao(db: GardenDatabase): RecommendationDao = db.recommendationDao()
+
+    @Provides
+    fun provideRecommendationFactorDao(db: GardenDatabase): RecommendationFactorDao = db.recommendationFactorDao()
+
+    @Provides
+    fun provideRecommendationEvidenceDao(db: GardenDatabase): RecommendationEvidenceDao = db.recommendationEvidenceDao()
+
+    @Provides
+    fun provideUserDecisionDao(db: GardenDatabase): UserDecisionDao = db.userDecisionDao()
 }

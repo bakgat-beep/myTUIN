@@ -38,4 +38,12 @@ class UuidIdGenerator
         override fun newSourceId(): String = "source_${UUID.randomUUID()}"
 
         override fun newSoilRecordId(): String = "soilrecord_${UUID.randomUUID()}"
+
+        override fun newRecommendationId(): String = "recommendation_${UUID.randomUUID()}"
+
+        override fun newRecommendationFactorId(): String = "recommendationfactor_${UUID.randomUUID()}"
+
+        override fun newRecommendationEvidenceId(): String = "recommendationevidence_${UUID.randomUUID()}"
+
+        override fun newUserDecisionId(): String = "userdecision_${UUID.randomUUID()}"
     }

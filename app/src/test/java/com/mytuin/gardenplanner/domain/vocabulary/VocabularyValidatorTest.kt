@@ -81,6 +81,14 @@ class VocabularyValidatorTest {
             SourceRelationship.entries,
             GrowthStage.entries,
             RotationGroupType.entries,
+            RecommendationStatus.entries,
+            RecommendationFactorResult.entries,
+            SuitabilityDimension.entries,
+            RecommendationReasonType.entries,
+            UserDecisionType.entries,
+            RecommendationSubjectType.entries,
+            RecommendationEvidenceSourceType.entries,
+            RecommendationEvidenceRole.entries,
         )
 
     @Test
