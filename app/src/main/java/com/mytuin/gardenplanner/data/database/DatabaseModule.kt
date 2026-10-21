@@ -4,12 +4,15 @@ import android.content.Context
 import com.mytuin.gardenplanner.data.dao.ActivityDao
 import com.mytuin.gardenplanner.data.dao.AreaDao
 import com.mytuin.gardenplanner.data.dao.CultivarDao
+import com.mytuin.gardenplanner.data.dao.ExperimentDao
+import com.mytuin.gardenplanner.data.dao.ExperimentLinkDao
 import com.mytuin.gardenplanner.data.dao.GardenDao
 import com.mytuin.gardenplanner.data.dao.GardenPreferenceDao
 import com.mytuin.gardenplanner.data.dao.GrowingSpaceDao
 import com.mytuin.gardenplanner.data.dao.GrowingSpaceHistoryDao
 import com.mytuin.gardenplanner.data.dao.HarvestDao
 import com.mytuin.gardenplanner.data.dao.HarvestLossDao
+import com.mytuin.gardenplanner.data.dao.InboxItemDao
 import com.mytuin.gardenplanner.data.dao.MeasurementDao
 import com.mytuin.gardenplanner.data.dao.ObservationDao
 import com.mytuin.gardenplanner.data.dao.PlanDao
@@ -152,4 +155,13 @@ object DatabaseModule {
 
     @Provides
     fun provideUserDecisionDao(db: GardenDatabase): UserDecisionDao = db.userDecisionDao()
+
+    @Provides
+    fun provideExperimentDao(db: GardenDatabase): ExperimentDao = db.experimentDao()
+
+    @Provides
+    fun provideExperimentLinkDao(db: GardenDatabase): ExperimentLinkDao = db.experimentLinkDao()
+
+    @Provides
+    fun provideInboxItemDao(db: GardenDatabase): InboxItemDao = db.inboxItemDao()
 }

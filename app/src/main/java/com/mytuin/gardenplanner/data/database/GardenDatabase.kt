@@ -7,12 +7,15 @@ import androidx.room.TypeConverters
 import com.mytuin.gardenplanner.data.dao.ActivityDao
 import com.mytuin.gardenplanner.data.dao.AreaDao
 import com.mytuin.gardenplanner.data.dao.CultivarDao
+import com.mytuin.gardenplanner.data.dao.ExperimentDao
+import com.mytuin.gardenplanner.data.dao.ExperimentLinkDao
 import com.mytuin.gardenplanner.data.dao.GardenDao
 import com.mytuin.gardenplanner.data.dao.GardenPreferenceDao
 import com.mytuin.gardenplanner.data.dao.GrowingSpaceDao
 import com.mytuin.gardenplanner.data.dao.GrowingSpaceHistoryDao
 import com.mytuin.gardenplanner.data.dao.HarvestDao
 import com.mytuin.gardenplanner.data.dao.HarvestLossDao
+import com.mytuin.gardenplanner.data.dao.InboxItemDao
 import com.mytuin.gardenplanner.data.dao.MeasurementDao
 import com.mytuin.gardenplanner.data.dao.ObservationDao
 import com.mytuin.gardenplanner.data.dao.PlanDao
@@ -41,6 +44,8 @@ import com.mytuin.gardenplanner.data.dao.UserDecisionDao
 import com.mytuin.gardenplanner.data.entities.ActivityEntity
 import com.mytuin.gardenplanner.data.entities.AreaEntity
 import com.mytuin.gardenplanner.data.entities.CultivarEntity
+import com.mytuin.gardenplanner.data.entities.ExperimentEntity
+import com.mytuin.gardenplanner.data.entities.ExperimentLinkEntity
 import com.mytuin.gardenplanner.data.entities.GardenEntity
 import com.mytuin.gardenplanner.data.entities.GardenPlantPreferenceEntity
 import com.mytuin.gardenplanner.data.entities.GardenPreferenceEntity
@@ -48,6 +53,7 @@ import com.mytuin.gardenplanner.data.entities.GrowingSpaceEntity
 import com.mytuin.gardenplanner.data.entities.GrowingSpaceHistoryEntity
 import com.mytuin.gardenplanner.data.entities.HarvestEntity
 import com.mytuin.gardenplanner.data.entities.HarvestLossEntity
+import com.mytuin.gardenplanner.data.entities.InboxItemEntity
 import com.mytuin.gardenplanner.data.entities.MeasurementEntity
 import com.mytuin.gardenplanner.data.entities.ObservationEntity
 import com.mytuin.gardenplanner.data.entities.PlanEntity
@@ -74,7 +80,7 @@ import com.mytuin.gardenplanner.data.entities.SourceEntity
 import com.mytuin.gardenplanner.data.entities.SpatialObjectEntity
 import com.mytuin.gardenplanner.data.entities.UserDecisionEntity
 
-const val GARDEN_DATABASE_VERSION: Int = 25
+const val GARDEN_DATABASE_VERSION: Int = 26
 
 /**
  * The V1 Room database.
@@ -105,6 +111,7 @@ const val GARDEN_DATABASE_VERSION: Int = 25
  *   v23 — adds RotationGroup (Phase 1 step 4e).
  *   v24 — adds SoilRecord (Phase 1 step 5).
  *   v25 — adds Recommendation, RecommendationFactor, RecommendationEvidence and UserDecision (Phase 1 step 6).
+ *   v26 — adds Experiment, ExperimentLink and InboxItem (Phase 1 step 7).
  *
  * All migrations are @AutoMigration. Room derives the SQL from the
  * schema diff at compile time.
@@ -134,6 +141,9 @@ const val GARDEN_DATABASE_VERSION: Int = 25
         RecommendationFactorEntity::class,
         RecommendationEvidenceEntity::class,
         UserDecisionEntity::class,
+        ExperimentEntity::class,
+        ExperimentLinkEntity::class,
+        InboxItemEntity::class,
         PlantInstanceEntity::class,
         PlantInstanceHistoryEntity::class,
         PlantAliasEntity::class,
@@ -175,6 +185,7 @@ const val GARDEN_DATABASE_VERSION: Int = 25
         AutoMigration(from = 22, to = 23),
         AutoMigration(from = 23, to = 24),
         AutoMigration(from = 24, to = 25),
+        AutoMigration(from = 25, to = 26),
     ],
 )
 @TypeConverters(VocabularyConverters::class)
@@ -246,4 +257,10 @@ abstract class GardenDatabase : RoomDatabase() {
     abstract fun recommendationEvidenceDao(): RecommendationEvidenceDao
 
     abstract fun userDecisionDao(): UserDecisionDao
+
+    abstract fun experimentDao(): ExperimentDao
+
+    abstract fun experimentLinkDao(): ExperimentLinkDao
+
+    abstract fun inboxItemDao(): InboxItemDao
 }

@@ -57,6 +57,9 @@ class GardenDatabaseMigrationTest {
             "recommendation_factor",
             "recommendation_evidence",
             "user_decision",
+            "experiment",
+            "experiment_link",
+            "inbox_item",
         )
 
     @Test
@@ -1813,6 +1816,63 @@ class GardenDatabaseMigrationTest {
             .use { cursor ->
                 assertTrue("v24 garden row must survive migration", cursor.moveToFirst())
                 assertEquals("V24 Garden", cursor.getString(0))
+            }
+
+        migrated.close()
+    }
+
+    @Test
+    fun fixture_migrates_from_v25_to_current_adding_experiment_and_inbox_tables_with_data_intact() {
+        helper.createDatabase("v25-fixture", 25).apply {
+            execSQL(
+                """
+                INSERT INTO garden (
+                    id, name, created_at, updated_at, status, hemisphere
+                ) VALUES (
+                    'garden_test_v25',
+                    'V25 Garden',
+                    1700000000000,
+                    1700000000000,
+                    'draft',
+                    'unknown'
+                )
+                """.trimIndent(),
+            )
+            close()
+        }
+
+        val migrated = helper.runMigrationsAndValidate("v25-fixture", GARDEN_DATABASE_VERSION, true)
+
+        listOf("experiment", "experiment_link", "inbox_item").forEach { table ->
+            migrated
+                .query(
+                    "SELECT name FROM sqlite_master WHERE type = 'table' AND name = '$table'",
+                ).use { cursor ->
+                    assertTrue("$table must exist after v25 migration", cursor.moveToFirst())
+                }
+        }
+
+        fun columnCount(table: String): Int {
+            var n = 0
+            migrated
+                .query("PRAGMA table_info($table)")
+                .use { cursor ->
+                    while (cursor.moveToNext()) {
+                        n += 1
+                    }
+                }
+            return n
+        }
+
+        assertEquals("experiment must have 13 columns", 13, columnCount("experiment"))
+        assertEquals("experiment_link must have 4 columns", 4, columnCount("experiment_link"))
+        assertEquals("inbox_item must have 13 columns", 13, columnCount("inbox_item"))
+
+        migrated
+            .query("SELECT name FROM garden WHERE id = 'garden_test_v25'")
+            .use { cursor ->
+                assertTrue("v25 garden row must survive migration", cursor.moveToFirst())
+                assertEquals("V25 Garden", cursor.getString(0))
             }
 
         migrated.close()

@@ -89,6 +89,11 @@ class VocabularyValidatorTest {
             RecommendationSubjectType.entries,
             RecommendationEvidenceSourceType.entries,
             RecommendationEvidenceRole.entries,
+            ExperimentStatus.entries,
+            ExperimentLinkType.entries,
+            InboxItemType.entries,
+            InboxItemStatus.entries,
+            InboxItemRelatedEntityType.entries,
         )
 
     @Test

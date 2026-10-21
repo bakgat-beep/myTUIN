@@ -23,6 +23,8 @@ class FakeIdGenerator(
     private val nextRecommendationFactorIdValue: String = "recommendationfactor_test_id_0001",
     private val nextRecommendationEvidenceIdValue: String = "recommendationevidence_test_id_0001",
     private val nextUserDecisionIdValue: String = "userdecision_test_id_0001",
+    private val nextExperimentIdValue: String = "experiment_test_id_0001",
+    private val nextInboxItemIdValue: String = "inboxitem_test_id_0001",
 ) : IdGenerator {
     override fun newGardenId(): String = nextGardenIdValue
 
@@ -63,4 +65,8 @@ class FakeIdGenerator(
     override fun newRecommendationEvidenceId(): String = nextRecommendationEvidenceIdValue
 
     override fun newUserDecisionId(): String = nextUserDecisionIdValue
+
+    override fun newExperimentId(): String = nextExperimentIdValue
+
+    override fun newInboxItemId(): String = nextInboxItemIdValue
 }

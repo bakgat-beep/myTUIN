@@ -7,6 +7,9 @@ package com.mytuin.gardenplanner.domain.identifiers
  * type. IDs must never encode display names, translations or row
  * order (V1_DATABASE_SCHEMA §5; CORE_ARCHITECTURE §51).
  *
+ * The experiment_link join table has no id: its identity is the
+ * (experiment_id, linked_type, linked_id) triple.
+ *
  * Domain layer: no Android, Compose, Room or Hilt dependencies.
  */
 interface IdGenerator {
@@ -49,4 +52,8 @@ interface IdGenerator {
     fun newRecommendationEvidenceId(): String
 
     fun newUserDecisionId(): String
+
+    fun newExperimentId(): String
+
+    fun newInboxItemId(): String
 }

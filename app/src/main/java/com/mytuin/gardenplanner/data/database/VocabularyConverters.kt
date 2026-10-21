@@ -6,6 +6,8 @@ import com.mytuin.gardenplanner.domain.vocabulary.AreaType
 import com.mytuin.gardenplanner.domain.vocabulary.Confidence
 import com.mytuin.gardenplanner.domain.vocabulary.DataOrigin
 import com.mytuin.gardenplanner.domain.vocabulary.DroughtTolerance
+import com.mytuin.gardenplanner.domain.vocabulary.ExperimentLinkType
+import com.mytuin.gardenplanner.domain.vocabulary.ExperimentStatus
 import com.mytuin.gardenplanner.domain.vocabulary.FeedingMethod
 import com.mytuin.gardenplanner.domain.vocabulary.FoodProductionCategory
 import com.mytuin.gardenplanner.domain.vocabulary.FrostSensitivity
@@ -24,6 +26,9 @@ import com.mytuin.gardenplanner.domain.vocabulary.HarvestLossSeverity
 import com.mytuin.gardenplanner.domain.vocabulary.HarvestSizeCategory
 import com.mytuin.gardenplanner.domain.vocabulary.HeatTolerance
 import com.mytuin.gardenplanner.domain.vocabulary.Hemisphere
+import com.mytuin.gardenplanner.domain.vocabulary.InboxItemRelatedEntityType
+import com.mytuin.gardenplanner.domain.vocabulary.InboxItemStatus
+import com.mytuin.gardenplanner.domain.vocabulary.InboxItemType
 import com.mytuin.gardenplanner.domain.vocabulary.InfrastructureType
 import com.mytuin.gardenplanner.domain.vocabulary.LightRequirement
 import com.mytuin.gardenplanner.domain.vocabulary.MaintenanceDemand
@@ -704,4 +709,44 @@ class VocabularyConverters {
     fun idToRecommendationEvidenceRole(id: String): RecommendationEvidenceRole =
         RecommendationEvidenceRole.fromId(id)
             ?: error("Unknown RecommendationEvidenceRole id stored in database: '$id'")
+
+    @TypeConverter
+    fun experimentStatusToId(value: ExperimentStatus): String = value.id
+
+    @TypeConverter
+    fun idToExperimentStatus(id: String): ExperimentStatus =
+        ExperimentStatus.fromId(id)
+            ?: error("Unknown ExperimentStatus id stored in database: '$id'")
+
+    @TypeConverter
+    fun experimentLinkTypeToId(value: ExperimentLinkType): String = value.id
+
+    @TypeConverter
+    fun idToExperimentLinkType(id: String): ExperimentLinkType =
+        ExperimentLinkType.fromId(id)
+            ?: error("Unknown ExperimentLinkType id stored in database: '$id'")
+
+    @TypeConverter
+    fun inboxItemTypeToId(value: InboxItemType): String = value.id
+
+    @TypeConverter
+    fun idToInboxItemType(id: String): InboxItemType =
+        InboxItemType.fromId(id)
+            ?: error("Unknown InboxItemType id stored in database: '$id'")
+
+    @TypeConverter
+    fun inboxItemStatusToId(value: InboxItemStatus): String = value.id
+
+    @TypeConverter
+    fun idToInboxItemStatus(id: String): InboxItemStatus =
+        InboxItemStatus.fromId(id)
+            ?: error("Unknown InboxItemStatus id stored in database: '$id'")
+
+    @TypeConverter
+    fun inboxItemRelatedEntityTypeToId(value: InboxItemRelatedEntityType): String = value.id
+
+    @TypeConverter
+    fun idToInboxItemRelatedEntityType(id: String): InboxItemRelatedEntityType =
+        InboxItemRelatedEntityType.fromId(id)
+            ?: error("Unknown InboxItemRelatedEntityType id stored in database: '$id'")
 }

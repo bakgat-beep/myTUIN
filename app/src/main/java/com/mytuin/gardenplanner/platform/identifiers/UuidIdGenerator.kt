@@ -46,4 +46,8 @@ class UuidIdGenerator
         override fun newRecommendationEvidenceId(): String = "recommendationevidence_${UUID.randomUUID()}"
 
         override fun newUserDecisionId(): String = "userdecision_${UUID.randomUUID()}"
+
+        override fun newExperimentId(): String = "experiment_${UUID.randomUUID()}"
+
+        override fun newInboxItemId(): String = "inboxitem_${UUID.randomUUID()}"
     }
