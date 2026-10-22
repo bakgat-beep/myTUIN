@@ -5,10 +5,13 @@ import com.mytuin.gardenplanner.domain.vocabulary.GrowingMethod
 import com.mytuin.gardenplanner.domain.vocabulary.GrowthHabit
 import com.mytuin.gardenplanner.domain.vocabulary.PlantRole
 import com.mytuin.gardenplanner.domain.vocabulary.PlantingStockType
+import com.mytuin.gardenplanner.domain.vocabulary.PreservationMethod
 import com.mytuin.gardenplanner.domain.vocabulary.PropagationMethod
 import com.mytuin.gardenplanner.domain.vocabulary.RootBehaviour
 import com.mytuin.gardenplanner.domain.vocabulary.SoilDrainage
 import com.mytuin.gardenplanner.domain.vocabulary.SoilTexture
+import com.mytuin.gardenplanner.domain.vocabulary.SupportType
+import com.mytuin.gardenplanner.domain.vocabulary.ToxicPart
 import com.mytuin.gardenplanner.domain.vocabulary.WaterRequirement
 
 /**
@@ -16,9 +19,7 @@ import com.mytuin.gardenplanner.domain.vocabulary.WaterRequirement
  *
  * Most variants carry a decoded vocabulary value. The Rotation
  * variant is different: its value_id is a RotationGroup id, not a
- * vocabulary id (P41E-2 (b)). It carries the id as a String; callers
- * that need the full RotationGroup fetch it via
- * RotationGroupRepository.getGroup(id).
+ * vocabulary id (P41E-2 (b)).
  */
 sealed interface PlantMultiValue {
     val plantId: String
@@ -87,6 +88,24 @@ sealed interface PlantMultiValue {
     data class Rotation(
         override val plantId: String,
         val rotationGroupId: String,
+        override val notes: String?,
+    ) : PlantMultiValue
+
+    data class Toxic(
+        override val plantId: String,
+        val part: ToxicPart,
+        override val notes: String?,
+    ) : PlantMultiValue
+
+    data class Preservation(
+        override val plantId: String,
+        val method: PreservationMethod,
+        override val notes: String?,
+    ) : PlantMultiValue
+
+    data class Support(
+        override val plantId: String,
+        val supportType: SupportType,
         override val notes: String?,
     ) : PlantMultiValue
 }

@@ -6,9 +6,9 @@ package com.mytuin.gardenplanner.domain.vocabulary
  * Discriminator for the plant_multi_value join table.
  *
  * Step 4c-B added WATER_REQUIREMENT, PREFERRED_SOIL and SOIL_DRAINAGE.
- * Step 4e adds ROTATION_GROUP (P41E-2 (b)): the value_id for that
- * kind is a RotationGroup id, not a vocabulary id. The mapper passes
- * it through unchanged.
+ * Step 4e added ROTATION_GROUP.
+ * Step 8 added TOXIC_PART, PRESERVATION_METHOD and SUPPORT_TYPE,
+ * closing the §41 multi-value deferrals.
  */
 enum class PlantMultiValueKind(
     override val id: String,
@@ -24,6 +24,9 @@ enum class PlantMultiValueKind(
     PREFERRED_SOIL("preferred_soil"),
     SOIL_DRAINAGE("soil_drainage"),
     ROTATION_GROUP("rotation_group"),
+    TOXIC_PART("toxic_part"),
+    PRESERVATION_METHOD("preservation_method"),
+    SUPPORT_TYPE("support_type"),
     ;
 
     companion object {

@@ -2244,3 +2244,131 @@ Supersedes
 No earlier decision. This is the first formal record of the §41
 storage structure. The implementation that this decision documents
 was produced incrementally across Phase 1 steps 4a–4e.
+
+---
+
+DEC-048 — Plant §41 is fully implemented
+
+Date: October 2026
+Status: Accepted
+Area: Data
+
+Decision
+
+The five §41 fields previously deferred are now implemented. Their
+vocabularies are:
+
+FertilityRequirement (6 values, §41.1 scalar)
+Toxicity (5 values, §41.1 scalar)
+ToxicPart (10 values, §41.2 multi-value)
+PreservationMethod (8 values, §41.2 multi-value)
+SupportType (9 values, §41.2 multi-value)
+
+PLANT_VOCABULARIES §41.8 is updated to note that no fields remain
+deferred.
+
+Rationale
+
+Each of these fields was deferred because no vocabulary document
+enumerated its values. The value sets above are derived from the
+patterns established by neighbouring vocabularies:
+
+- FertilityRequirement follows the scale of DroughtTolerance (§14)
+  and WaterloggingTolerance (§15): very_low through very_high.
+- Toxicity follows the sensitive/tolerant pattern of FrostSensitivity
+  (§12) adapted for a safety context: non_toxic through highly_toxic.
+- ToxicPart, PreservationMethod and SupportType are multi-value
+  enumerations derived from the §41 field descriptions and, for
+  SupportType, the illustrative examples in §23.
+
+No individual value is a new concept the application did not already
+reference. They fill enumerations whose field names existed in §41
+without value definitions.
+
+Consequences
+
+- Two new scalar columns on plant, both nullable.
+- Three new PlantMultiValueKind values; three new variants in
+  PlantMultiValue; three new mapper arms.
+- PLANT_VOCABULARIES §41 is now complete. Any future addition to
+  that list will go through the same "choose the category that fits"
+  rule recorded in DEC-047.
+
+Related documents
+
+docs/vocabularies/PLANT_VOCABULARIES.md §41
+docs/DECISION_LOG.md DEC-047
+
+Supersedes
+
+No earlier decision. This closes the deferrals recorded in the
+pre-code statements for Phase 1 steps 4 and 4c.
+
+---
+
+DEC-049 — intervention_type and target-type enum decisions
+
+Date: October 2026
+Status: Accepted
+Area: Data
+
+Decision
+
+Two open questions are resolved without schema change.
+
+1. `intervention_type` on Activity remains deferred.
+
+ACTIVITY_VOCABULARIES §3.8 defers intervention categories to "the
+Problem/Intervention domain where required". No such vocabulary
+exists. PROBLEM_VOCABULARIES provides ProblemCategory,
+ProblemSeverity, ProblemStatus and ProblemPriority, none of which
+is an intervention category. Without a vocabulary, adding
+`intervention_type` would mean either a free-text column (which
+breaches DEC-040) or an invented vocabulary (which breaches the
+"no invented identifiers" rule).
+
+The field is deferred until ACTIVITY_VOCABULARIES §3.8 is
+expanded with an intervention-category section. This is a
+documentation task, not a schema task.
+
+2. PlanTargetType, RecommendationSubjectType and
+   InboxItemRelatedEntityType remain separate enums.
+
+PlanTargetType and RecommendationSubjectType currently share
+identical value sets. InboxItemRelatedEntityType differs
+(observation, experiment in place of cultivar, area, spatial
+object). The step 6 R2 decision recorded the reason for keeping
+PlanTargetType and RecommendationSubjectType separate:
+independent evolution. That reasoning is now formally extended to
+cover all three.
+
+A future unification into a shared GardenEntityType remains
+possible if a real requirement surfaces. Until then, the three
+remain separate.
+
+Rationale
+
+Both items are decisions not to act. Recording them explicitly
+prevents future work from drifting into either silently. The
+alternative — leaving them as inline comments in past commits —
+would lose the reasoning the next time someone revisits the
+question.
+
+Consequences
+
+- `intervention_type` is a known gap in Activity. Users cannot
+  categorise an intervention beyond its being an activity of type
+  `intervention`. This matches Phase 1's scope.
+
+- No change to the three target-type enums.
+
+Related documents
+
+docs/vocabularies/ACTIVITY_VOCABULARIES.md §3.8
+docs/DECISION_LOG.md DEC-040, DEC-047
+docs/DECISION_LOG.md DEC-036 in step 6 (RecommendationSubjectType)
+
+Supersedes
+
+No earlier decision. This records resolution of items flagged in
+earlier Phase 1 steps.

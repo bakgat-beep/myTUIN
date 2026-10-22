@@ -1,7 +1,7 @@
 # Garden Planner & Manager — Plant Controlled Vocabularies
 
 **Document:** `docs/vocabularies/PLANT_VOCABULARIES.md`
-**Version:** 0.6
+**Version:** 0.7
 **Status:** Working specification
 **Last updated:** October 2026
 
@@ -994,6 +994,8 @@ stored as typed columns on the `plant` table.
 | `maintenance_demand` | Maintenance demand (§21) |
 | `pollination_requirement` | Pollination requirement (§24) |
 | `container_suitable` | (none — nullable Boolean) |
+| `fertility_requirement` | Fertility requirement |
+| `toxicity` | Toxicity |
 
 All fields are nullable. `null` means "not recorded"; the `unknown`
 value within a vocabulary means "recorded as unknown"
@@ -1021,6 +1023,9 @@ that names which of the following fields the row represents.
 | `preferred_soil` | Soil texture (SOIL_VOCABULARIES §3) |
 | `soil_drainage` | Soil drainage (SOIL_VOCABULARIES §5) |
 | `rotation_group` | Rotation group (see §41.7) |
+| `toxic_parts` | Toxic part |
+| `preservation_methods` | Preservation method |
+| `support_type` | Support type |
 
 `planting_stock` here is distinct from the single-value
 `PlantInstance.plantingStock`: this field records the forms in which
@@ -1162,19 +1167,8 @@ The `rotation_group` entity itself is described in
 
 ### 41.8 Fields deferred
 
-The following §41 fields are not yet represented. Each requires a
-controlled vocabulary that has not been authored.
-
-| Field | Reason |
-| --- | --- |
-| `fertility_requirement` | No vocabulary. A bounded qualitative scale would be needed, matching the pattern of `drought_tolerance`. |
-| `toxicity` | No vocabulary. |
-| `toxic_parts` | No vocabulary. Depends on `toxicity`. |
-| `preservation_methods` | No vocabulary. |
-| `support_type` | No vocabulary. §23 gives illustrative examples but no authoritative list. |
-
-Each of these fields will be added when its vocabulary is authored,
-using whichever storage category fits the field's shape.
+No §41 fields are deferred. All fields listed in the vocabulary are
+now implemented.
 
 ### 41.9 Adding a new §41 field
 

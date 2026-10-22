@@ -6,6 +6,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.mytuin.gardenplanner.domain.vocabulary.Confidence
 import com.mytuin.gardenplanner.domain.vocabulary.ProblemCategory
+import com.mytuin.gardenplanner.domain.vocabulary.ProblemPriority
 import com.mytuin.gardenplanner.domain.vocabulary.ProblemSeverity
 import com.mytuin.gardenplanner.domain.vocabulary.ProblemStatus
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
@@ -13,21 +14,8 @@ import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
 /**
  * Problem.
  *
- * V1_DATABASE_SCHEMA §36. DATA_MODEL §38–§39.
- *
- * Stable identifier format: "problem_<uuid>".
- *
- * Four foreign keys, all RESTRICT. All but garden are nullable.
- *
- * `status` (ProblemStatus) and `record_status` (RecordStatus) are
- * orthogonal (P2 (a)). The DAO's default queries filter on
- * record_status only.
- *
- * `name` is free text (P5). `problem_type` is the vocabulary-backed
- * classification.
- *
- * No history table (P4). `updated_at` reflects the most recent
- * change, not a log.
+ * V1_DATABASE_SCHEMA §36. Phase 1 step 8 resolves the P7 omission:
+ * `priority` uses ProblemPriority (PROBLEM_VOCABULARIES §17).
  */
 @Entity(
     tableName = "problem",
@@ -87,4 +75,5 @@ data class ProblemEntity(
     val growing_space_id: String? = null,
     val plant_instance_id: String? = null,
     val notes: String? = null,
+    val priority: ProblemPriority? = null,
 )

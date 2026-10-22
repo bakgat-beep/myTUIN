@@ -26,6 +26,7 @@ import com.mytuin.gardenplanner.domain.vocabulary.ObservationType
 import com.mytuin.gardenplanner.domain.vocabulary.PlantLifecycle
 import com.mytuin.gardenplanner.domain.vocabulary.ProblemCategory
 import com.mytuin.gardenplanner.domain.vocabulary.ProblemEvidenceDirection
+import com.mytuin.gardenplanner.domain.vocabulary.ProblemPriority
 import com.mytuin.gardenplanner.domain.vocabulary.ProblemSeverity
 import com.mytuin.gardenplanner.domain.vocabulary.ProblemStatus
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
@@ -466,6 +467,15 @@ class ProblemRepositoryTest {
             created_at = 1_700_000_000_000L,
         )
 
+    @Test
+    fun priority_round_trips() =
+        runBlocking {
+            val problem = sampleProblem().copy(priority = ProblemPriority.URGENT)
+            repository.insert(problem)
+
+            assertEquals(ProblemPriority.URGENT, repository.getProblem(problem.id)?.priority)
+        }
+
     private fun sampleProblem(): Problem =
         Problem(
             id = "problem_00000000-0000-0000-0000-000000000001",
@@ -483,5 +493,6 @@ class ProblemRepositoryTest {
             growingSpaceId = spaceId,
             plantInstanceId = instanceId,
             notes = null,
+            priority = null,
         )
 }

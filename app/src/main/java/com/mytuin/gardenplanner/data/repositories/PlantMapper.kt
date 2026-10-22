@@ -7,17 +7,6 @@ import com.mytuin.gardenplanner.domain.model.plant.Cultivar
 import com.mytuin.gardenplanner.domain.model.plant.Plant
 import com.mytuin.gardenplanner.domain.model.plant.PlantAlias
 
-/**
- * Mapping between Room entities (snake_case, schema-aligned) and
- * domain models (camelCase, idiomatic Kotlin).
- *
- * V1_TECHNICAL_ARCHITECTURE §79: entities, domain models and UI
- * models are not assumed to be the same type.
- *
- * These are one-way, entity -> domain. Write-path mapping (domain ->
- * entity) arrives with the write path (deferred, P41-6).
- */
-
 fun PlantEntity.toDomain(): Plant =
     Plant(
         id = id,
@@ -45,6 +34,8 @@ fun PlantEntity.toDomain(): Plant =
         maintenanceDemand = maintenance_demand,
         pollinationRequirement = pollination_requirement,
         containerSuitable = container_suitable,
+        fertilityRequirement = fertility_requirement,
+        toxicity = toxicity,
     )
 
 fun PlantAliasEntity.toDomain(): PlantAlias =

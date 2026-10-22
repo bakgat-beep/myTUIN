@@ -113,6 +113,16 @@ complexity:
       - '**/src/test/**'
       - '**/src/androidTest/**'
 
+  # PlantMultiValueMapper.toDomain is a flat dispatch table over the
+  # PlantMultiValueKind enum: one `when` arm per kind, each arm
+  # delegating to a dedicated decoder. The branch count grows by
+  # exactly one per new kind and is structural, not semantic. Every
+  # arm is a one-line call. Excluded per-file so the rule remains
+  # active everywhere else.
+  CyclomaticComplexMethod:
+    excludes:
+      - '**/data/repositories/PlantMultiValueMapper.kt'
+
 style:
   MagicNumber:
     ignorePropertyDeclaration: true

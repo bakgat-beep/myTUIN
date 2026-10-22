@@ -8,14 +8,6 @@ import com.mytuin.gardenplanner.domain.time.Clock
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
 import javax.inject.Inject
 
-/**
- * Record a new Problem.
- *
- * Assigns id, recordStatus (ACTIVE), createdAt and updatedAt.
- * `status` is taken from the input, defaulting to SUSPECTED (P6).
- *
- * Returns the new Problem's id.
- */
 class CreateProblem
     @Inject
     constructor(
@@ -42,6 +34,7 @@ class CreateProblem
                     growingSpaceId = input.growingSpaceId,
                     plantInstanceId = input.plantInstanceId,
                     notes = input.notes,
+                    priority = input.priority,
                 )
             repository.insert(problem)
             return problem.id

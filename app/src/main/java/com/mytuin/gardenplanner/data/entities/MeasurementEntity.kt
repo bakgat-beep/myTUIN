@@ -11,18 +11,8 @@ import com.mytuin.gardenplanner.domain.vocabulary.QuantityUnit
 /**
  * Measurement.
  *
- * V1_DATABASE_SCHEMA §32. DATA_MODEL §27.
- *
- * Stable identifier format: "measurement_<uuid>".
- *
- * M1 (a): no activity_id. M6: measured_at is stored as an
- * (epoch_day, time_of_day_millis) pair, matching the KnownDate
- * representation used by PlantInstance.
- *
- * M7, M8: no status, no information_state, no updated_at, no
- * structured_values. All deliberate.
- *
- * Five foreign keys, all RESTRICT. All but garden are nullable.
+ * V1_DATABASE_SCHEMA §32. Phase 1 step 8 resolves the M5 deferral:
+ * `source_id` is an optional FK to Source, RESTRICT.
  */
 @Entity(
     tableName = "measurement",
@@ -62,6 +52,13 @@ import com.mytuin.gardenplanner.domain.vocabulary.QuantityUnit
             onDelete = ForeignKey.RESTRICT,
             onUpdate = ForeignKey.RESTRICT,
         ),
+        ForeignKey(
+            entity = SourceEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["source_id"],
+            onDelete = ForeignKey.RESTRICT,
+            onUpdate = ForeignKey.RESTRICT,
+        ),
     ],
     indices = [
         Index(value = ["garden_id"]),
@@ -71,6 +68,7 @@ import com.mytuin.gardenplanner.domain.vocabulary.QuantityUnit
         Index(value = ["growing_space_id"]),
         Index(value = ["spatial_object_id"]),
         Index(value = ["plant_instance_id"]),
+        Index(value = ["source_id"]),
     ],
 )
 data class MeasurementEntity(
@@ -88,5 +86,6 @@ data class MeasurementEntity(
     val growing_space_id: String? = null,
     val spatial_object_id: String? = null,
     val plant_instance_id: String? = null,
+    val source_id: String? = null,
     val notes: String? = null,
 )

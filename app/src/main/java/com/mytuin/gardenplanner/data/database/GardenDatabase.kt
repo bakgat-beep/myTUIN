@@ -80,7 +80,7 @@ import com.mytuin.gardenplanner.data.entities.SourceEntity
 import com.mytuin.gardenplanner.data.entities.SpatialObjectEntity
 import com.mytuin.gardenplanner.data.entities.UserDecisionEntity
 
-const val GARDEN_DATABASE_VERSION: Int = 26
+const val GARDEN_DATABASE_VERSION: Int = 27
 
 /**
  * The V1 Room database.
@@ -112,6 +112,8 @@ const val GARDEN_DATABASE_VERSION: Int = 26
  *   v24 — adds SoilRecord (Phase 1 step 5).
  *   v25 — adds Recommendation, RecommendationFactor, RecommendationEvidence and UserDecision (Phase 1 step 6).
  *   v26 — adds Experiment, ExperimentLink and InboxItem (Phase 1 step 7).
+ *   v27 — Plant §41 completion (fertility_requirement, toxicity scalars and three multi-value kinds),
+ *         Measurement.source_id, Problem.priority (Phase 1 wrap-up step 8).
  *
  * All migrations are @AutoMigration. Room derives the SQL from the
  * schema diff at compile time.
@@ -186,6 +188,7 @@ const val GARDEN_DATABASE_VERSION: Int = 26
         AutoMigration(from = 23, to = 24),
         AutoMigration(from = 24, to = 25),
         AutoMigration(from = 25, to = 26),
+        AutoMigration(from = 26, to = 27),
     ],
 )
 @TypeConverters(VocabularyConverters::class)

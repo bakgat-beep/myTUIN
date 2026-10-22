@@ -1,6 +1,7 @@
 package com.mytuin.gardenplanner.data.database
 
 import androidx.room.testing.MigrationTestHelper
+import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Assert.assertEquals
@@ -61,6 +62,34 @@ class GardenDatabaseMigrationTest {
             "experiment_link",
             "inbox_item",
         )
+
+    /**
+     * Asserts that every column in [expectedColumns] exists on
+     * [tableName]. The exact total column count is NOT asserted:
+     * tables grow as future migrations add columns, so a total-count
+     * assertion always goes stale. Presence of the specific columns
+     * a given migration introduced is what matters.
+     */
+    private fun assertColumnsPresent(
+        migrated: SupportSQLiteDatabase,
+        tableName: String,
+        vararg expectedColumns: String,
+    ) {
+        val present = mutableSetOf<String>()
+        migrated
+            .query("PRAGMA table_info($tableName)")
+            .use { cursor ->
+                while (cursor.moveToNext()) {
+                    present += cursor.getString(1)
+                }
+            }
+        expectedColumns.forEach { column ->
+            assertTrue(
+                "$tableName.$column must exist after migration",
+                column in present,
+            )
+        }
+    }
 
     @Test
     fun empty_database_fixture_migrates_from_v1_to_current() {
@@ -342,7 +371,7 @@ class GardenDatabaseMigrationTest {
         migrated
             .query("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'area'")
             .use { cursor ->
-                assertTrue("area table must exist after v4 -> v12 migration", cursor.moveToFirst())
+                assertTrue("area table must exist after v4 migration", cursor.moveToFirst())
             }
 
         migrated
@@ -405,7 +434,7 @@ class GardenDatabaseMigrationTest {
                 "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'spatial_object'",
             ).use { cursor ->
                 assertTrue(
-                    "spatial_object table must exist after v5 -> v12 migration",
+                    "spatial_object table must exist after v5 migration",
                     cursor.moveToFirst(),
                 )
             }
@@ -469,7 +498,7 @@ class GardenDatabaseMigrationTest {
                     }
                 }
             }
-        assertTrue("growing_space.area_id must exist after v6 -> v12 migration", areaIdPresent)
+        assertTrue("growing_space.area_id must exist after v6 migration", areaIdPresent)
 
         migrated
             .query(
@@ -547,7 +576,7 @@ class GardenDatabaseMigrationTest {
                 "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'plant_instance'",
             ).use { cursor ->
                 assertTrue(
-                    "plant_instance table must exist after v7 -> v12 migration",
+                    "plant_instance table must exist after v7 migration",
                     cursor.moveToFirst(),
                 )
             }
@@ -619,7 +648,7 @@ class GardenDatabaseMigrationTest {
                 "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'plant_instance_history'",
             ).use { cursor ->
                 assertTrue(
-                    "plant_instance_history table must exist after v8 -> v12 migration",
+                    "plant_instance_history table must exist after v8 migration",
                     cursor.moveToFirst(),
                 )
             }
@@ -686,7 +715,7 @@ class GardenDatabaseMigrationTest {
                 "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'activity'",
             ).use { cursor ->
                 assertTrue(
-                    "activity table must exist after v9 -> v12 migration",
+                    "activity table must exist after v9 migration",
                     cursor.moveToFirst(),
                 )
             }
@@ -743,7 +772,7 @@ class GardenDatabaseMigrationTest {
                 "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'observation'",
             ).use { cursor ->
                 assertTrue(
-                    "observation table must exist after v10 -> v12 migration",
+                    "observation table must exist after v10 migration",
                     cursor.moveToFirst(),
                 )
             }
@@ -816,7 +845,7 @@ class GardenDatabaseMigrationTest {
                 "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'measurement'",
             ).use { cursor ->
                 assertTrue(
-                    "measurement table must exist after v11 -> v12 migration",
+                    "measurement table must exist after v11 migration",
                     cursor.moveToFirst(),
                 )
             }
@@ -875,21 +904,27 @@ class GardenDatabaseMigrationTest {
                 "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'harvest'",
             ).use { cursor ->
                 assertTrue(
-                    "harvest table must exist after v12 -> v13 migration",
+                    "harvest table must exist after v12 migration",
                     cursor.moveToFirst(),
                 )
             }
 
-        // harvest must have 12 columns.
-        var columnCount = 0
-        migrated
-            .query("PRAGMA table_info(harvest)")
-            .use { cursor ->
-                while (cursor.moveToNext()) {
-                    columnCount += 1
-                }
-            }
-        assertEquals("harvest must have 12 columns", 12, columnCount)
+        assertColumnsPresent(
+            migrated,
+            "harvest",
+            "id",
+            "garden_id",
+            "activity_id",
+            "date_epoch_day",
+            "quantity",
+            "unit",
+            "created_at",
+            "date_time_of_day_millis",
+            "size_category",
+            "plant_instance_id",
+            "growing_space_id",
+            "notes",
+        )
 
         migrated
             .query("SELECT name FROM garden WHERE id = 'garden_test_v12'")
@@ -967,21 +1002,28 @@ class GardenDatabaseMigrationTest {
                 "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'harvest_loss'",
             ).use { cursor ->
                 assertTrue(
-                    "harvest_loss table must exist after v13 -> v14 migration",
+                    "harvest_loss table must exist after v13 migration",
                     cursor.moveToFirst(),
                 )
             }
 
-        // harvest_loss must have 13 columns.
-        var columnCount = 0
-        migrated
-            .query("PRAGMA table_info(harvest_loss)")
-            .use { cursor ->
-                while (cursor.moveToNext()) {
-                    columnCount += 1
-                }
-            }
-        assertEquals("harvest_loss must have 13 columns", 13, columnCount)
+        assertColumnsPresent(
+            migrated,
+            "harvest_loss",
+            "id",
+            "garden_id",
+            "date_epoch_day",
+            "quantity",
+            "unit",
+            "created_at",
+            "activity_id",
+            "date_time_of_day_millis",
+            "cause",
+            "severity",
+            "plant_instance_id",
+            "growing_space_id",
+            "notes",
+        )
 
         migrated
             .query("SELECT name FROM garden WHERE id = 'garden_test_v13'")
@@ -1057,27 +1099,34 @@ class GardenDatabaseMigrationTest {
                 )
             }
 
-        // problem must have 15 columns.
-        var problemColumnCount = 0
-        migrated
-            .query("PRAGMA table_info(problem)")
-            .use { cursor ->
-                while (cursor.moveToNext()) {
-                    problemColumnCount += 1
-                }
-            }
-        assertEquals("problem must have 15 columns", 15, problemColumnCount)
+        assertColumnsPresent(
+            migrated,
+            "problem",
+            "id",
+            "garden_id",
+            "name",
+            "problem_type",
+            "status",
+            "created_at",
+            "updated_at",
+            "severity",
+            "confidence",
+            "record_status",
+            "description",
+            "area_id",
+            "growing_space_id",
+            "plant_instance_id",
+            "notes",
+        )
 
-        // problem_observation must have 4 columns.
-        var linkColumnCount = 0
-        migrated
-            .query("PRAGMA table_info(problem_observation)")
-            .use { cursor ->
-                while (cursor.moveToNext()) {
-                    linkColumnCount += 1
-                }
-            }
-        assertEquals("problem_observation must have 4 columns", 4, linkColumnCount)
+        assertColumnsPresent(
+            migrated,
+            "problem_observation",
+            "problem_id",
+            "observation_id",
+            "evidence_direction",
+            "notes",
+        )
 
         migrated
             .query("SELECT name FROM garden WHERE id = 'garden_test_v14'")
@@ -1155,43 +1204,37 @@ class GardenDatabaseMigrationTest {
                 )
             }
 
-        // plan must have 15 columns.
-        var planColumnCount = 0
-        migrated
-            .query("PRAGMA table_info(plan)")
-            .use { cursor ->
-                while (cursor.moveToNext()) {
-                    planColumnCount += 1
-                }
-            }
-        assertEquals("plan must have 15 columns", 15, planColumnCount)
+        assertColumnsPresent(
+            migrated,
+            "plan",
+            "id",
+            "garden_id",
+            "plan_type",
+            "status",
+            "created_at",
+            "updated_at",
+            "record_status",
+            "planned_start_epoch_day",
+            "planned_start_time_of_day_millis",
+            "planned_end_epoch_day",
+            "planned_end_time_of_day_millis",
+            "quantity",
+            "unit",
+            "priority",
+            "notes",
+        )
 
-        // plan_target must have 5 columns.
-        var targetColumnCount = 0
-        migrated
-            .query("PRAGMA table_info(plan_target)")
-            .use { cursor ->
-                while (cursor.moveToNext()) {
-                    targetColumnCount += 1
-                }
-            }
-        assertEquals("plan_target must have 5 columns", 5, targetColumnCount)
+        assertColumnsPresent(
+            migrated,
+            "plan_target",
+            "plan_id",
+            "target_type",
+            "target_id",
+            "completed_at",
+            "notes",
+        )
 
-        // activity must now have 20 columns, including plan_id.
-        var activityColumnCount = 0
-        var planIdPresent = false
-        migrated
-            .query("PRAGMA table_info(activity)")
-            .use { cursor ->
-                while (cursor.moveToNext()) {
-                    activityColumnCount += 1
-                    if (cursor.getString(1) == "plan_id") {
-                        planIdPresent = true
-                    }
-                }
-            }
-        assertEquals("activity must have 20 columns", 20, activityColumnCount)
-        assertTrue("activity.plan_id must exist", planIdPresent)
+        assertColumnsPresent(migrated, "activity", "plan_id")
 
         migrated
             .query("SELECT name FROM garden WHERE id = 'garden_test_v15'")
@@ -1258,16 +1301,25 @@ class GardenDatabaseMigrationTest {
                 )
             }
 
-        // source must have 15 columns.
-        var columnCount = 0
-        migrated
-            .query("PRAGMA table_info(source)")
-            .use { cursor ->
-                while (cursor.moveToNext()) {
-                    columnCount += 1
-                }
-            }
-        assertEquals("source must have 15 columns", 15, columnCount)
+        assertColumnsPresent(
+            migrated,
+            "source",
+            "id",
+            "source_type",
+            "status",
+            "created_at",
+            "title",
+            "author_or_organisation",
+            "publication_date_epoch_day",
+            "publication_date_time_of_day_millis",
+            "access_date_epoch_day",
+            "access_date_time_of_day_millis",
+            "url",
+            "geographic_scope",
+            "hemisphere",
+            "context",
+            "notes",
+        )
 
         migrated
             .query("SELECT name FROM garden WHERE id = 'garden_test_v16'")
@@ -1307,21 +1359,9 @@ class GardenDatabaseMigrationTest {
 
         val migrated = helper.runMigrationsAndValidate("v17-fixture", GARDEN_DATABASE_VERSION, true, Migrations.MIGRATION_19_20)
 
-        // plant must now have 25 columns (11 original + 14 new).
-        var columnCount = 0
-        val columnNames = mutableListOf<String>()
-        migrated
-            .query("PRAGMA table_info(plant)")
-            .use { cursor ->
-                while (cursor.moveToNext()) {
-                    columnCount += 1
-                    columnNames += cursor.getString(1)
-                }
-            }
-        assertEquals("plant must have 25 columns after v17 migration", 25, columnCount)
-
-        // Every new column must be present and nullable.
-        listOf(
+        assertColumnsPresent(
+            migrated,
+            "plant",
             "growth_rate",
             "support_requirement",
             "light_requirement",
@@ -1336,11 +1376,8 @@ class GardenDatabaseMigrationTest {
             "maintenance_demand",
             "pollination_requirement",
             "container_suitable",
-        ).forEach { column ->
-            assertTrue("plant.$column must exist after v17 migration", column in columnNames)
-        }
+        )
 
-        // The two new indices must exist.
         val indexNames = mutableListOf<String>()
         migrated
             .query("SELECT name FROM sqlite_master WHERE type = 'index' AND tbl_name = 'plant'")
@@ -1358,7 +1395,6 @@ class GardenDatabaseMigrationTest {
             indexNames.any { it.contains("frost_sensitivity") },
         )
 
-        // The pre-existing row must survive with the new columns NULL.
         migrated
             .query(
                 """
@@ -1407,16 +1443,14 @@ class GardenDatabaseMigrationTest {
                 )
             }
 
-        // plant_multi_value must have 4 columns.
-        var columnCount = 0
-        migrated
-            .query("PRAGMA table_info(plant_multi_value)")
-            .use { cursor ->
-                while (cursor.moveToNext()) {
-                    columnCount += 1
-                }
-            }
-        assertEquals("plant_multi_value must have 4 columns", 4, columnCount)
+        assertColumnsPresent(
+            migrated,
+            "plant_multi_value",
+            "plant_id",
+            "kind",
+            "value_id",
+            "notes",
+        )
 
         migrated
             .query("SELECT canonical_name FROM plant WHERE id = 'plant_test_v18'")
@@ -1445,8 +1479,6 @@ class GardenDatabaseMigrationTest {
                 )
                 """.trimIndent(),
             )
-            // A measurement whose unit is the plural form that the
-            // unification renames.
             execSQL(
                 """
                 INSERT INTO measurement (
@@ -1541,35 +1573,40 @@ class GardenDatabaseMigrationTest {
                 }
         }
 
-        var numericColumns = 0
-        migrated
-            .query("PRAGMA table_info(plant_numeric_fact)")
-            .use { cursor ->
-                while (cursor.moveToNext()) {
-                    numericColumns += 1
-                }
-            }
-        assertEquals("plant_numeric_fact must have 7 columns", 7, numericColumns)
+        assertColumnsPresent(
+            migrated,
+            "plant_numeric_fact",
+            "plant_id",
+            "fact_kind",
+            "min_value",
+            "max_value",
+            "typical_value",
+            "unit",
+            "notes",
+        )
 
-        var temporalColumns = 0
-        migrated
-            .query("PRAGMA table_info(plant_temporal_fact)")
-            .use { cursor ->
-                while (cursor.moveToNext()) {
-                    temporalColumns += 1
-                }
-            }
-        assertEquals("plant_temporal_fact must have 10 columns", 10, temporalColumns)
+        assertColumnsPresent(
+            migrated,
+            "plant_temporal_fact",
+            "plant_id",
+            "fact_kind",
+            "start_month",
+            "start_day",
+            "end_month",
+            "end_day",
+            "season",
+            "hemisphere",
+            "geographic_scope",
+            "notes",
+        )
 
-        var noteColumns = 0
-        migrated
-            .query("PRAGMA table_info(plant_note)")
-            .use { cursor ->
-                while (cursor.moveToNext()) {
-                    noteColumns += 1
-                }
-            }
-        assertEquals("plant_note must have 3 columns", 3, noteColumns)
+        assertColumnsPresent(
+            migrated,
+            "plant_note",
+            "plant_id",
+            "note_kind",
+            "text",
+        )
 
         migrated
             .query("SELECT canonical_name FROM plant WHERE id = 'plant_test_v20'")
@@ -1615,35 +1652,43 @@ class GardenDatabaseMigrationTest {
                 }
         }
 
-        var relColumns = 0
-        migrated
-            .query("PRAGMA table_info(plant_relationship)")
-            .use { cursor ->
-                while (cursor.moveToNext()) {
-                    relColumns += 1
-                }
-            }
-        assertEquals("plant_relationship must have 8 columns", 8, relColumns)
+        assertColumnsPresent(
+            migrated,
+            "plant_relationship",
+            "plant_id",
+            "related_plant_id",
+            "relationship_type",
+            "strength",
+            "reason",
+            "source_id",
+            "confidence",
+            "notes",
+        )
 
-        var probRelColumns = 0
-        migrated
-            .query("PRAGMA table_info(plant_problem_relationship)")
-            .use { cursor ->
-                while (cursor.moveToNext()) {
-                    probRelColumns += 1
-                }
-            }
-        assertEquals("plant_problem_relationship must have 11 columns", 11, probRelColumns)
+        assertColumnsPresent(
+            migrated,
+            "plant_problem_relationship",
+            "plant_id",
+            "problem_id",
+            "relationship_type",
+            "cultivar_id",
+            "response_characteristic",
+            "growth_stage",
+            "severity",
+            "reason",
+            "source_id",
+            "confidence",
+            "notes",
+        )
 
-        var sourceColumns = 0
-        migrated
-            .query("PRAGMA table_info(plant_source)")
-            .use { cursor ->
-                while (cursor.moveToNext()) {
-                    sourceColumns += 1
-                }
-            }
-        assertEquals("plant_source must have 4 columns", 4, sourceColumns)
+        assertColumnsPresent(
+            migrated,
+            "plant_source",
+            "plant_id",
+            "source_id",
+            "source_relationship",
+            "notes",
+        )
 
         migrated
             .query("SELECT canonical_name FROM plant WHERE id = 'plant_test_v21'")
@@ -1686,15 +1731,18 @@ class GardenDatabaseMigrationTest {
                 )
             }
 
-        var columnCount = 0
-        migrated
-            .query("PRAGMA table_info(rotation_group)")
-            .use { cursor ->
-                while (cursor.moveToNext()) {
-                    columnCount += 1
-                }
-            }
-        assertEquals("rotation_group must have 8 columns", 8, columnCount)
+        assertColumnsPresent(
+            migrated,
+            "rotation_group",
+            "id",
+            "name",
+            "group_type",
+            "status",
+            "garden_id",
+            "description",
+            "created_at",
+            "updated_at",
+        )
 
         migrated
             .query("SELECT canonical_name FROM plant WHERE id = 'plant_test_v22'")
@@ -1738,15 +1786,19 @@ class GardenDatabaseMigrationTest {
                 )
             }
 
-        var columnCount = 0
-        migrated
-            .query("PRAGMA table_info(soil_record)")
-            .use { cursor ->
-                while (cursor.moveToNext()) {
-                    columnCount += 1
-                }
-            }
-        assertEquals("soil_record must have 9 columns", 9, columnCount)
+        assertColumnsPresent(
+            migrated,
+            "soil_record",
+            "id",
+            "garden_id",
+            "status",
+            "created_at",
+            "updated_at",
+            "area_id",
+            "growing_space_id",
+            "name",
+            "notes",
+        )
 
         migrated
             .query("SELECT name FROM garden WHERE id = 'garden_test_v23'")
@@ -1794,22 +1846,60 @@ class GardenDatabaseMigrationTest {
                 }
         }
 
-        fun columnCount(table: String): Int {
-            var n = 0
-            migrated
-                .query("PRAGMA table_info($table)")
-                .use { cursor ->
-                    while (cursor.moveToNext()) {
-                        n += 1
-                    }
-                }
-            return n
-        }
+        assertColumnsPresent(
+            migrated,
+            "recommendation",
+            "id",
+            "garden_id",
+            "created_at",
+            "subject_type",
+            "subject_id",
+            "recommendation_type",
+            "status",
+            "confidence",
+            "overall_result",
+            "expires_at",
+            "context",
+            "notes",
+        )
 
-        assertEquals("recommendation must have 12 columns", 12, columnCount("recommendation"))
-        assertEquals("recommendation_factor must have 8 columns", 8, columnCount("recommendation_factor"))
-        assertEquals("recommendation_evidence must have 6 columns", 6, columnCount("recommendation_evidence"))
-        assertEquals("user_decision must have 9 columns", 9, columnCount("user_decision"))
+        assertColumnsPresent(
+            migrated,
+            "recommendation_factor",
+            "id",
+            "recommendation_id",
+            "dimension",
+            "result",
+            "confidence",
+            "weight",
+            "reason_type",
+            "notes",
+        )
+
+        assertColumnsPresent(
+            migrated,
+            "recommendation_evidence",
+            "id",
+            "recommendation_id",
+            "source_type",
+            "source_id",
+            "role",
+            "notes",
+        )
+
+        assertColumnsPresent(
+            migrated,
+            "user_decision",
+            "id",
+            "garden_id",
+            "decision_type",
+            "decided_at",
+            "created_at",
+            "recommendation_id",
+            "plan_id",
+            "reason",
+            "notes",
+        )
 
         migrated
             .query("SELECT name FROM garden WHERE id = 'garden_test_v24'")
@@ -1852,27 +1942,126 @@ class GardenDatabaseMigrationTest {
                 }
         }
 
-        fun columnCount(table: String): Int {
-            var n = 0
-            migrated
-                .query("PRAGMA table_info($table)")
-                .use { cursor ->
-                    while (cursor.moveToNext()) {
-                        n += 1
-                    }
-                }
-            return n
-        }
+        assertColumnsPresent(
+            migrated,
+            "experiment",
+            "id",
+            "garden_id",
+            "name",
+            "question",
+            "status",
+            "created_at",
+            "updated_at",
+            "hypothesis",
+            "start_date_epoch_day",
+            "start_date_time_of_day_millis",
+            "end_date_epoch_day",
+            "end_date_time_of_day_millis",
+            "notes",
+        )
 
-        assertEquals("experiment must have 13 columns", 13, columnCount("experiment"))
-        assertEquals("experiment_link must have 4 columns", 4, columnCount("experiment_link"))
-        assertEquals("inbox_item must have 13 columns", 13, columnCount("inbox_item"))
+        assertColumnsPresent(
+            migrated,
+            "experiment_link",
+            "experiment_id",
+            "linked_type",
+            "linked_id",
+            "notes",
+        )
+
+        assertColumnsPresent(
+            migrated,
+            "inbox_item",
+            "id",
+            "garden_id",
+            "item_type",
+            "priority",
+            "status",
+            "created_at",
+            "updated_at",
+            "title",
+            "description",
+            "related_entity_type",
+            "related_entity_id",
+            "due_at",
+            "muted_until",
+        )
 
         migrated
             .query("SELECT name FROM garden WHERE id = 'garden_test_v25'")
             .use { cursor ->
                 assertTrue("v25 garden row must survive migration", cursor.moveToFirst())
                 assertEquals("V25 Garden", cursor.getString(0))
+            }
+
+        migrated.close()
+    }
+
+    @Test
+    fun fixture_migrates_from_v26_to_current_adding_wrapup_columns_with_data_intact() {
+        helper.createDatabase("v26-fixture", 26).apply {
+            execSQL(
+                """
+                INSERT INTO garden (
+                    id, name, created_at, updated_at, status, hemisphere
+                ) VALUES (
+                    'garden_test_v26',
+                    'V26 Garden',
+                    1700000000000,
+                    1700000000000,
+                    'draft',
+                    'unknown'
+                )
+                """.trimIndent(),
+            )
+            execSQL(
+                """
+                INSERT INTO plant (
+                    id, canonical_name, created_at, updated_at, status
+                ) VALUES (
+                    'plant_test_v26',
+                    'V26 Plant',
+                    1700000000000,
+                    1700000000000,
+                    'active'
+                )
+                """.trimIndent(),
+            )
+            close()
+        }
+
+        val migrated = helper.runMigrationsAndValidate("v26-fixture", GARDEN_DATABASE_VERSION, true)
+
+        assertColumnsPresent(
+            migrated,
+            "plant",
+            "fertility_requirement",
+            "toxicity",
+        )
+
+        assertColumnsPresent(migrated, "measurement", "source_id")
+
+        var sourceFkPresent = false
+        migrated
+            .query("PRAGMA foreign_key_list(measurement)")
+            .use { cursor ->
+                while (cursor.moveToNext()) {
+                    val referencedTable = cursor.getString(2)
+                    val fromColumn = cursor.getString(3)
+                    if (referencedTable == "source" && fromColumn == "source_id") {
+                        sourceFkPresent = true
+                    }
+                }
+            }
+        assertTrue("measurement.source_id must reference source(id)", sourceFkPresent)
+
+        assertColumnsPresent(migrated, "problem", "priority")
+
+        migrated
+            .query("SELECT canonical_name FROM plant WHERE id = 'plant_test_v26'")
+            .use { cursor ->
+                assertTrue("v26 plant row must survive migration", cursor.moveToFirst())
+                assertEquals("V26 Plant", cursor.getString(0))
             }
 
         migrated.close()

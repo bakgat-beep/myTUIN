@@ -1,6 +1,7 @@
 package com.mytuin.gardenplanner.domain.model.plant
 
 import com.mytuin.gardenplanner.domain.vocabulary.DroughtTolerance
+import com.mytuin.gardenplanner.domain.vocabulary.FertilityRequirement
 import com.mytuin.gardenplanner.domain.vocabulary.FrostSensitivity
 import com.mytuin.gardenplanner.domain.vocabulary.GrowthRate
 import com.mytuin.gardenplanner.domain.vocabulary.HeatTolerance
@@ -14,24 +15,14 @@ import com.mytuin.gardenplanner.domain.vocabulary.SalinityTolerance
 import com.mytuin.gardenplanner.domain.vocabulary.ShadeTolerance
 import com.mytuin.gardenplanner.domain.vocabulary.SupportRequirement
 import com.mytuin.gardenplanner.domain.vocabulary.TemperatureClass
+import com.mytuin.gardenplanner.domain.vocabulary.Toxicity
 import com.mytuin.gardenplanner.domain.vocabulary.WaterloggingTolerance
 
 /**
  * Plant — domain model.
  *
  * V1_DATABASE_SCHEMA.md §16. DATA_MODEL.md §12.
- * PLANT_VOCABULARIES.md §41 (partial — Phase 1 step 4a).
- *
- * Field names are camelCase. The Room entity uses snake_case to
- * match the schema JSON. The mapper converts between them (A28;
- * V1_TECHNICAL_ARCHITECTURE §79).
- *
- * lifecycle is nullable. The `unknown` value exists in the
- * vocabulary but "no lifecycle recorded" and "lifecycle recorded as
- * unknown" remain distinguishable (CORE_VOCABULARIES §4). The same
- * holds for every new classification added in 4a.
- *
- * Domain layer: no Android, Compose, Room or Hilt dependencies.
+ * PLANT_VOCABULARIES.md §41 (complete after Phase 1 step 8).
  */
 data class Plant(
     val id: String,
@@ -59,4 +50,6 @@ data class Plant(
     val maintenanceDemand: MaintenanceDemand?,
     val pollinationRequirement: PollinationRequirement?,
     val containerSuitable: Boolean?,
+    val fertilityRequirement: FertilityRequirement?,
+    val toxicity: Toxicity?,
 )

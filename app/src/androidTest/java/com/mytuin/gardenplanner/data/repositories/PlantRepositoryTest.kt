@@ -20,6 +20,7 @@ import com.mytuin.gardenplanner.data.entities.PlantTemporalFactEntity
 import com.mytuin.gardenplanner.domain.model.plant.PlantMultiValue
 import com.mytuin.gardenplanner.domain.repository.PlantRepository
 import com.mytuin.gardenplanner.domain.vocabulary.Confidence
+import com.mytuin.gardenplanner.domain.vocabulary.FertilityRequirement
 import com.mytuin.gardenplanner.domain.vocabulary.GrowthStage
 import com.mytuin.gardenplanner.domain.vocabulary.Hemisphere
 import com.mytuin.gardenplanner.domain.vocabulary.PlantAliasType
@@ -37,6 +38,8 @@ import com.mytuin.gardenplanner.domain.vocabulary.QuantityUnit
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
 import com.mytuin.gardenplanner.domain.vocabulary.Season
 import com.mytuin.gardenplanner.domain.vocabulary.SourceRelationship
+import com.mytuin.gardenplanner.domain.vocabulary.ToxicPart
+import com.mytuin.gardenplanner.domain.vocabulary.Toxicity
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -341,6 +344,71 @@ class PlantRepositoryTest {
             ),
         )
     }
+
+    @Test
+    fun fertility_requirement_round_trips() =
+        runBlocking {
+            val plant = samplePlant().copy(fertility_requirement = FertilityRequirement.HIGH)
+            db.plantDao().insert(plant)
+
+            assertEquals(
+                FertilityRequirement.HIGH,
+                repository.getPlant(plant.id)?.fertilityRequirement,
+            )
+        }
+
+    @Test
+    fun toxicity_round_trips() =
+        runBlocking {
+            val plant = samplePlant().copy(toxicity = Toxicity.MILDLY_TOXIC)
+            db.plantDao().insert(plant)
+
+            assertEquals(Toxicity.MILDLY_TOXIC, repository.getPlant(plant.id)?.toxicity)
+        }
+
+    @Test
+    fun multi_value_mapper_decodes_toxic_part_kind() =
+        runBlocking {
+            val plant = samplePlant()
+            db.plantDao().insert(plant)
+            db.plantMultiValueDao().upsert(
+                PlantMultiValueEntity(
+                    plant_id = plant.id,
+                    kind = PlantMultiValueKind.TOXIC_PART,
+                    value_id = "leaves",
+                ),
+            )
+
+            val values = repository.observeAllMultiValuesForPlant(plant.id).first()
+            val toxic = values.single() as PlantMultiValue.Toxic
+            assertEquals(ToxicPart.LEAVES, toxic.part)
+        }
+
+    @Test
+    fun multi_value_mapper_decodes_preservation_and_support_kinds() =
+        runBlocking {
+            val plant = samplePlant()
+            db.plantDao().insert(plant)
+            db.plantMultiValueDao().upsert(
+                PlantMultiValueEntity(
+                    plant_id = plant.id,
+                    kind = PlantMultiValueKind.PRESERVATION_METHOD,
+                    value_id = "freezing",
+                ),
+            )
+            db.plantMultiValueDao().upsert(
+                PlantMultiValueEntity(
+                    plant_id = plant.id,
+                    kind = PlantMultiValueKind.SUPPORT_TYPE,
+                    value_id = "trellis",
+                ),
+            )
+
+            val values = repository.observeAllMultiValuesForPlant(plant.id).first()
+            assertEquals(2, values.size)
+            assertEquals(1, values.filterIsInstance<PlantMultiValue.Preservation>().size)
+            assertEquals(1, values.filterIsInstance<PlantMultiValue.Support>().size)
+        }
 
     private fun samplePlant(): PlantEntity =
         PlantEntity(

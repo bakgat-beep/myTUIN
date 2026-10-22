@@ -7,14 +7,6 @@ import com.mytuin.gardenplanner.domain.repository.MeasurementRepository
 import com.mytuin.gardenplanner.domain.time.Clock
 import javax.inject.Inject
 
-/**
- * Record a new Measurement.
- *
- * Assigns id and createdAt. Returns the new id.
- *
- * No transaction. A single-row insert does not need one (M1 (a): no
- * Activity companion record).
- */
 class CreateMeasurement
     @Inject
     constructor(
@@ -37,6 +29,7 @@ class CreateMeasurement
                     growingSpaceId = input.growingSpaceId,
                     spatialObjectId = input.spatialObjectId,
                     plantInstanceId = input.plantInstanceId,
+                    sourceId = input.sourceId,
                     notes = input.notes,
                 )
             repository.insert(measurement)

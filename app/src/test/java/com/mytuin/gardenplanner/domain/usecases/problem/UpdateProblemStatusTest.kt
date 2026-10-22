@@ -38,6 +38,7 @@ class UpdateProblemStatusTest {
                     growingSpaceId = null,
                     plantInstanceId = null,
                     notes = null,
+                    priority = null,
                 ),
             )
         }

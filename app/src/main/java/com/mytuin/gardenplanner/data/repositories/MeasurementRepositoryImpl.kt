@@ -6,6 +6,7 @@ import com.mytuin.gardenplanner.data.dao.GardenDao
 import com.mytuin.gardenplanner.data.dao.GrowingSpaceDao
 import com.mytuin.gardenplanner.data.dao.MeasurementDao
 import com.mytuin.gardenplanner.data.dao.PlantInstanceDao
+import com.mytuin.gardenplanner.data.dao.SourceDao
 import com.mytuin.gardenplanner.data.dao.SpatialObjectDao
 import com.mytuin.gardenplanner.domain.error.ValidationError
 import com.mytuin.gardenplanner.domain.model.garden.Measurement
@@ -14,14 +15,6 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-/**
- * Measurement has five foreign keys, so a bare
- * SQLiteConstraintException cannot say which one failed. This
- * implementation pre-checks each optional parent, following the
- * established pattern.
- *
- * No archive or restore. Measurement has no status column (M7, M8).
- */
 class MeasurementRepositoryImpl
     @Inject
     constructor(
@@ -31,6 +24,7 @@ class MeasurementRepositoryImpl
         private val growingSpaceDao: GrowingSpaceDao,
         private val spatialObjectDao: SpatialObjectDao,
         private val plantInstanceDao: PlantInstanceDao,
+        private val sourceDao: SourceDao,
     ) : MeasurementRepository {
         override fun observeMeasurementsInGarden(gardenId: String): Flow<List<Measurement>> =
             measurementDao
@@ -57,6 +51,7 @@ class MeasurementRepositoryImpl
             measurement.growingSpaceId?.let { requireGrowingSpaceExists(it) }
             measurement.spatialObjectId?.let { requireSpatialObjectExists(it) }
             measurement.plantInstanceId?.let { requirePlantInstanceExists(it) }
+            measurement.sourceId?.let { requireSourceExists(it) }
             try {
                 measurementDao.insert(measurement.toEntity())
             } catch (e: SQLiteConstraintException) {
@@ -105,6 +100,14 @@ class MeasurementRepositoryImpl
                 ?: throw ValidationError(
                     field = "plant_instance_id",
                     reason = "PlantInstance does not exist: $plantInstanceId",
+                )
+        }
+
+        private suspend fun requireSourceExists(sourceId: String) {
+            sourceDao.getById(sourceId)
+                ?: throw ValidationError(
+                    field = "source_id",
+                    reason = "Source does not exist: $sourceId",
                 )
         }
     }

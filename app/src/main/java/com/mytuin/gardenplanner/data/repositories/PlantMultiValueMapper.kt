@@ -8,19 +8,15 @@ import com.mytuin.gardenplanner.domain.vocabulary.GrowthHabit
 import com.mytuin.gardenplanner.domain.vocabulary.PlantMultiValueKind
 import com.mytuin.gardenplanner.domain.vocabulary.PlantRole
 import com.mytuin.gardenplanner.domain.vocabulary.PlantingStockType
+import com.mytuin.gardenplanner.domain.vocabulary.PreservationMethod
 import com.mytuin.gardenplanner.domain.vocabulary.PropagationMethod
 import com.mytuin.gardenplanner.domain.vocabulary.RootBehaviour
 import com.mytuin.gardenplanner.domain.vocabulary.SoilDrainage
 import com.mytuin.gardenplanner.domain.vocabulary.SoilTexture
+import com.mytuin.gardenplanner.domain.vocabulary.SupportType
+import com.mytuin.gardenplanner.domain.vocabulary.ToxicPart
 import com.mytuin.gardenplanner.domain.vocabulary.WaterRequirement
 
-/**
- * Decodes a PlantMultiValueEntity row into a typed PlantMultiValue
- * variant, based on the kind discriminator.
- *
- * Most kinds decode value_id to a vocabulary value. ROTATION_GROUP
- * passes the value_id through as a RotationGroup id (P41E-2 (b)).
- */
 fun PlantMultiValueEntity.toDomain(): PlantMultiValue {
     val id = plant_id
     val v = value_id
@@ -37,6 +33,9 @@ fun PlantMultiValueEntity.toDomain(): PlantMultiValue {
         PlantMultiValueKind.PREFERRED_SOIL -> decodePreferredSoil(id, v, n)
         PlantMultiValueKind.SOIL_DRAINAGE -> decodeDrainage(id, v, n)
         PlantMultiValueKind.ROTATION_GROUP -> decodeRotation(id, v, n)
+        PlantMultiValueKind.TOXIC_PART -> decodeToxicPart(id, v, n)
+        PlantMultiValueKind.PRESERVATION_METHOD -> decodePreservation(id, v, n)
+        PlantMultiValueKind.SUPPORT_TYPE -> decodeSupport(id, v, n)
     }
 }
 
@@ -58,12 +57,7 @@ private fun decodeFoodProduction(
 ): PlantMultiValue =
     PlantMultiValue.FoodProduction(
         plantId = plantId,
-        category =
-            decodeOrThrow(
-                valueId,
-                "FoodProductionCategory",
-                FoodProductionCategory::fromId,
-            ),
+        category = decodeOrThrow(valueId, "FoodProductionCategory", FoodProductionCategory::fromId),
         notes = notes,
     )
 
@@ -107,12 +101,7 @@ private fun decodePropagation(
 ): PlantMultiValue =
     PlantMultiValue.Propagation(
         plantId = plantId,
-        method =
-            decodeOrThrow(
-                valueId,
-                "PropagationMethod",
-                PropagationMethod::fromId,
-            ),
+        method = decodeOrThrow(valueId, "PropagationMethod", PropagationMethod::fromId),
         notes = notes,
     )
 
@@ -134,12 +123,7 @@ private fun decodeWater(
 ): PlantMultiValue =
     PlantMultiValue.WaterRequirementLevel(
         plantId = plantId,
-        requirement =
-            decodeOrThrow(
-                valueId,
-                "WaterRequirement",
-                WaterRequirement::fromId,
-            ),
+        requirement = decodeOrThrow(valueId, "WaterRequirement", WaterRequirement::fromId),
         notes = notes,
     )
 
@@ -165,11 +149,6 @@ private fun decodeDrainage(
         notes = notes,
     )
 
-/**
- * ROTATION_GROUP does not decode a vocabulary id. The value_id is a
- * RotationGroup id (P41E-2 (b)); it is passed through unchanged.
- * Existence of the referenced group is not validated here.
- */
 private fun decodeRotation(
     plantId: String,
     valueId: String,
@@ -178,6 +157,39 @@ private fun decodeRotation(
     PlantMultiValue.Rotation(
         plantId = plantId,
         rotationGroupId = valueId,
+        notes = notes,
+    )
+
+private fun decodeToxicPart(
+    plantId: String,
+    valueId: String,
+    notes: String?,
+): PlantMultiValue =
+    PlantMultiValue.Toxic(
+        plantId = plantId,
+        part = decodeOrThrow(valueId, "ToxicPart", ToxicPart::fromId),
+        notes = notes,
+    )
+
+private fun decodePreservation(
+    plantId: String,
+    valueId: String,
+    notes: String?,
+): PlantMultiValue =
+    PlantMultiValue.Preservation(
+        plantId = plantId,
+        method = decodeOrThrow(valueId, "PreservationMethod", PreservationMethod::fromId),
+        notes = notes,
+    )
+
+private fun decodeSupport(
+    plantId: String,
+    valueId: String,
+    notes: String?,
+): PlantMultiValue =
+    PlantMultiValue.Support(
+        plantId = plantId,
+        supportType = decodeOrThrow(valueId, "SupportType", SupportType::fromId),
         notes = notes,
     )
 

@@ -38,6 +38,7 @@ class RestoreProblemTest {
                     growingSpaceId = null,
                     plantInstanceId = null,
                     notes = null,
+                    priority = null,
                 ),
             )
         }

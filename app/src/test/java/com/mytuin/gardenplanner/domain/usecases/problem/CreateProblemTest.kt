@@ -3,6 +3,7 @@ package com.mytuin.gardenplanner.domain.usecases.problem
 import com.mytuin.gardenplanner.domain.model.garden.NewProblem
 import com.mytuin.gardenplanner.domain.vocabulary.Confidence
 import com.mytuin.gardenplanner.domain.vocabulary.ProblemCategory
+import com.mytuin.gardenplanner.domain.vocabulary.ProblemPriority
 import com.mytuin.gardenplanner.domain.vocabulary.ProblemSeverity
 import com.mytuin.gardenplanner.domain.vocabulary.ProblemStatus
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
@@ -112,6 +113,20 @@ class CreateProblemTest {
                 createProblem(minimalInput().copy(status = status))
             }
             assertEquals(7, repository.snapshot().size)
+        }
+
+    @Test
+    fun invoke_defaults_priority_to_null() =
+        runBlocking {
+            createProblem(minimalInput())
+            assertNull(repository.snapshot().first().priority)
+        }
+
+    @Test
+    fun invoke_preserves_priority_when_supplied() =
+        runBlocking {
+            createProblem(minimalInput().copy(priority = ProblemPriority.HIGH))
+            assertEquals(ProblemPriority.HIGH, repository.snapshot().first().priority)
         }
 
     private fun minimalInput(): NewProblem =

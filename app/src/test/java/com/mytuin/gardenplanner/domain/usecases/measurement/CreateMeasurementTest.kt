@@ -171,6 +171,20 @@ class CreateMeasurementTest {
             assertEquals(6, repository.snapshot().size)
         }
 
+    @Test
+    fun invoke_defaults_source_id_to_null() =
+        runBlocking {
+            createMeasurement(minimalInput())
+            assertNull(repository.snapshot().first().sourceId)
+        }
+
+    @Test
+    fun invoke_preserves_source_id_when_supplied() =
+        runBlocking {
+            createMeasurement(minimalInput().copy(sourceId = "source_test_0001"))
+            assertEquals("source_test_0001", repository.snapshot().first().sourceId)
+        }
+
     private fun minimalInput(): NewMeasurement =
         NewMeasurement(
             gardenId = "garden_test_0001",

@@ -9,6 +9,7 @@ import com.mytuin.gardenplanner.domain.vocabulary.DroughtTolerance
 import com.mytuin.gardenplanner.domain.vocabulary.ExperimentLinkType
 import com.mytuin.gardenplanner.domain.vocabulary.ExperimentStatus
 import com.mytuin.gardenplanner.domain.vocabulary.FeedingMethod
+import com.mytuin.gardenplanner.domain.vocabulary.FertilityRequirement
 import com.mytuin.gardenplanner.domain.vocabulary.FoodProductionCategory
 import com.mytuin.gardenplanner.domain.vocabulary.FrostSensitivity
 import com.mytuin.gardenplanner.domain.vocabulary.GardenPlantPreferenceKind
@@ -51,8 +52,10 @@ import com.mytuin.gardenplanner.domain.vocabulary.PlantTemporalFactKind
 import com.mytuin.gardenplanner.domain.vocabulary.PlantingMethod
 import com.mytuin.gardenplanner.domain.vocabulary.PlantingStockType
 import com.mytuin.gardenplanner.domain.vocabulary.PollinationRequirement
+import com.mytuin.gardenplanner.domain.vocabulary.PreservationMethod
 import com.mytuin.gardenplanner.domain.vocabulary.ProblemCategory
 import com.mytuin.gardenplanner.domain.vocabulary.ProblemEvidenceDirection
+import com.mytuin.gardenplanner.domain.vocabulary.ProblemPriority
 import com.mytuin.gardenplanner.domain.vocabulary.ProblemResponse
 import com.mytuin.gardenplanner.domain.vocabulary.ProblemSeverity
 import com.mytuin.gardenplanner.domain.vocabulary.ProblemStatus
@@ -79,7 +82,10 @@ import com.mytuin.gardenplanner.domain.vocabulary.SourceStatus
 import com.mytuin.gardenplanner.domain.vocabulary.SourceType
 import com.mytuin.gardenplanner.domain.vocabulary.SuitabilityDimension
 import com.mytuin.gardenplanner.domain.vocabulary.SupportRequirement
+import com.mytuin.gardenplanner.domain.vocabulary.SupportType
 import com.mytuin.gardenplanner.domain.vocabulary.TemperatureClass
+import com.mytuin.gardenplanner.domain.vocabulary.ToxicPart
+import com.mytuin.gardenplanner.domain.vocabulary.Toxicity
 import com.mytuin.gardenplanner.domain.vocabulary.UserDecisionType
 import com.mytuin.gardenplanner.domain.vocabulary.WaterRequirement
 import com.mytuin.gardenplanner.domain.vocabulary.WateringMethod
@@ -749,4 +755,52 @@ class VocabularyConverters {
     fun idToInboxItemRelatedEntityType(id: String): InboxItemRelatedEntityType =
         InboxItemRelatedEntityType.fromId(id)
             ?: error("Unknown InboxItemRelatedEntityType id stored in database: '$id'")
+
+    @TypeConverter
+    fun fertilityRequirementToId(value: FertilityRequirement): String = value.id
+
+    @TypeConverter
+    fun idToFertilityRequirement(id: String): FertilityRequirement =
+        FertilityRequirement.fromId(id)
+            ?: error("Unknown FertilityRequirement id stored in database: '$id'")
+
+    @TypeConverter
+    fun toxicityToId(value: Toxicity): String = value.id
+
+    @TypeConverter
+    fun idToToxicity(id: String): Toxicity =
+        Toxicity.fromId(id)
+            ?: error("Unknown Toxicity id stored in database: '$id'")
+
+    @TypeConverter
+    fun toxicPartToId(value: ToxicPart): String = value.id
+
+    @TypeConverter
+    fun idToToxicPart(id: String): ToxicPart =
+        ToxicPart.fromId(id)
+            ?: error("Unknown ToxicPart id stored in database: '$id'")
+
+    @TypeConverter
+    fun preservationMethodToId(value: PreservationMethod): String = value.id
+
+    @TypeConverter
+    fun idToPreservationMethod(id: String): PreservationMethod =
+        PreservationMethod.fromId(id)
+            ?: error("Unknown PreservationMethod id stored in database: '$id'")
+
+    @TypeConverter
+    fun supportTypeToId(value: SupportType): String = value.id
+
+    @TypeConverter
+    fun idToSupportType(id: String): SupportType =
+        SupportType.fromId(id)
+            ?: error("Unknown SupportType id stored in database: '$id'")
+
+    @TypeConverter
+    fun problemPriorityToId(value: ProblemPriority): String = value.id
+
+    @TypeConverter
+    fun idToProblemPriority(id: String): ProblemPriority =
+        ProblemPriority.fromId(id)
+            ?: error("Unknown ProblemPriority id stored in database: '$id'")
 }

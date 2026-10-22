@@ -94,6 +94,12 @@ class VocabularyValidatorTest {
             InboxItemType.entries,
             InboxItemStatus.entries,
             InboxItemRelatedEntityType.entries,
+            FertilityRequirement.entries,
+            Toxicity.entries,
+            ToxicPart.entries,
+            PreservationMethod.entries,
+            SupportType.entries,
+            ProblemPriority.entries,
         )
 
     @Test

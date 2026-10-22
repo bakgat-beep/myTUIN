@@ -11,6 +11,7 @@ import com.mytuin.gardenplanner.data.entities.GardenEntity
 import com.mytuin.gardenplanner.data.entities.GrowingSpaceEntity
 import com.mytuin.gardenplanner.data.entities.PlantEntity
 import com.mytuin.gardenplanner.data.entities.PlantInstanceEntity
+import com.mytuin.gardenplanner.data.entities.SourceEntity
 import com.mytuin.gardenplanner.data.entities.SpatialObjectEntity
 import com.mytuin.gardenplanner.domain.error.ValidationError
 import com.mytuin.gardenplanner.domain.model.garden.KnownDate
@@ -26,6 +27,8 @@ import com.mytuin.gardenplanner.domain.vocabulary.MeasurementProperty
 import com.mytuin.gardenplanner.domain.vocabulary.PlantLifecycle
 import com.mytuin.gardenplanner.domain.vocabulary.QuantityUnit
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
+import com.mytuin.gardenplanner.domain.vocabulary.SourceStatus
+import com.mytuin.gardenplanner.domain.vocabulary.SourceType
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlinx.coroutines.flow.first
@@ -68,6 +71,7 @@ class MeasurementRepositoryTest {
                     growingSpaceDao = db.growingSpaceDao(),
                     spatialObjectDao = db.spatialObjectDao(),
                     plantInstanceDao = db.plantInstanceDao(),
+                    sourceDao = db.sourceDao(),
                 )
 
             db.gardenDao().insert(sampleGarden())
@@ -401,6 +405,44 @@ class MeasurementRepositoryTest {
             updated_at = 1_700_000_000_000L,
         )
 
+    @Test
+    fun source_id_round_trips_when_supplied() =
+        runBlocking {
+            db.sourceDao().insert(
+                SourceEntity(
+                    id = "source_00000000-0000-0000-0000-000000000001",
+                    source_type = SourceType.GOVERNMENT,
+                    status = SourceStatus.VERIFIED,
+                    created_at = 1_700_000_000_000L,
+                ),
+            )
+
+            val measurement =
+                sampleMeasurement().copy(sourceId = "source_00000000-0000-0000-0000-000000000001")
+            repository.insert(measurement)
+
+            assertEquals(
+                "source_00000000-0000-0000-0000-000000000001",
+                repository.getMeasurement(measurement.id)?.sourceId,
+            )
+        }
+
+    @Test
+    fun insert_requires_existing_source_when_supplied() =
+        runBlocking {
+            val orphan =
+                sampleMeasurement().copy(
+                    id = "measurement_00000000-0000-0000-0000-0000000000aa",
+                    sourceId = "source_does_not_exist",
+                )
+            try {
+                repository.insert(orphan)
+                fail("Expected ValidationError; insert succeeded")
+            } catch (expected: ValidationError) {
+                assertEquals("source_id", expected.field)
+            }
+        }
+
     private fun sampleMeasurement(): Measurement =
         Measurement(
             id = "measurement_00000000-0000-0000-0000-000000000001",
@@ -415,6 +457,7 @@ class MeasurementRepositoryTest {
             growingSpaceId = spaceId,
             spatialObjectId = objectId,
             plantInstanceId = instanceId,
+            sourceId = null,
             notes = "Home test kit",
         )
 }

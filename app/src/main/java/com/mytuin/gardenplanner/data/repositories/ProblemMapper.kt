@@ -22,6 +22,7 @@ fun ProblemEntity.toDomain(): Problem =
         growingSpaceId = growing_space_id,
         plantInstanceId = plant_instance_id,
         notes = notes,
+        priority = priority,
     )
 
 fun Problem.toEntity(): ProblemEntity =
@@ -41,6 +42,7 @@ fun Problem.toEntity(): ProblemEntity =
         growing_space_id = growingSpaceId,
         plant_instance_id = plantInstanceId,
         notes = notes,
+        priority = priority,
     )
 
 fun ProblemObservationEntity.toDomain(): ProblemObservation =

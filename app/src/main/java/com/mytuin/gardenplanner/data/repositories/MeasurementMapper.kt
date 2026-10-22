@@ -3,15 +3,6 @@ package com.mytuin.gardenplanner.data.repositories
 import com.mytuin.gardenplanner.data.entities.MeasurementEntity
 import com.mytuin.gardenplanner.domain.model.garden.Measurement
 
-/**
- * Mapping between MeasurementEntity and Measurement domain model.
- *
- * The KnownDate pair is decoded via knownDateFromEntity and encoded
- * via encodeTime, both shared with PlantInstanceMapper. The
- * measured_at_epoch_day column is required, so the decoder is called
- * with a non-null day and a nullable time.
- */
-
 fun MeasurementEntity.toDomain(): Measurement =
     Measurement(
         id = id,
@@ -31,6 +22,7 @@ fun MeasurementEntity.toDomain(): Measurement =
         growingSpaceId = growing_space_id,
         spatialObjectId = spatial_object_id,
         plantInstanceId = plant_instance_id,
+        sourceId = source_id,
         notes = notes,
     )
 
@@ -49,5 +41,6 @@ fun Measurement.toEntity(): MeasurementEntity =
         growing_space_id = growingSpaceId,
         spatial_object_id = spatialObjectId,
         plant_instance_id = plantInstanceId,
+        source_id = sourceId,
         notes = notes,
     )

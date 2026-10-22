@@ -4,11 +4,6 @@ import com.mytuin.gardenplanner.domain.vocabulary.Confidence
 import com.mytuin.gardenplanner.domain.vocabulary.MeasurementProperty
 import com.mytuin.gardenplanner.domain.vocabulary.QuantityUnit
 
-/**
- * User-settable fields for a new Measurement.
- *
- * The use case assigns id and createdAt.
- */
 data class NewMeasurement(
     val gardenId: String,
     val property: MeasurementProperty,
@@ -20,5 +15,6 @@ data class NewMeasurement(
     val growingSpaceId: String? = null,
     val spatialObjectId: String? = null,
     val plantInstanceId: String? = null,
+    val sourceId: String? = null,
     val notes: String? = null,
 )
