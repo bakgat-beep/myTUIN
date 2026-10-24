@@ -11,10 +11,11 @@ import org.junit.Rule
 import org.junit.Test
 
 /**
- * The diagnostic footer appears on the Home screen in a debug build,
- * showing the real app version and the real schema version.
+ * The diagnostic footer is now rendered at shell level (Step 9a) so
+ * it is visible wherever the user navigates. This test asserts it is
+ * visible on Home with the real app version and schema version.
  *
- * A83. connectedDebugAndroidTest runs against the debug variant, so
+ * A83: connectedDebugAndroidTest runs against the debug variant, so
  * BuildConfig.DEBUG is true and the footer is rendered.
  */
 class DiagnosticsOnHomeTest {
@@ -22,10 +23,10 @@ class DiagnosticsOnHomeTest {
     val composeRule = createComposeRule()
 
     @Test
-    fun home_shows_diagnostics_footer_with_real_values_in_debug() {
+    fun shell_shows_diagnostics_footer_with_real_values_in_debug() {
         composeRule.setContent {
             MyTuinTheme {
-                MyTuinNavHost()
+                MyTuinNavHost(homeScreenContent = { _ -> })
             }
         }
 

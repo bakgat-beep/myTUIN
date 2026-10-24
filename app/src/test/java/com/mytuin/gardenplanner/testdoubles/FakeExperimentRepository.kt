@@ -15,7 +15,9 @@ class FakeExperimentRepository : ExperimentRepository {
     private val links = MutableStateFlow<List<ExperimentLink>>(emptyList())
 
     override fun observeExperimentsInGarden(gardenId: String): Flow<List<Experiment>> =
-        experiments.map { rows -> rows.filter { it.gardenId == gardenId } }
+        experiments.map { rows ->
+            rows.filter { it.gardenId == gardenId }.sortedByDescending { it.createdAt }
+        }
 
     override fun observeExperiment(id: String): Flow<Experiment?> = experiments.map { rows -> rows.firstOrNull { it.id == id } }
 

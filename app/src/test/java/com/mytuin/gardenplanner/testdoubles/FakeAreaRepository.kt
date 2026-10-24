@@ -31,7 +31,7 @@ class FakeAreaRepository : AreaRepository {
                     } else {
                         filtered.filter { it.status != RecordStatus.ARCHIVED }
                     }
-                }
+                }.sortedBy { it.name }
         }
 
     override fun observeArea(id: String): Flow<Area?> = store.map { rows -> rows.firstOrNull { it.id == id } }

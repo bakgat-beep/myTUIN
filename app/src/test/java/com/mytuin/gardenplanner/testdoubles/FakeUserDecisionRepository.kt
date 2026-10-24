@@ -10,13 +10,19 @@ class FakeUserDecisionRepository : UserDecisionRepository {
     private val store = MutableStateFlow<List<UserDecision>>(emptyList())
 
     override fun observeUserDecisionsInGarden(gardenId: String): Flow<List<UserDecision>> =
-        store.map { rows -> rows.filter { it.gardenId == gardenId } }
+        store.map { rows ->
+            rows.filter { it.gardenId == gardenId }.sortedByDescending { it.decidedAt }
+        }
 
     override fun observeUserDecisionsForRecommendation(recommendationId: String): Flow<List<UserDecision>> =
-        store.map { rows -> rows.filter { it.recommendationId == recommendationId } }
+        store.map { rows ->
+            rows.filter { it.recommendationId == recommendationId }.sortedByDescending { it.decidedAt }
+        }
 
     override fun observeUserDecisionsForPlan(planId: String): Flow<List<UserDecision>> =
-        store.map { rows -> rows.filter { it.planId == planId } }
+        store.map { rows ->
+            rows.filter { it.planId == planId }.sortedByDescending { it.decidedAt }
+        }
 
     override fun observeUserDecision(id: String): Flow<UserDecision?> = store.map { rows -> rows.firstOrNull { it.id == id } }
 

@@ -10,7 +10,9 @@ class FakeGrowingSpaceHistoryRepository : GrowingSpaceHistoryRepository {
     private val store = MutableStateFlow<List<GrowingSpaceHistory>>(emptyList())
 
     override fun observeHistoryForSpace(growingSpaceId: String): Flow<List<GrowingSpaceHistory>> =
-        store.map { rows -> rows.filter { it.growingSpaceId == growingSpaceId } }
+        store.map { rows ->
+            rows.filter { it.growingSpaceId == growingSpaceId }.sortedByDescending { it.validFrom }
+        }
 
     override suspend fun getHistoryForSpace(growingSpaceId: String): List<GrowingSpaceHistory> =
         store.value.filter { it.growingSpaceId == growingSpaceId }

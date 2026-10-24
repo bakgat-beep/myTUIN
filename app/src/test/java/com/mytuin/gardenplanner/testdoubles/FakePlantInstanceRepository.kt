@@ -40,7 +40,7 @@ class FakePlantInstanceRepository : PlantInstanceRepository {
                     } else {
                         filtered.filter { it.status != RecordStatus.ARCHIVED }
                     }
-                }
+                }.sortedBy { it.name ?: "" }
         }
 
     override fun observePlantInstancesInGrowingSpace(
@@ -56,7 +56,7 @@ class FakePlantInstanceRepository : PlantInstanceRepository {
                     } else {
                         filtered.filter { it.status != RecordStatus.ARCHIVED }
                     }
-                }
+                }.sortedBy { it.name ?: "" }
         }
 
     override fun observePlantInstance(id: String): Flow<PlantInstance?> = store.map { rows -> rows.firstOrNull { it.id == id } }

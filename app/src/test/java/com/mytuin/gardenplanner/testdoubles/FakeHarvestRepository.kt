@@ -34,7 +34,7 @@ class FakeHarvestRepository : HarvestRepository {
                 .filter { it.gardenId == gardenId }
                 .let { filtered ->
                     if (includeArchived) filtered else filtered.filter { it.id !in archivedIds }
-                }
+                }.sortedByDescending { it.date.date }
         }
 
     override fun observeHarvestsForPlantInstance(
@@ -46,7 +46,7 @@ class FakeHarvestRepository : HarvestRepository {
                 .filter { it.plantInstanceId == plantInstanceId }
                 .let { filtered ->
                     if (includeArchived) filtered else filtered.filter { it.id !in archivedIds }
-                }
+                }.sortedByDescending { it.date.date }
         }
 
     override fun observeHarvestsInGrowingSpace(
@@ -58,7 +58,7 @@ class FakeHarvestRepository : HarvestRepository {
                 .filter { it.growingSpaceId == growingSpaceId }
                 .let { filtered ->
                     if (includeArchived) filtered else filtered.filter { it.id !in archivedIds }
-                }
+                }.sortedByDescending { it.date.date }
         }
 
     override fun observeHarvest(id: String): Flow<Harvest?> = store.map { rows -> rows.firstOrNull { it.id == id } }

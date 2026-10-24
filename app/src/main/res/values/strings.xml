@@ -41,4 +41,23 @@
     <string name="error_details_show">Details</string>
     <string name="error_details_hide">Hide details</string>
     <string name="error_default_message">We couldn\'t load that.</string>
+
+    <string name="home_no_garden_title">Welcome to myTUIN</string>
+    <string name="home_no_garden_description">Create your first garden to start tracking your plants, activities, and harvests.</string>
+    <string name="home_no_garden_action">Create your first garden</string>
+    <string name="home_error_generic">We couldn\'t load your garden.</string>
+
+    <string name="home_garden_summary_status_draft">Draft</string>
+    <string name="home_garden_summary_status_active">Active</string>
+    <string name="home_garden_summary_status_inactive">Inactive</string>
+    <string name="home_garden_summary_status_deprecated">Deprecated</string>
+    <string name="home_garden_summary_status_archived">Archived</string>
+
+    <string name="create_garden_title">Create garden</string>
+    <string name="create_garden_name_label">Garden name</string>
+    <string name="create_garden_description_label">Description (optional)</string>
+    <string name="create_garden_save">Save</string>
+    <string name="create_garden_cancel">Cancel</string>
+    <string name="create_garden_name_error_blank">Enter a garden name</string>
+    <string name="create_garden_save_error_generic">We couldn\'t save that change. Try again.</string>
 </resources>

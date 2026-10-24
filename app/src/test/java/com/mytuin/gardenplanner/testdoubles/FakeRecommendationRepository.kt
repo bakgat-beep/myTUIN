@@ -14,7 +14,9 @@ class FakeRecommendationRepository : RecommendationRepository {
     private val evidence = MutableStateFlow<List<RecommendationEvidence>>(emptyList())
 
     override fun observeRecommendationsInGarden(gardenId: String): Flow<List<Recommendation>> =
-        recommendations.map { rows -> rows.filter { it.gardenId == gardenId } }
+        recommendations.map { rows ->
+            rows.filter { it.gardenId == gardenId }.sortedByDescending { it.createdAt }
+        }
 
     override fun observeRecommendation(id: String): Flow<Recommendation?> = recommendations.map { rows -> rows.firstOrNull { it.id == id } }
 

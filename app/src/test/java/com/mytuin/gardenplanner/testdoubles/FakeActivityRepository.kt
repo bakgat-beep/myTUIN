@@ -31,7 +31,7 @@ class FakeActivityRepository : ActivityRepository {
                     } else {
                         filtered.filter { it.status != RecordStatus.ARCHIVED }
                     }
-                }
+                }.sortedByDescending { it.occurredAt }
         }
 
     override fun observeActivitiesForPlantInstance(
@@ -47,7 +47,7 @@ class FakeActivityRepository : ActivityRepository {
                     } else {
                         filtered.filter { it.status != RecordStatus.ARCHIVED }
                     }
-                }
+                }.sortedByDescending { it.occurredAt }
         }
 
     override fun observeActivitiesInGrowingSpace(
@@ -63,7 +63,7 @@ class FakeActivityRepository : ActivityRepository {
                     } else {
                         filtered.filter { it.status != RecordStatus.ARCHIVED }
                     }
-                }
+                }.sortedByDescending { it.occurredAt }
         }
 
     override fun observeActivitiesForPlan(
@@ -79,7 +79,7 @@ class FakeActivityRepository : ActivityRepository {
                     } else {
                         filtered.filter { it.status != RecordStatus.ARCHIVED }
                     }
-                }
+                }.sortedByDescending { it.occurredAt }
         }
 
     override fun observeActivity(id: String): Flow<Activity?> = store.map { rows -> rows.firstOrNull { it.id == id } }

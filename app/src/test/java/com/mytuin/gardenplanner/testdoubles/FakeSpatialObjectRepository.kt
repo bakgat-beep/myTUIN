@@ -31,7 +31,7 @@ class FakeSpatialObjectRepository : SpatialObjectRepository {
                     } else {
                         filtered.filter { it.status != RecordStatus.ARCHIVED }
                     }
-                }
+                }.sortedBy { it.name ?: "" }
         }
 
     override fun observeSpatialObject(id: String): Flow<SpatialObject?> = store.map { rows -> rows.firstOrNull { it.id == id } }

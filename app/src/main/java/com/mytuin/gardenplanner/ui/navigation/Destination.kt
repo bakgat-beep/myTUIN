@@ -11,11 +11,11 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import com.mytuin.gardenplanner.R
 
 /**
- * The five V1 primary destinations.
+ * The five V1 primary destinations shown in the bottom navigation bar.
  *
- * V1_SCREEN_SPECIFICATION §3, §81; PHASE_0_PROJECT_FOUNDATION §25.
- * Route strings are internal navigation identifiers, not controlled
- * vocabulary. Labels are localisation resources.
+ * D9a-6 (b): non-tab routes live in [Routes], not in this sealed
+ * class. `Destination.all` is the bottom-nav item list and stays that
+ * way.
  */
 sealed class Destination(
     val route: String,
@@ -35,4 +35,11 @@ sealed class Destination(
     companion object {
         val all: List<Destination> = listOf(Home, Garden, Plants, Planner, Inbox)
     }
+}
+
+/**
+ * Routes reachable from the shell but not shown in the bottom bar.
+ */
+object Routes {
+    const val CREATE_GARDEN: String = "create_garden"
 }

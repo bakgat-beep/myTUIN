@@ -31,7 +31,7 @@ class FakeSoilRecordRepository : SoilRecordRepository {
                     } else {
                         filtered.filter { it.status != RecordStatus.ARCHIVED }
                     }
-                }
+                }.sortedBy { it.name ?: "" }
         }
 
     override fun observeSoilRecord(id: String): Flow<SoilRecord?> = store.map { rows -> rows.firstOrNull { it.id == id } }

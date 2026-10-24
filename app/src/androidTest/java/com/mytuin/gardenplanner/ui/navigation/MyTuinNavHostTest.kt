@@ -17,7 +17,9 @@ class MyTuinNavHostTest {
     @Test
     fun shell_displays_all_five_navigation_destinations() {
         composeRule.setContent {
-            MyTuinTheme { MyTuinNavHost() }
+            MyTuinTheme {
+                MyTuinNavHost(homeScreenContent = { _ -> })
+            }
         }
         listOf("Home", "Garden", "Plants", "Planner", "Inbox").forEach { label ->
             composeRule.onAllNodesWithText(label).onFirst().assertIsDisplayed()
@@ -27,7 +29,9 @@ class MyTuinNavHostTest {
     @Test
     fun add_fab_opens_sheet_with_seven_primary_options() {
         composeRule.setContent {
-            MyTuinTheme { MyTuinNavHost() }
+            MyTuinTheme {
+                MyTuinNavHost(homeScreenContent = { _ -> })
+            }
         }
         composeRule.onNodeWithContentDescription("Add").performClick()
         listOf("Plant", "Water", "Harvest", "Observe", "Feed", "Prune", "Intervention")

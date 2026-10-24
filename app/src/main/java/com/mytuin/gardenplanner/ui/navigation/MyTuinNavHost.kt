@@ -1,6 +1,8 @@
 package com.mytuin.gardenplanner.ui.navigation
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -21,16 +23,23 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.mytuin.gardenplanner.BuildConfig
 import com.mytuin.gardenplanner.R
+import com.mytuin.gardenplanner.data.database.GARDEN_DATABASE_VERSION
+import com.mytuin.gardenplanner.ui.garden.CreateGardenScreen
 import com.mytuin.gardenplanner.ui.garden.GardenScreen
+import com.mytuin.gardenplanner.ui.home.DiagnosticsFooter
 import com.mytuin.gardenplanner.ui.home.HomeScreen
 import com.mytuin.gardenplanner.ui.inbox.InboxScreen
 import com.mytuin.gardenplanner.ui.planner.PlannerScreen
@@ -38,55 +47,102 @@ import com.mytuin.gardenplanner.ui.plants.PlantsScreen
 import com.mytuin.gardenplanner.ui.theme.Spacing
 
 @Composable
-fun MyTuinNavHost(modifier: Modifier = Modifier) {
+fun MyTuinNavHost(
+    modifier: Modifier = Modifier,
+    homeScreenContent: @Composable (onNavigateToCreateGarden: () -> Unit) -> Unit = { onNavigate ->
+        HomeScreen(onNavigateToCreateGarden = onNavigate)
+    },
+) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentDestination = navBackStackEntry?.destination
 
     Scaffold(
         modifier = modifier,
-        bottomBar = {
-            NavigationBar {
-                Destination.all.forEach { destination ->
-                    val selected =
-                        currentDestination
-                            ?.hierarchy
-                            ?.any { it.route == destination.route } == true
-
-                    NavigationBarItem(
-                        selected = selected,
-                        onClick = {
-                            navController.navigate(destination.route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
-                                }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        },
-                        icon = {
-                            Icon(
-                                imageVector = destination.icon,
-                                contentDescription = null,
-                            )
-                        },
-                        label = { Text(stringResource(destination.labelRes)) },
-                    )
-                }
-            }
-        },
+        bottomBar = { ShellBottomBar(navController, navBackStackEntry) },
         floatingActionButton = { AddActionFab() },
     ) { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = Destination.Home.route,
-            modifier = Modifier.padding(innerPadding),
+        Box(
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
         ) {
-            composable(Destination.Home.route) { HomeScreen() }
-            composable(Destination.Garden.route) { GardenScreen() }
-            composable(Destination.Plants.route) { PlantsScreen() }
-            composable(Destination.Planner.route) { PlannerScreen() }
-            composable(Destination.Inbox.route) { InboxScreen() }
+            ShellNavHost(
+                navController = navController,
+                homeScreenContent = homeScreenContent,
+                modifier = Modifier.fillMaxSize(),
+            )
+            if (BuildConfig.DEBUG) {
+                DiagnosticsFooter(
+                    appVersion = BuildConfig.VERSION_NAME,
+                    schemaVersion = GARDEN_DATABASE_VERSION,
+                    modifier = Modifier.align(Alignment.BottomCenter),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ShellBottomBar(
+    navController: NavHostController,
+    navBackStackEntry: NavBackStackEntry?,
+) {
+    val currentDestination = navBackStackEntry?.destination
+    NavigationBar {
+        Destination.all.forEach { destination ->
+            val selected =
+                currentDestination
+                    ?.hierarchy
+                    ?.any { it.route == destination.route } == true
+
+            NavigationBarItem(
+                selected = selected,
+                onClick = {
+                    navController.navigate(destination.route) {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                },
+                icon = {
+                    Icon(
+                        imageVector = destination.icon,
+                        contentDescription = null,
+                    )
+                },
+                label = { Text(stringResource(destination.labelRes)) },
+            )
+        }
+    }
+}
+
+@Composable
+private fun ShellNavHost(
+    navController: NavHostController,
+    homeScreenContent: @Composable (onNavigateToCreateGarden: () -> Unit) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    NavHost(
+        navController = navController,
+        startDestination = Destination.Home.route,
+        modifier = modifier,
+    ) {
+        composable(Destination.Home.route) {
+            homeScreenContent {
+                navController.navigate(Routes.CREATE_GARDEN)
+            }
+        }
+        composable(Destination.Garden.route) { GardenScreen() }
+        composable(Destination.Plants.route) { PlantsScreen() }
+        composable(Destination.Planner.route) { PlannerScreen() }
+        composable(Destination.Inbox.route) { InboxScreen() }
+        composable(Routes.CREATE_GARDEN) {
+            CreateGardenScreen(
+                onNavigateBack = { navController.popBackStack() },
+            )
         }
     }
 }
@@ -116,8 +172,6 @@ private fun AddActionFab() {
 
 @Composable
 private fun AddActionSheet(onDismiss: () -> Unit) {
-    // V1_SCREEN_SPECIFICATION §4.1 — seven primary options plus More.
-    // Step 1: inert. Each row dismisses the sheet.
     val options =
         listOf(
             R.string.add_option_plant,

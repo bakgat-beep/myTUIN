@@ -15,13 +15,19 @@ class FakeHarvestLossRepository : HarvestLossRepository {
     private val store = MutableStateFlow<List<HarvestLoss>>(emptyList())
 
     override fun observeHarvestLossesInGarden(gardenId: String): Flow<List<HarvestLoss>> =
-        store.map { rows -> rows.filter { it.gardenId == gardenId } }
+        store.map { rows ->
+            rows.filter { it.gardenId == gardenId }.sortedByDescending { it.date.date }
+        }
 
     override fun observeHarvestLossesForPlantInstance(plantInstanceId: String): Flow<List<HarvestLoss>> =
-        store.map { rows -> rows.filter { it.plantInstanceId == plantInstanceId } }
+        store.map { rows ->
+            rows.filter { it.plantInstanceId == plantInstanceId }.sortedByDescending { it.date.date }
+        }
 
     override fun observeHarvestLossesInGrowingSpace(growingSpaceId: String): Flow<List<HarvestLoss>> =
-        store.map { rows -> rows.filter { it.growingSpaceId == growingSpaceId } }
+        store.map { rows ->
+            rows.filter { it.growingSpaceId == growingSpaceId }.sortedByDescending { it.date.date }
+        }
 
     override fun observeHarvestLoss(id: String): Flow<HarvestLoss?> = store.map { rows -> rows.firstOrNull { it.id == id } }
 

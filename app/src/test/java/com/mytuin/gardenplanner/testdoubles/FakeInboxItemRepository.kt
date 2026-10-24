@@ -24,7 +24,7 @@ class FakeInboxItemRepository : InboxItemRepository {
                     } else {
                         filtered.filter { it.status == InboxItemStatus.PENDING }
                     }
-                }
+                }.sortedByDescending { it.createdAt }
         }
 
     override fun observeInboxItem(id: String): Flow<InboxItem?> = store.map { rows -> rows.firstOrNull { it.id == id } }

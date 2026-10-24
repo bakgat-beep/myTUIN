@@ -17,7 +17,7 @@ class FakeSourceRepository : SourceRepository {
     private val store = MutableStateFlow<List<Source>>(emptyList())
     private val statusCalls = mutableListOf<StatusCall>()
 
-    override fun observeAllSources(): Flow<List<Source>> = store.map { it }
+    override fun observeAllSources(): Flow<List<Source>> = store.map { it.sortedByDescending { it.createdAt } }
 
     override fun observeSource(id: String): Flow<Source?> = store.map { rows -> rows.firstOrNull { it.id == id } }
 

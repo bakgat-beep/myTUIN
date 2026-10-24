@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
@@ -18,6 +19,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.mytuin.gardenplanner.ui.theme.Spacing
+import com.mytuin.gardenplanner.ui.theme.TouchTarget
 
 /**
  * A useful empty state for a screen with nothing to show.
@@ -83,7 +85,10 @@ fun EmptyState(
 
         if (actionLabel != null && onAction != null) {
             Spacer(Modifier.height(Spacing.xl))
-            Button(onClick = onAction) {
+            Button(
+                onClick = onAction,
+                modifier = Modifier.heightIn(min = TouchTarget.minimum),
+            ) {
                 Text(actionLabel)
             }
         }

@@ -10,7 +10,9 @@ class FakePlantInstanceHistoryRepository : PlantInstanceHistoryRepository {
     private val store = MutableStateFlow<List<PlantInstanceHistory>>(emptyList())
 
     override fun observeHistoryFor(plantInstanceId: String): Flow<List<PlantInstanceHistory>> =
-        store.map { rows -> rows.filter { it.plantInstanceId == plantInstanceId } }
+        store.map { rows ->
+            rows.filter { it.plantInstanceId == plantInstanceId }.sortedByDescending { it.validFrom }
+        }
 
     override suspend fun getHistoryFor(plantInstanceId: String): List<PlantInstanceHistory> =
         store.value.filter { it.plantInstanceId == plantInstanceId }

@@ -10,13 +10,19 @@ class FakeMeasurementRepository : MeasurementRepository {
     private val store = MutableStateFlow<List<Measurement>>(emptyList())
 
     override fun observeMeasurementsInGarden(gardenId: String): Flow<List<Measurement>> =
-        store.map { rows -> rows.filter { it.gardenId == gardenId } }
+        store.map { rows ->
+            rows.filter { it.gardenId == gardenId }.sortedByDescending { it.measuredAt.date }
+        }
 
     override fun observeMeasurementsForPlantInstance(plantInstanceId: String): Flow<List<Measurement>> =
-        store.map { rows -> rows.filter { it.plantInstanceId == plantInstanceId } }
+        store.map { rows ->
+            rows.filter { it.plantInstanceId == plantInstanceId }.sortedByDescending { it.measuredAt.date }
+        }
 
     override fun observeMeasurementsInGrowingSpace(growingSpaceId: String): Flow<List<Measurement>> =
-        store.map { rows -> rows.filter { it.growingSpaceId == growingSpaceId } }
+        store.map { rows ->
+            rows.filter { it.growingSpaceId == growingSpaceId }.sortedByDescending { it.measuredAt.date }
+        }
 
     override fun observeMeasurement(id: String): Flow<Measurement?> = store.map { rows -> rows.firstOrNull { it.id == id } }
 

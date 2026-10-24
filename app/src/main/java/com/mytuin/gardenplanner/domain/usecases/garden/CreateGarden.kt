@@ -1,5 +1,6 @@
 package com.mytuin.gardenplanner.domain.usecases.garden
 
+import com.mytuin.gardenplanner.domain.error.ValidationError
 import com.mytuin.gardenplanner.domain.identifiers.IdGenerator
 import com.mytuin.gardenplanner.domain.model.garden.Garden
 import com.mytuin.gardenplanner.domain.model.garden.NewGarden
@@ -11,14 +12,16 @@ import javax.inject.Inject
 /**
  * Create a new Garden.
  *
- * The use case assigns id, createdAt, updatedAt and status (A44=A;
- * repository takes a fully-formed domain model). Status is DRAFT
- * (D5=B, A41).
+ * D9a-3: the use case guards against a blank name. This makes the
+ * invariant true for every caller, not just the UI. The ViewModel in
+ * ui/garden/CreateGardenViewModel pre-checks so the field error
+ * appears without a round-trip, but the use case is the ultimate
+ * guard.
  *
- * Returns the new Garden's id (A38=A, non-null).
+ * Assigns id, createdAt, updatedAt and status (DRAFT). Trims the name
+ * and description so a name of "  Garden  " stores as "Garden".
  *
- * No transaction: a single-row insert does not need one (A42). The
- * transaction pattern arrives with the first multi-row write.
+ * Returns the new Garden's id.
  */
 class CreateGarden
     @Inject
@@ -28,12 +31,19 @@ class CreateGarden
         private val clock: Clock,
     ) {
         suspend operator fun invoke(newGarden: NewGarden): String {
+            val trimmedName = newGarden.name.trim()
+            if (trimmedName.isEmpty()) {
+                throw ValidationError(
+                    field = "name",
+                    reason = "Name must not be blank",
+                )
+            }
             val now = clock.nowMillis()
             val garden =
                 Garden(
                     id = idGenerator.newGardenId(),
-                    name = newGarden.name,
-                    description = newGarden.description,
+                    name = trimmedName,
+                    description = newGarden.description?.trim()?.ifBlank { null },
                     countryCode = newGarden.countryCode,
                     region = newGarden.region,
                     locality = newGarden.locality,

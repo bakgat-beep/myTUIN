@@ -42,7 +42,7 @@ class FakeProblemRepository : ProblemRepository {
                     } else {
                         filtered.filter { it.recordStatus != RecordStatus.ARCHIVED }
                     }
-                }
+                }.sortedByDescending { it.updatedAt }
         }
 
     override fun observeProblemsForPlantInstance(
@@ -58,7 +58,7 @@ class FakeProblemRepository : ProblemRepository {
                     } else {
                         filtered.filter { it.recordStatus != RecordStatus.ARCHIVED }
                     }
-                }
+                }.sortedByDescending { it.updatedAt }
         }
 
     override fun observeProblemsInGrowingSpace(
@@ -74,7 +74,7 @@ class FakeProblemRepository : ProblemRepository {
                     } else {
                         filtered.filter { it.recordStatus != RecordStatus.ARCHIVED }
                     }
-                }
+                }.sortedByDescending { it.updatedAt }
         }
 
     override fun observeProblem(id: String): Flow<Problem?> = store.map { rows -> rows.firstOrNull { it.id == id } }

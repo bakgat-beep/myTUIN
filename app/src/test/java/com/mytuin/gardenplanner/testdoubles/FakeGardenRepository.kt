@@ -26,13 +26,20 @@ class FakeGardenRepository : GardenRepository {
     private val updateLocationCalls = mutableListOf<UpdateLocationCall>()
     private val statusChangeCalls = mutableListOf<StatusChangeCall>()
 
+    /**
+     * Mirrors GardenRepositoryImpl.observeGardens' behaviour:
+     * archived filtered by default (A231=a) and results sorted by
+     * name (ORDER BY name in the DAO queries).
+     */
     override fun observeGardens(includeArchived: Boolean): Flow<List<Garden>> =
         store.map { rows ->
-            if (includeArchived) {
-                rows
-            } else {
-                rows.filter { it.status != RecordStatus.ARCHIVED }
-            }
+            val visible =
+                if (includeArchived) {
+                    rows
+                } else {
+                    rows.filter { it.status != RecordStatus.ARCHIVED }
+                }
+            visible.sortedBy { it.name }
         }
 
     override fun observeGarden(id: String): Flow<Garden?> = store.map { rows -> rows.firstOrNull { it.id == id } }

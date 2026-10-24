@@ -1,5 +1,6 @@
 package com.mytuin.gardenplanner.domain.usecases.garden
 
+import com.mytuin.gardenplanner.domain.error.ValidationError
 import com.mytuin.gardenplanner.domain.model.garden.NewGarden
 import com.mytuin.gardenplanner.domain.vocabulary.Hemisphere
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
@@ -8,14 +9,9 @@ import com.mytuin.gardenplanner.testdoubles.FakeGardenRepository
 import com.mytuin.gardenplanner.testdoubles.FakeIdGenerator
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.fail
 import org.junit.Test
 
-/**
- * Use case tests for CreateGarden.
- *
- * TESTING_STRATEGY §4: unit tests, no Android runtime.
- * A47=A: use case tests are plain unit tests, using fakes.
- */
 class CreateGardenTest {
     private val repository = FakeGardenRepository()
     private val idGenerator = FakeIdGenerator(nextGardenIdValue = "garden_test_0001")
@@ -49,7 +45,49 @@ class CreateGardenTest {
             assertEquals(RecordStatus.DRAFT, garden.status)
             assertEquals(1_700_000_000_000L, garden.createdAt)
             assertEquals(1_700_000_000_000L, garden.updatedAt)
-            assertEquals(1_700_000_000_000L, garden.createdAt)
+        }
+
+    @Test
+    fun invoke_trims_name_and_description() =
+        runBlocking {
+            createGarden(
+                NewGarden(
+                    name = "  Back Garden  ",
+                    description = "  Main plot  ",
+                ),
+            )
+            val garden = repository.snapshot().single()
+            assertEquals("Back Garden", garden.name)
+            assertEquals("Main plot", garden.description)
+        }
+
+    @Test
+    fun invoke_stores_blank_description_as_null() =
+        runBlocking {
+            createGarden(NewGarden(name = "Back Garden", description = "   "))
+            assertEquals(null, repository.snapshot().single().description)
+        }
+
+    @Test
+    fun invoke_throws_ValidationError_when_name_is_blank() =
+        runBlocking {
+            try {
+                createGarden(NewGarden(name = "   "))
+                fail("Expected ValidationError")
+            } catch (e: ValidationError) {
+                assertEquals("name", e.field)
+            }
+        }
+
+    @Test
+    fun invoke_throws_ValidationError_when_name_is_empty() =
+        runBlocking {
+            try {
+                createGarden(NewGarden(name = ""))
+                fail("Expected ValidationError")
+            } catch (e: ValidationError) {
+                assertEquals("name", e.field)
+            }
         }
 
     @Test

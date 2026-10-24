@@ -28,6 +28,7 @@ class FakeGrowingSpaceRepository : GrowingSpaceRepository {
             rows
                 .filter { it.gardenId == gardenId }
                 .let { if (includeArchived) it else it.filter { s -> s.status != RecordStatus.ARCHIVED } }
+                .sortedBy { it.name }
         }
 
     override fun observeGrowingSpace(id: String): Flow<GrowingSpace?> = store.map { rows -> rows.firstOrNull { it.id == id } }

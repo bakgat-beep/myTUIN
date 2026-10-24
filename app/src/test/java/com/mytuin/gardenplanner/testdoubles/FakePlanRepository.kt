@@ -42,7 +42,7 @@ class FakePlanRepository : PlanRepository {
                     } else {
                         filtered.filter { it.recordStatus != RecordStatus.ARCHIVED }
                     }
-                }
+                }.sortedByDescending { it.updatedAt }
         }
 
     override fun observePlan(id: String): Flow<Plan?> = store.map { rows -> rows.firstOrNull { it.id == id } }

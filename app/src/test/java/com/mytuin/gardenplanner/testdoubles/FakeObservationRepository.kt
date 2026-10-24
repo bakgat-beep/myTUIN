@@ -34,7 +34,7 @@ class FakeObservationRepository : ObservationRepository {
                 .filter { it.gardenId == gardenId }
                 .let { filtered ->
                     if (includeArchived) filtered else filtered.filter { it.id !in archivedIds }
-                }
+                }.sortedByDescending { it.observedAt }
         }
 
     override fun observeObservationsForPlantInstance(
@@ -46,7 +46,7 @@ class FakeObservationRepository : ObservationRepository {
                 .filter { it.plantInstanceId == plantInstanceId }
                 .let { filtered ->
                     if (includeArchived) filtered else filtered.filter { it.id !in archivedIds }
-                }
+                }.sortedByDescending { it.observedAt }
         }
 
     override fun observeObservationsInGrowingSpace(
@@ -58,7 +58,7 @@ class FakeObservationRepository : ObservationRepository {
                 .filter { it.growingSpaceId == growingSpaceId }
                 .let { filtered ->
                     if (includeArchived) filtered else filtered.filter { it.id !in archivedIds }
-                }
+                }.sortedByDescending { it.observedAt }
         }
 
     override fun observeObservation(id: String): Flow<Observation?> = store.map { rows -> rows.firstOrNull { it.id == id } }
