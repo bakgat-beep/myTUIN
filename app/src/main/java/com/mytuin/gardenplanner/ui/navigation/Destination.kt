@@ -10,13 +10,6 @@ import androidx.compose.material.icons.filled.Yard
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.mytuin.gardenplanner.R
 
-/**
- * The five V1 primary destinations shown in the bottom navigation bar.
- *
- * D9a-6 (b): non-tab routes live in [Routes], not in this sealed
- * class. `Destination.all` is the bottom-nav item list and stays that
- * way.
- */
 sealed class Destination(
     val route: String,
     @StringRes val labelRes: Int,
@@ -39,7 +32,16 @@ sealed class Destination(
 
 /**
  * Routes reachable from the shell but not shown in the bottom bar.
+ *
+ * Garden Detail (9b) carries a gardenId argument. Editing location is
+ * a sheet within Detail (E1), not a route — see the 9b pre-code
+ * statement for the deviation from E10.
  */
 object Routes {
     const val CREATE_GARDEN: String = "create_garden"
+
+    const val GARDEN_DETAIL_ARG_GARDEN_ID: String = "gardenId"
+    const val GARDEN_DETAIL_PATTERN: String = "garden_detail/{$GARDEN_DETAIL_ARG_GARDEN_ID}"
+
+    fun gardenDetail(gardenId: String): String = "garden_detail/$gardenId"
 }

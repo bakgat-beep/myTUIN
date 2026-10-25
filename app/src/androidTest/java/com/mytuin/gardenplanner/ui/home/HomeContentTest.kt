@@ -15,14 +15,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 
-/**
- * Compose tests for HomeContent (stateless).
- *
- * D9a-2: stateless target, no ViewModel or Hilt dependency.
- *
- * Accessibility baseline (Step 9a requirement): CTA button meets 48dp
- * minimum touch target.
- */
 class HomeContentTest {
     @get:Rule
     val composeRule = createComposeRule()
@@ -34,6 +26,7 @@ class HomeContentTest {
                 HomeContent(
                     uiState = HomeUiState.NoGarden,
                     onNavigateToCreateGarden = {},
+                    onGardenClick = {},
                 )
             }
         }
@@ -54,6 +47,7 @@ class HomeContentTest {
                 HomeContent(
                     uiState = HomeUiState.NoGarden,
                     onNavigateToCreateGarden = { clicks += 1 },
+                    onGardenClick = {},
                 )
             }
         }
@@ -69,6 +63,7 @@ class HomeContentTest {
                 HomeContent(
                     uiState = HomeUiState.NoGarden,
                     onNavigateToCreateGarden = {},
+                    onGardenClick = {},
                 )
             }
         }
@@ -85,6 +80,7 @@ class HomeContentTest {
                 HomeContent(
                     uiState = HomeUiState.Ready(sampleGarden()),
                     onNavigateToCreateGarden = {},
+                    onGardenClick = {},
                 )
             }
         }
@@ -102,6 +98,7 @@ class HomeContentTest {
                 HomeContent(
                     uiState = HomeUiState.Ready(currentGarden.value),
                     onNavigateToCreateGarden = {},
+                    onGardenClick = {},
                 )
             }
         }
@@ -127,13 +124,30 @@ class HomeContentTest {
                 HomeContent(
                     uiState = HomeUiState.Ready(sampleGarden().copy(description = null)),
                     onNavigateToCreateGarden = {},
+                    onGardenClick = {},
                 )
             }
         }
 
         composeRule.onNodeWithText("Back Garden").assertIsDisplayed()
-        // No description node
         composeRule.onNodeWithText("Main vegetable plot").assertDoesNotExist()
+    }
+
+    @Test
+    fun ready_state_garden_click_invokes_callback_with_id() {
+        var capturedId: String? = null
+        composeRule.setContent {
+            MyTuinTheme {
+                HomeContent(
+                    uiState = HomeUiState.Ready(sampleGarden()),
+                    onNavigateToCreateGarden = {},
+                    onGardenClick = { capturedId = it },
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("Back Garden").performClick()
+        assertEquals("garden_test_0001", capturedId)
     }
 
     @Test
@@ -143,6 +157,7 @@ class HomeContentTest {
                 HomeContent(
                     uiState = HomeUiState.Error,
                     onNavigateToCreateGarden = {},
+                    onGardenClick = {},
                 )
             }
         }

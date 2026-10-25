@@ -24,10 +24,11 @@ class ShellAccessibilityTest {
         composeRule.setContent {
             MyTuinTheme {
                 MyTuinNavHost(
-                    homeScreenContent = { _ ->
+                    homeScreenContent = { _, _ ->
                         HomeContent(
                             uiState = HomeUiState.NoGarden,
                             onNavigateToCreateGarden = {},
+                            onGardenClick = {},
                         )
                     },
                 )

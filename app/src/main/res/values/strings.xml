@@ -60,4 +60,37 @@
     <string name="create_garden_cancel">Cancel</string>
     <string name="create_garden_name_error_blank">Enter a garden name</string>
     <string name="create_garden_save_error_generic">We couldn\'t save that change. Try again.</string>
+    <string name="garden_detail_location_section">Location</string>
+    <string name="garden_detail_country_label">Country</string>
+    <string name="garden_detail_region_label">Region</string>
+    <string name="garden_detail_locality_label">Locality</string>
+    <string name="garden_detail_latitude_label">Latitude</string>
+    <string name="garden_detail_longitude_label">Longitude</string>
+    <string name="garden_detail_timezone_label">Timezone</string>
+    <string name="garden_detail_hemisphere_label">Hemisphere</string>
+    <string name="garden_detail_edit_location_action">Edit location</string>
+    <string name="garden_detail_not_set">Not set</string>
+    <string name="garden_detail_load_error">We couldn\'t load this garden.</string>
+
+    <string name="edit_location_title">Edit location</string>
+    <string name="edit_location_save">Save</string>
+    <string name="edit_location_cancel">Cancel</string>
+    <string name="edit_location_pick_country_action">Pick country</string>
+    <string name="edit_location_country_error">Enter a two-letter country code</string>
+    <string name="edit_location_latitude_error">Latitude must be between -90 and 90</string>
+    <string name="edit_location_longitude_error">Longitude must be between -180 and 180</string>
+    <string name="edit_location_save_error_generic">We couldn\'t save that change. Try again.</string>
+
+    <string name="location_updated_message">Location updated</string>
+    <string name="undo_action">Undo</string>
+    <string name="back_action">Back</string>
+
+    <string name="country_picker_title">Select country</string>
+    <string name="country_picker_search_hint">Search countries</string>
+
+    <string name="hemisphere_northern">Northern</string>
+    <string name="hemisphere_southern">Southern</string>
+    <string name="hemisphere_equatorial">Equatorial</string>
+    <string name="hemisphere_global">Global</string>
+    <string name="hemisphere_unknown">Unknown</string>
 </resources>

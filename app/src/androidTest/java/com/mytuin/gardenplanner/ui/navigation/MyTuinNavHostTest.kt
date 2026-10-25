@@ -18,7 +18,7 @@ class MyTuinNavHostTest {
     fun shell_displays_all_five_navigation_destinations() {
         composeRule.setContent {
             MyTuinTheme {
-                MyTuinNavHost(homeScreenContent = { _ -> })
+                MyTuinNavHost(homeScreenContent = { _, _ -> })
             }
         }
         listOf("Home", "Garden", "Plants", "Planner", "Inbox").forEach { label ->
@@ -30,7 +30,7 @@ class MyTuinNavHostTest {
     fun add_fab_opens_sheet_with_seven_primary_options() {
         composeRule.setContent {
             MyTuinTheme {
-                MyTuinNavHost(homeScreenContent = { _ -> })
+                MyTuinNavHost(homeScreenContent = { _, _ -> })
             }
         }
         composeRule.onNodeWithContentDescription("Add").performClick()

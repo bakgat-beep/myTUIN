@@ -1,6 +1,7 @@
 package com.mytuin.gardenplanner.ui.home
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,17 +26,10 @@ import com.mytuin.gardenplanner.ui.components.EmptyState
 import com.mytuin.gardenplanner.ui.components.ErrorState
 import com.mytuin.gardenplanner.ui.theme.Spacing
 
-/**
- * Wired Home screen. Reads state from HomeViewModel and delegates
- * rendering to HomeContent.
- *
- * D9a-2: the split between HomeScreen (wired) and HomeContent
- * (stateless) means Compose tests target HomeContent directly, with
- * no ViewModel dependency.
- */
 @Composable
 fun HomeScreen(
     onNavigateToCreateGarden: () -> Unit,
+    onGardenClick: (gardenId: String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
@@ -43,17 +37,16 @@ fun HomeScreen(
     HomeContent(
         uiState = uiState,
         onNavigateToCreateGarden = onNavigateToCreateGarden,
+        onGardenClick = onGardenClick,
         modifier = modifier,
     )
 }
 
-/**
- * Stateless Home screen.
- */
 @Composable
 fun HomeContent(
     uiState: HomeUiState,
     onNavigateToCreateGarden: () -> Unit,
+    onGardenClick: (gardenId: String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     when (uiState) {
@@ -74,7 +67,11 @@ fun HomeContent(
                 modifier = modifier,
             )
         is HomeUiState.Ready ->
-            GardenSummary(garden = uiState.garden, modifier = modifier)
+            GardenSummary(
+                garden = uiState.garden,
+                onClick = { onGardenClick(uiState.garden.id) },
+                modifier = modifier,
+            )
         HomeUiState.Error ->
             ErrorState(
                 message = stringResource(R.string.home_error_generic),
@@ -86,12 +83,14 @@ fun HomeContent(
 @Composable
 private fun GardenSummary(
     garden: Garden,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
         modifier =
             modifier
                 .fillMaxSize()
+                .clickable(onClick = onClick)
                 .padding(Spacing.screenMargin),
         verticalArrangement = Arrangement.spacedBy(Spacing.m),
     ) {

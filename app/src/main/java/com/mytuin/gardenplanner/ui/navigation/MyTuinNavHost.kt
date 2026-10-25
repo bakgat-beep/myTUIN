@@ -30,14 +30,17 @@ import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.mytuin.gardenplanner.BuildConfig
 import com.mytuin.gardenplanner.R
 import com.mytuin.gardenplanner.data.database.GARDEN_DATABASE_VERSION
 import com.mytuin.gardenplanner.ui.garden.CreateGardenScreen
+import com.mytuin.gardenplanner.ui.garden.GardenDetailScreen
 import com.mytuin.gardenplanner.ui.garden.GardenScreen
 import com.mytuin.gardenplanner.ui.home.DiagnosticsFooter
 import com.mytuin.gardenplanner.ui.home.HomeScreen
@@ -49,8 +52,14 @@ import com.mytuin.gardenplanner.ui.theme.Spacing
 @Composable
 fun MyTuinNavHost(
     modifier: Modifier = Modifier,
-    homeScreenContent: @Composable (onNavigateToCreateGarden: () -> Unit) -> Unit = { onNavigate ->
-        HomeScreen(onNavigateToCreateGarden = onNavigate)
+    homeScreenContent: @Composable (
+        onNavigateToCreateGarden: () -> Unit,
+        onNavigateToGardenDetail: (gardenId: String) -> Unit,
+    ) -> Unit = { onCreate, onDetail ->
+        HomeScreen(
+            onNavigateToCreateGarden = onCreate,
+            onGardenClick = onDetail,
+        )
     },
 ) {
     val navController = rememberNavController()
@@ -122,7 +131,10 @@ private fun ShellBottomBar(
 @Composable
 private fun ShellNavHost(
     navController: NavHostController,
-    homeScreenContent: @Composable (onNavigateToCreateGarden: () -> Unit) -> Unit,
+    homeScreenContent: @Composable (
+        onNavigateToCreateGarden: () -> Unit,
+        onNavigateToGardenDetail: (gardenId: String) -> Unit,
+    ) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     NavHost(
@@ -131,9 +143,10 @@ private fun ShellNavHost(
         modifier = modifier,
     ) {
         composable(Destination.Home.route) {
-            homeScreenContent {
-                navController.navigate(Routes.CREATE_GARDEN)
-            }
+            homeScreenContent(
+                { navController.navigate(Routes.CREATE_GARDEN) },
+                { gardenId -> navController.navigate(Routes.gardenDetail(gardenId)) },
+            )
         }
         composable(Destination.Garden.route) { GardenScreen() }
         composable(Destination.Plants.route) { PlantsScreen() }
@@ -141,6 +154,19 @@ private fun ShellNavHost(
         composable(Destination.Inbox.route) { InboxScreen() }
         composable(Routes.CREATE_GARDEN) {
             CreateGardenScreen(
+                onNavigateBack = { navController.popBackStack() },
+            )
+        }
+        composable(
+            route = Routes.GARDEN_DETAIL_PATTERN,
+            arguments =
+                listOf(
+                    navArgument(Routes.GARDEN_DETAIL_ARG_GARDEN_ID) {
+                        type = NavType.StringType
+                    },
+                ),
+        ) {
+            GardenDetailScreen(
                 onNavigateBack = { navController.popBackStack() },
             )
         }
