@@ -31,11 +31,10 @@ sealed class Destination(
 }
 
 /**
- * Routes reachable from the shell but not shown in the bottom bar.
+ * Non-tab routes.
  *
- * Garden Detail (9b) carries a gardenId argument. Editing location is
- * a sheet within Detail (E1), not a route — see the 9b pre-code
- * statement for the deviation from E10.
+ * Flat string IDs everywhere. No nested graphs; each route carries
+ * the ID(s) it needs as path arguments.
  */
 object Routes {
     const val CREATE_GARDEN: String = "create_garden"
@@ -43,5 +42,15 @@ object Routes {
     const val GARDEN_DETAIL_ARG_GARDEN_ID: String = "gardenId"
     const val GARDEN_DETAIL_PATTERN: String = "garden_detail/{$GARDEN_DETAIL_ARG_GARDEN_ID}"
 
+    const val GROWING_SPACES_ARG_GARDEN_ID: String = "gardenId"
+    const val GROWING_SPACES_PATTERN: String = "growing_spaces/{$GROWING_SPACES_ARG_GARDEN_ID}"
+
+    const val GROWING_SPACE_DETAIL_ARG_ID: String = "growingSpaceId"
+    const val GROWING_SPACE_DETAIL_PATTERN: String = "growing_space/{$GROWING_SPACE_DETAIL_ARG_ID}"
+
     fun gardenDetail(gardenId: String): String = "garden_detail/$gardenId"
+
+    fun growingSpaces(gardenId: String): String = "growing_spaces/$gardenId"
+
+    fun growingSpaceDetail(growingSpaceId: String): String = "growing_space/$growingSpaceId"
 }

@@ -93,4 +93,57 @@
     <string name="hemisphere_equatorial">Equatorial</string>
     <string name="hemisphere_global">Global</string>
     <string name="hemisphere_unknown">Unknown</string>
+
+    <!-- RecordStatus labels -->
+    <string name="status_draft">Draft</string>
+    <string name="status_active">Active</string>
+    <string name="status_inactive">Inactive</string>
+    <string name="status_deprecated">Deprecated</string>
+    <string name="status_archived">Archived</string>
+
+    <!-- GrowingSpaceType labels -->
+    <string name="growing_space_type_garden_bed">Garden bed</string>
+    <string name="growing_space_type_raised_bed">Raised bed</string>
+    <string name="growing_space_type_in_ground_bed">In-ground bed</string>
+    <string name="growing_space_type_container">Container</string>
+    <string name="growing_space_type_pot">Pot</string>
+    <string name="growing_space_type_planter">Planter</string>
+    <string name="growing_space_type_greenhouse">Greenhouse</string>
+    <string name="growing_space_type_polytunnel">Polytunnel</string>
+    <string name="growing_space_type_orchard">Orchard</string>
+    <string name="growing_space_type_row">Row</string>
+    <string name="growing_space_type_border">Border</string>
+    <string name="growing_space_type_vertical_space">Vertical space</string>
+    <string name="growing_space_type_nursery_area">Nursery area</string>
+    <string name="growing_space_type_lawn">Lawn</string>
+    <string name="growing_space_type_mixed_area">Mixed area</string>
+    <string name="growing_space_type_other">Other</string>
+
+    <!-- Growing spaces list -->
+    <string name="growing_spaces_list_title">Growing spaces</string>
+    <string name="growing_spaces_list_empty_title">No growing spaces yet</string>
+    <string name="growing_spaces_list_empty_description">Growing spaces you create will appear here.</string>
+    <string name="growing_spaces_list_error">We couldn\'t load your growing spaces.</string>
+
+    <!-- Garden Detail additions -->
+    <string name="garden_detail_growing_spaces_section">Growing spaces</string>
+    <string name="garden_detail_view_growing_spaces_action">View growing spaces</string>
+
+    <!-- Growing space detail -->
+    <string name="growing_space_detail_section_description">Description</string>
+    <string name="growing_space_detail_section_dimensions">Dimensions</string>
+    <string name="growing_space_detail_section_geometry">Geometry</string>
+    <string name="growing_space_detail_section_notes">Notes</string>
+    <string name="growing_space_detail_length_format">Length: %1$s m</string>
+    <string name="growing_space_detail_width_format">Width: %1$s m</string>
+    <string name="growing_space_detail_height_format">Height: %1$s m</string>
+    <string name="growing_space_detail_diameter_format">Diameter: %1$s m</string>
+    <string name="growing_space_detail_area_format">Area: %1$s m²</string>
+    <string name="growing_space_detail_volume_format">Volume: %1$s m³</string>
+    <string name="growing_space_detail_geometry_point">Point</string>
+    <string name="growing_space_detail_geometry_line">Line</string>
+    <string name="growing_space_detail_geometry_polygon">Polygon</string>
+    <string name="growing_space_detail_geometry_not_set">Not set</string>
+    <string name="growing_space_detail_load_error">We couldn\'t load this growing space.</string>
+    <string name="growing_space_detail_type_and_status_format">%1$s · %2$s</string>
 </resources>

@@ -24,6 +24,7 @@ class GardenDetailContentTest {
                 GardenDetailContent(
                     uiState = GardenDetailUiState(isLoading = true),
                     onEditLocation = {},
+                    onNavigateToGrowingSpaces = {},
                 )
             }
         }
@@ -37,6 +38,7 @@ class GardenDetailContentTest {
                 GardenDetailContent(
                     uiState = GardenDetailUiState(isLoading = false, loadError = true),
                     onEditLocation = {},
+                    onNavigateToGrowingSpaces = {},
                 )
             }
         }
@@ -54,6 +56,7 @@ class GardenDetailContentTest {
                             garden = sampleGarden(),
                         ),
                     onEditLocation = {},
+                    onNavigateToGrowingSpaces = {},
                 )
             }
         }
@@ -74,6 +77,7 @@ class GardenDetailContentTest {
                 GardenDetailContent(
                     uiState = GardenDetailUiState(isLoading = false, garden = sampleGarden()),
                     onEditLocation = {},
+                    onNavigateToGrowingSpaces = {},
                 )
             }
         }
@@ -92,11 +96,31 @@ class GardenDetailContentTest {
                 GardenDetailContent(
                     uiState = GardenDetailUiState(isLoading = false, garden = sampleGarden()),
                     onEditLocation = { edits += 1 },
+                    onNavigateToGrowingSpaces = {},
                 )
             }
         }
         composeRule.onNodeWithText("Edit location").performScrollTo().performClick()
         assertEquals(1, edits)
+    }
+
+    @Test
+    fun view_growing_spaces_button_invokes_callback() {
+        var navigations = 0
+        composeRule.setContent {
+            MyTuinTheme {
+                GardenDetailContent(
+                    uiState = GardenDetailUiState(isLoading = false, garden = sampleGarden()),
+                    onEditLocation = {},
+                    onNavigateToGrowingSpaces = { navigations += 1 },
+                )
+            }
+        }
+        composeRule
+            .onNodeWithText("View growing spaces")
+            .performScrollTo()
+            .performClick()
+        assertEquals(1, navigations)
     }
 
     private fun sampleGarden(): Garden =

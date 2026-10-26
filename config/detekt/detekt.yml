@@ -122,6 +122,7 @@ complexity:
   CyclomaticComplexMethod:
     excludes:
       - '**/data/repositories/PlantMultiValueMapper.kt'
+      - '**/ui/garden/GrowingSpaceLabels.kt'
 
 style:
   MagicNumber:

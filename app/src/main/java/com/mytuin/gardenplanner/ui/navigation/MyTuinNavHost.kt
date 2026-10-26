@@ -29,6 +29,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -42,6 +43,8 @@ import com.mytuin.gardenplanner.data.database.GARDEN_DATABASE_VERSION
 import com.mytuin.gardenplanner.ui.garden.CreateGardenScreen
 import com.mytuin.gardenplanner.ui.garden.GardenDetailScreen
 import com.mytuin.gardenplanner.ui.garden.GardenScreen
+import com.mytuin.gardenplanner.ui.garden.GrowingSpaceDetailScreen
+import com.mytuin.gardenplanner.ui.garden.GrowingSpacesListScreen
 import com.mytuin.gardenplanner.ui.home.DiagnosticsFooter
 import com.mytuin.gardenplanner.ui.home.HomeScreen
 import com.mytuin.gardenplanner.ui.inbox.InboxScreen
@@ -157,19 +160,67 @@ private fun ShellNavHost(
                 onNavigateBack = { navController.popBackStack() },
             )
         }
-        composable(
-            route = Routes.GARDEN_DETAIL_PATTERN,
-            arguments =
-                listOf(
-                    navArgument(Routes.GARDEN_DETAIL_ARG_GARDEN_ID) {
-                        type = NavType.StringType
-                    },
-                ),
-        ) {
-            GardenDetailScreen(
-                onNavigateBack = { navController.popBackStack() },
-            )
-        }
+        gardenDetailRoute(navController)
+        growingSpacesRoute(navController)
+        growingSpaceDetailRoute(navController)
+    }
+}
+
+private fun NavGraphBuilder.gardenDetailRoute(navController: NavHostController) {
+    composable(
+        route = Routes.GARDEN_DETAIL_PATTERN,
+        arguments =
+            listOf(
+                navArgument(Routes.GARDEN_DETAIL_ARG_GARDEN_ID) {
+                    type = NavType.StringType
+                },
+            ),
+    ) { backStackEntry ->
+        val gardenId =
+            backStackEntry.arguments
+                ?.getString(Routes.GARDEN_DETAIL_ARG_GARDEN_ID)
+                .orEmpty()
+        GardenDetailScreen(
+            onNavigateBack = { navController.popBackStack() },
+            onNavigateToGrowingSpaces = {
+                navController.navigate(Routes.growingSpaces(gardenId))
+            },
+        )
+    }
+}
+
+private fun NavGraphBuilder.growingSpacesRoute(navController: NavHostController) {
+    composable(
+        route = Routes.GROWING_SPACES_PATTERN,
+        arguments =
+            listOf(
+                navArgument(Routes.GROWING_SPACES_ARG_GARDEN_ID) {
+                    type = NavType.StringType
+                },
+            ),
+    ) {
+        GrowingSpacesListScreen(
+            onNavigateBack = { navController.popBackStack() },
+            onSpaceClick = { growingSpaceId ->
+                navController.navigate(Routes.growingSpaceDetail(growingSpaceId))
+            },
+        )
+    }
+}
+
+private fun NavGraphBuilder.growingSpaceDetailRoute(navController: NavHostController) {
+    composable(
+        route = Routes.GROWING_SPACE_DETAIL_PATTERN,
+        arguments =
+            listOf(
+                navArgument(Routes.GROWING_SPACE_DETAIL_ARG_ID) {
+                    type = NavType.StringType
+                },
+            ),
+    ) {
+        GrowingSpaceDetailScreen(
+            onNavigateBack = { navController.popBackStack() },
+        )
     }
 }
 

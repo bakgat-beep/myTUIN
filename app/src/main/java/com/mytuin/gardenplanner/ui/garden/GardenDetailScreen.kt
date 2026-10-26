@@ -41,6 +41,7 @@ import com.mytuin.gardenplanner.ui.theme.Spacing
 @Composable
 fun GardenDetailScreen(
     onNavigateBack: () -> Unit,
+    onNavigateToGrowingSpaces: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: GardenDetailViewModel = hiltViewModel(),
 ) {
@@ -100,6 +101,7 @@ fun GardenDetailScreen(
         GardenDetailContent(
             uiState = uiState,
             onEditLocation = viewModel::openEditSheet,
+            onNavigateToGrowingSpaces = onNavigateToGrowingSpaces,
             modifier = Modifier.padding(innerPadding),
         )
     }
@@ -109,6 +111,7 @@ fun GardenDetailScreen(
 fun GardenDetailContent(
     uiState: GardenDetailUiState,
     onEditLocation: () -> Unit,
+    onNavigateToGrowingSpaces: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     when {
@@ -128,6 +131,7 @@ fun GardenDetailContent(
             LoadedGardenDetail(
                 garden = uiState.garden,
                 onEditLocation = onEditLocation,
+                onNavigateToGrowingSpaces = onNavigateToGrowingSpaces,
                 modifier = modifier,
             )
     }
@@ -137,6 +141,7 @@ fun GardenDetailContent(
 private fun LoadedGardenDetail(
     garden: Garden,
     onEditLocation: () -> Unit,
+    onNavigateToGrowingSpaces: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -187,6 +192,13 @@ private fun LoadedGardenDetail(
         )
         Button(onClick = onEditLocation) {
             Text(stringResource(R.string.garden_detail_edit_location_action))
+        }
+        Text(
+            text = stringResource(R.string.garden_detail_growing_spaces_section),
+            style = MaterialTheme.typography.titleMedium,
+        )
+        Button(onClick = onNavigateToGrowingSpaces) {
+            Text(stringResource(R.string.garden_detail_view_growing_spaces_action))
         }
     }
 }
