@@ -41,6 +41,8 @@ import com.mytuin.gardenplanner.BuildConfig
 import com.mytuin.gardenplanner.R
 import com.mytuin.gardenplanner.data.database.GARDEN_DATABASE_VERSION
 import com.mytuin.gardenplanner.ui.garden.CreateGardenScreen
+import com.mytuin.gardenplanner.ui.garden.CreateGrowingSpaceScreen
+import com.mytuin.gardenplanner.ui.garden.EditGrowingSpaceScreen
 import com.mytuin.gardenplanner.ui.garden.GardenDetailScreen
 import com.mytuin.gardenplanner.ui.garden.GardenScreen
 import com.mytuin.gardenplanner.ui.garden.GrowingSpaceDetailScreen
@@ -163,6 +165,8 @@ private fun ShellNavHost(
         gardenDetailRoute(navController)
         growingSpacesRoute(navController)
         growingSpaceDetailRoute(navController)
+        createGrowingSpaceRoute(navController)
+        editGrowingSpaceRoute(navController)
     }
 }
 
@@ -177,9 +181,7 @@ private fun NavGraphBuilder.gardenDetailRoute(navController: NavHostController) 
             ),
     ) { backStackEntry ->
         val gardenId =
-            backStackEntry.arguments
-                ?.getString(Routes.GARDEN_DETAIL_ARG_GARDEN_ID)
-                .orEmpty()
+            backStackEntry.arguments?.getString(Routes.GARDEN_DETAIL_ARG_GARDEN_ID).orEmpty()
         GardenDetailScreen(
             onNavigateBack = { navController.popBackStack() },
             onNavigateToGrowingSpaces = {
@@ -198,9 +200,14 @@ private fun NavGraphBuilder.growingSpacesRoute(navController: NavHostController)
                     type = NavType.StringType
                 },
             ),
-    ) {
+    ) { backStackEntry ->
+        val gardenId =
+            backStackEntry.arguments?.getString(Routes.GROWING_SPACES_ARG_GARDEN_ID).orEmpty()
         GrowingSpacesListScreen(
             onNavigateBack = { navController.popBackStack() },
+            onCreateSpace = {
+                navController.navigate(Routes.createGrowingSpace(gardenId))
+            },
             onSpaceClick = { growingSpaceId ->
                 navController.navigate(Routes.growingSpaceDetail(growingSpaceId))
             },
@@ -217,8 +224,45 @@ private fun NavGraphBuilder.growingSpaceDetailRoute(navController: NavHostContro
                     type = NavType.StringType
                 },
             ),
-    ) {
+    ) { backStackEntry ->
+        val growingSpaceId =
+            backStackEntry.arguments?.getString(Routes.GROWING_SPACE_DETAIL_ARG_ID).orEmpty()
         GrowingSpaceDetailScreen(
+            onNavigateBack = { navController.popBackStack() },
+            onEdit = {
+                navController.navigate(Routes.editGrowingSpace(growingSpaceId))
+            },
+        )
+    }
+}
+
+private fun NavGraphBuilder.createGrowingSpaceRoute(navController: NavHostController) {
+    composable(
+        route = Routes.CREATE_GROWING_SPACE_PATTERN,
+        arguments =
+            listOf(
+                navArgument(Routes.CREATE_GROWING_SPACE_ARG_GARDEN_ID) {
+                    type = NavType.StringType
+                },
+            ),
+    ) {
+        CreateGrowingSpaceScreen(
+            onNavigateBack = { navController.popBackStack() },
+        )
+    }
+}
+
+private fun NavGraphBuilder.editGrowingSpaceRoute(navController: NavHostController) {
+    composable(
+        route = Routes.EDIT_GROWING_SPACE_PATTERN,
+        arguments =
+            listOf(
+                navArgument(Routes.EDIT_GROWING_SPACE_ARG_ID) {
+                    type = NavType.StringType
+                },
+            ),
+    ) {
+        EditGrowingSpaceScreen(
             onNavigateBack = { navController.popBackStack() },
         )
     }

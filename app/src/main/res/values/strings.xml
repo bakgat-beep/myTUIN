@@ -146,4 +146,52 @@
     <string name="growing_space_detail_geometry_not_set">Not set</string>
     <string name="growing_space_detail_load_error">We couldn\'t load this growing space.</string>
     <string name="growing_space_detail_type_and_status_format">%1$s · %2$s</string>
+
+    <!-- Shared growing space form -->
+    <string name="form_growing_space_name_label">Name</string>
+    <string name="form_growing_space_name_error_blank">Enter a name</string>
+    <string name="form_growing_space_type_label">Type</string>
+    <string name="form_growing_space_description_label">Description</string>
+    <string name="form_growing_space_notes_label">Notes</string>
+    <string name="form_growing_space_dimensions_header">Dimensions (optional)</string>
+    <string name="form_growing_space_length_label">Length (m)</string>
+    <string name="form_growing_space_width_label">Width (m)</string>
+    <string name="form_growing_space_height_label">Height (m)</string>
+    <string name="form_growing_space_diameter_label">Diameter (m)</string>
+    <string name="form_growing_space_area_label">Area (m²)</string>
+    <string name="form_growing_space_volume_label">Volume (m³)</string>
+    <string name="form_growing_space_dimension_error">Enter a positive number</string>
+    <string name="form_growing_space_geometry_header">Geometry (optional)</string>
+    <string name="form_growing_space_geometry_current_format">Current geometry: %1$s</string>
+    <string name="form_growing_space_geometry_help_edit">Enter four corners to replace the current geometry with a rectangle. Leave blank to keep the current geometry.</string>
+    <string name="form_growing_space_geometry_help_create">Enter four corners to define a rectangular geometry. Leave blank to create the space without geometry.</string>
+    <string name="form_growing_space_geometry_x1_label">X1 (m)</string>
+    <string name="form_growing_space_geometry_y1_label">Y1 (m)</string>
+    <string name="form_growing_space_geometry_x2_label">X2 (m)</string>
+    <string name="form_growing_space_geometry_y2_label">Y2 (m)</string>
+    <string name="form_growing_space_geometry_error">Enter four valid corners forming a non-zero rectangle, or leave all four blank</string>
+    <string name="form_action_save">Save</string>
+    <string name="form_action_cancel">Cancel</string>
+
+    <!-- Create growing space -->
+    <string name="create_growing_space_title">New growing space</string>
+    <string name="create_growing_space_save_error">We couldn\'t save that change. Try again.</string>
+
+    <!-- Edit growing space -->
+    <string name="edit_growing_space_title">Edit growing space</string>
+    <string name="edit_growing_space_save_error">We couldn\'t save that change. Try again.</string>
+    <string name="edit_growing_space_load_error">We couldn\'t load this growing space.</string>
+
+    <!-- Growing spaces list additions -->
+    <string name="growing_spaces_list_create_action">Create growing space</string>
+    <string name="growing_spaces_list_empty_action">Add your first growing space</string>
+
+    <!-- Growing space detail additions -->
+    <string name="growing_space_detail_edit_action">Edit</string>
+    <string name="growing_space_detail_archive_action">Archive</string>
+    <string name="growing_space_detail_restore_action">Restore</string>
+    <string name="growing_space_archive_confirm_title">Archive this growing space?</string>
+    <string name="growing_space_archive_confirm_message">This space will be hidden from the list. Historical records remain.</string>
+    <string name="growing_space_archive_confirm_confirm">Archive</string>
+    <string name="growing_space_archive_confirm_cancel">Cancel</string>
 </resources>

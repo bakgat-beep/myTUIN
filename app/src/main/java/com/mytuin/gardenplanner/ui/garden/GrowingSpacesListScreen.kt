@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Yard
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -38,6 +39,7 @@ import com.mytuin.gardenplanner.ui.theme.Spacing
 @Composable
 fun GrowingSpacesListScreen(
     onNavigateBack: () -> Unit,
+    onCreateSpace: () -> Unit,
     onSpaceClick: (growingSpaceId: String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: GrowingSpacesListViewModel = hiltViewModel(),
@@ -56,11 +58,23 @@ fun GrowingSpacesListScreen(
                         )
                     }
                 },
+                actions = {
+                    if (uiState is GrowingSpacesListUiState.Ready) {
+                        IconButton(onClick = onCreateSpace) {
+                            Icon(
+                                imageVector = Icons.Filled.Add,
+                                contentDescription =
+                                    stringResource(R.string.growing_spaces_list_create_action),
+                            )
+                        }
+                    }
+                },
             )
         },
     ) { innerPadding ->
         GrowingSpacesListContent(
             uiState = uiState,
+            onCreateSpace = onCreateSpace,
             onSpaceClick = onSpaceClick,
             modifier = Modifier.padding(innerPadding),
         )
@@ -70,6 +84,7 @@ fun GrowingSpacesListScreen(
 @Composable
 fun GrowingSpacesListContent(
     uiState: GrowingSpacesListUiState,
+    onCreateSpace: () -> Unit,
     onSpaceClick: (growingSpaceId: String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -86,6 +101,8 @@ fun GrowingSpacesListContent(
                 title = stringResource(R.string.growing_spaces_list_empty_title),
                 description = stringResource(R.string.growing_spaces_list_empty_description),
                 icon = Icons.Filled.Yard,
+                actionLabel = stringResource(R.string.growing_spaces_list_empty_action),
+                onAction = onCreateSpace,
                 modifier = modifier,
             )
         is GrowingSpacesListUiState.Ready ->

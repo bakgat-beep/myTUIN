@@ -2,9 +2,12 @@ package com.mytuin.gardenplanner.ui.garden
 
 import androidx.lifecycle.SavedStateHandle
 import com.mytuin.gardenplanner.domain.model.garden.GrowingSpace
+import com.mytuin.gardenplanner.domain.usecases.garden.ArchiveGrowingSpace
 import com.mytuin.gardenplanner.domain.usecases.garden.ObserveGrowingSpace
+import com.mytuin.gardenplanner.domain.usecases.garden.RestoreGrowingSpace
 import com.mytuin.gardenplanner.domain.vocabulary.GrowingSpaceType
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
+import com.mytuin.gardenplanner.testdoubles.FakeClock
 import com.mytuin.gardenplanner.testdoubles.FakeGrowingSpaceRepository
 import com.mytuin.gardenplanner.ui.navigation.Routes
 import kotlinx.coroutines.Dispatchers
@@ -40,8 +43,14 @@ class GrowingSpaceDetailViewModelTest {
     }
 
     private fun buildViewModel(): GrowingSpaceDetailViewModel {
+        val clock = FakeClock(nowMillisValue = 1_700_000_500_000L)
         val handle = SavedStateHandle(mapOf(Routes.GROWING_SPACE_DETAIL_ARG_ID to spaceId))
-        return GrowingSpaceDetailViewModel(handle, ObserveGrowingSpace(repository))
+        return GrowingSpaceDetailViewModel(
+            savedStateHandle = handle,
+            observeGrowingSpace = ObserveGrowingSpace(repository),
+            archiveGrowingSpace = ArchiveGrowingSpace(repository, clock),
+            restoreGrowingSpace = RestoreGrowingSpace(repository, clock),
+        )
     }
 
     @Test
@@ -66,6 +75,55 @@ class GrowingSpaceDetailViewModelTest {
             assertEquals(false, vm.uiState.value.isLoading)
             assertTrue(vm.uiState.value.loadError)
             assertNull(vm.uiState.value.space)
+        }
+
+    @Test
+    fun archive_updates_status_and_emits_finished_event() =
+        runTest(testDispatcher) {
+            repository.insert(sampleSpace())
+            val vm = buildViewModel()
+            advanceUntilIdle()
+
+            vm.archive()
+            advanceUntilIdle()
+
+            assertEquals(
+                GrowingSpaceDetailUiState.FinishedEvent.ARCHIVED,
+                vm.uiState.value.finishedEvent,
+            )
+            assertEquals(RecordStatus.ARCHIVED, repository.snapshot().single().status)
+        }
+
+    @Test
+    fun restore_updates_status_and_emits_finished_event() =
+        runTest(testDispatcher) {
+            repository.insert(sampleSpace().copy(status = RecordStatus.ARCHIVED))
+            val vm = buildViewModel()
+            advanceUntilIdle()
+
+            vm.restore()
+            advanceUntilIdle()
+
+            assertEquals(
+                GrowingSpaceDetailUiState.FinishedEvent.RESTORED,
+                vm.uiState.value.finishedEvent,
+            )
+            assertEquals(RecordStatus.ACTIVE, repository.snapshot().single().status)
+        }
+
+    @Test
+    fun onFinishedHandled_clears_finishedEvent() =
+        runTest(testDispatcher) {
+            repository.insert(sampleSpace())
+            val vm = buildViewModel()
+            advanceUntilIdle()
+
+            vm.archive()
+            advanceUntilIdle()
+            assertTrue(vm.uiState.value.finishedEvent != null)
+
+            vm.onFinishedHandled()
+            assertNull(vm.uiState.value.finishedEvent)
         }
 
     private fun sampleSpace(): GrowingSpace =

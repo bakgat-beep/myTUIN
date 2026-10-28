@@ -2,13 +2,18 @@ package com.mytuin.gardenplanner.ui.garden
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onLast
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import com.mytuin.gardenplanner.domain.model.garden.Coordinate
 import com.mytuin.gardenplanner.domain.model.garden.Geometry
 import com.mytuin.gardenplanner.domain.model.garden.GrowingSpace
 import com.mytuin.gardenplanner.domain.vocabulary.GrowingSpaceType
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
 import com.mytuin.gardenplanner.ui.theme.MyTuinTheme
+import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 
@@ -20,7 +25,12 @@ class GrowingSpaceDetailContentTest {
     fun loading_state_shows_progress_indicator_only() {
         composeRule.setContent {
             MyTuinTheme {
-                GrowingSpaceDetailContent(uiState = GrowingSpaceDetailUiState(isLoading = true))
+                GrowingSpaceDetailContent(
+                    uiState = GrowingSpaceDetailUiState(isLoading = true),
+                    onEdit = {},
+                    onArchive = {},
+                    onRestore = {},
+                )
             }
         }
         composeRule.onNodeWithText("Dimensions").assertDoesNotExist()
@@ -32,6 +42,9 @@ class GrowingSpaceDetailContentTest {
             MyTuinTheme {
                 GrowingSpaceDetailContent(
                     uiState = GrowingSpaceDetailUiState(isLoading = false, loadError = true),
+                    onEdit = {},
+                    onArchive = {},
+                    onRestore = {},
                 )
             }
         }
@@ -48,6 +61,9 @@ class GrowingSpaceDetailContentTest {
                             isLoading = false,
                             space = sampleSpace(),
                         ),
+                    onEdit = {},
+                    onArchive = {},
+                    onRestore = {},
                 )
             }
         }
@@ -64,6 +80,9 @@ class GrowingSpaceDetailContentTest {
                             isLoading = false,
                             space = sampleSpace().copy(description = "Main raised bed"),
                         ),
+                    onEdit = {},
+                    onArchive = {},
+                    onRestore = {},
                 )
             }
         }
@@ -81,6 +100,9 @@ class GrowingSpaceDetailContentTest {
                             isLoading = false,
                             space = sampleSpace().copy(description = null),
                         ),
+                    onEdit = {},
+                    onArchive = {},
+                    onRestore = {},
                 )
             }
         }
@@ -105,6 +127,9 @@ class GrowingSpaceDetailContentTest {
                                     volumeCubicMetres = null,
                                 ),
                         ),
+                    onEdit = {},
+                    onArchive = {},
+                    onRestore = {},
                 )
             }
         }
@@ -135,6 +160,9 @@ class GrowingSpaceDetailContentTest {
                                     volumeCubicMetres = null,
                                 ),
                         ),
+                    onEdit = {},
+                    onArchive = {},
+                    onRestore = {},
                 )
             }
         }
@@ -142,7 +170,7 @@ class GrowingSpaceDetailContentTest {
     }
 
     @Test
-    fun geometry_section_shows_polygon_label_when_geometry_present() {
+    fun geometry_section_shows_polygon_label() {
         composeRule.setContent {
             MyTuinTheme {
                 GrowingSpaceDetailContent(
@@ -162,6 +190,9 @@ class GrowingSpaceDetailContentTest {
                                         ),
                                 ),
                         ),
+                    onEdit = {},
+                    onArchive = {},
+                    onRestore = {},
                 )
             }
         }
@@ -179,6 +210,9 @@ class GrowingSpaceDetailContentTest {
                             isLoading = false,
                             space = sampleSpace().copy(geometry = null),
                         ),
+                    onEdit = {},
+                    onArchive = {},
+                    onRestore = {},
                 )
             }
         }
@@ -193,13 +227,158 @@ class GrowingSpaceDetailContentTest {
                     uiState =
                         GrowingSpaceDetailUiState(
                             isLoading = false,
-                            space = sampleSpace().copy(notes = "South edge of the vegetable garden"),
+                            space = sampleSpace().copy(notes = "South edge"),
                         ),
+                    onEdit = {},
+                    onArchive = {},
+                    onRestore = {},
                 )
             }
         }
         composeRule.onNodeWithText("Notes").assertIsDisplayed()
-        composeRule.onNodeWithText("South edge of the vegetable garden").assertIsDisplayed()
+        composeRule.onNodeWithText("South edge").assertIsDisplayed()
+    }
+
+    @Test
+    fun edit_button_invokes_callback() {
+        var edits = 0
+        composeRule.setContent {
+            MyTuinTheme {
+                GrowingSpaceDetailContent(
+                    uiState = GrowingSpaceDetailUiState(isLoading = false, space = sampleSpace()),
+                    onEdit = { edits += 1 },
+                    onArchive = {},
+                    onRestore = {},
+                )
+            }
+        }
+        composeRule.onNodeWithText("Edit").performScrollTo().performClick()
+        assertEquals(1, edits)
+    }
+
+    @Test
+    fun active_space_shows_archive_button_and_hides_restore() {
+        composeRule.setContent {
+            MyTuinTheme {
+                GrowingSpaceDetailContent(
+                    uiState =
+                        GrowingSpaceDetailUiState(
+                            isLoading = false,
+                            space = sampleSpace().copy(status = RecordStatus.ACTIVE),
+                        ),
+                    onEdit = {},
+                    onArchive = {},
+                    onRestore = {},
+                )
+            }
+        }
+        composeRule.onNodeWithText("Archive").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Restore").assertDoesNotExist()
+    }
+
+    @Test
+    fun archived_space_shows_restore_button_and_hides_archive() {
+        composeRule.setContent {
+            MyTuinTheme {
+                GrowingSpaceDetailContent(
+                    uiState =
+                        GrowingSpaceDetailUiState(
+                            isLoading = false,
+                            space = sampleSpace().copy(status = RecordStatus.ARCHIVED),
+                        ),
+                    onEdit = {},
+                    onArchive = {},
+                    onRestore = {},
+                )
+            }
+        }
+        composeRule.onNodeWithText("Restore").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Archive").assertDoesNotExist()
+    }
+
+    @Test
+    fun tapping_archive_opens_confirmation_dialog() {
+        composeRule.setContent {
+            MyTuinTheme {
+                GrowingSpaceDetailContent(
+                    uiState = GrowingSpaceDetailUiState(isLoading = false, space = sampleSpace()),
+                    onEdit = {},
+                    onArchive = {},
+                    onRestore = {},
+                )
+            }
+        }
+        composeRule.onNodeWithText("Archive").performScrollTo().performClick()
+        composeRule.onNodeWithText("Archive this growing space?").assertIsDisplayed()
+        composeRule
+            .onNodeWithText("This space will be hidden from the list. Historical records remain.")
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun confirming_archive_dialog_invokes_onArchive() {
+        var archives = 0
+        composeRule.setContent {
+            MyTuinTheme {
+                GrowingSpaceDetailContent(
+                    uiState = GrowingSpaceDetailUiState(isLoading = false, space = sampleSpace()),
+                    onEdit = {},
+                    onArchive = { archives += 1 },
+                    onRestore = {},
+                )
+            }
+        }
+        // Open the dialog.
+        composeRule.onNodeWithText("Archive").performScrollTo().performClick()
+        composeRule.onNodeWithText("Archive this growing space?").assertIsDisplayed()
+
+        // The dialog's confirm button is also labeled "Archive". After
+        // opening the dialog there are two nodes with "Archive": the
+        // screen button and the dialog's confirm. OnLast targets the
+        // dialog's.
+        composeRule.onAllNodesWithText("Archive").onLast().performClick()
+        assertEquals(1, archives)
+    }
+
+    @Test
+    fun cancelling_archive_dialog_does_not_invoke_onArchive() {
+        var archives = 0
+        composeRule.setContent {
+            MyTuinTheme {
+                GrowingSpaceDetailContent(
+                    uiState = GrowingSpaceDetailUiState(isLoading = false, space = sampleSpace()),
+                    onEdit = {},
+                    onArchive = { archives += 1 },
+                    onRestore = {},
+                )
+            }
+        }
+        composeRule.onNodeWithText("Archive").performScrollTo().performClick()
+        composeRule.onNodeWithText("Cancel").performClick()
+        assertEquals(0, archives)
+        // Dialog is gone.
+        composeRule.onNodeWithText("Archive this growing space?").assertDoesNotExist()
+    }
+
+    @Test
+    fun tapping_restore_invokes_onRestore_directly() {
+        var restores = 0
+        composeRule.setContent {
+            MyTuinTheme {
+                GrowingSpaceDetailContent(
+                    uiState =
+                        GrowingSpaceDetailUiState(
+                            isLoading = false,
+                            space = sampleSpace().copy(status = RecordStatus.ARCHIVED),
+                        ),
+                    onEdit = {},
+                    onArchive = {},
+                    onRestore = { restores += 1 },
+                )
+            }
+        }
+        composeRule.onNodeWithText("Restore").performScrollTo().performClick()
+        assertEquals(1, restores)
     }
 
     private fun sampleSpace(): GrowingSpace =

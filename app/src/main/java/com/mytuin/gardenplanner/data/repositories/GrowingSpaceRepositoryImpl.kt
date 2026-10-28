@@ -13,6 +13,7 @@ import com.mytuin.gardenplanner.domain.error.ValidationError
 import com.mytuin.gardenplanner.domain.identifiers.IdGenerator
 import com.mytuin.gardenplanner.domain.model.garden.Geometry
 import com.mytuin.gardenplanner.domain.model.garden.GrowingSpace
+import com.mytuin.gardenplanner.domain.model.garden.GrowingSpaceFields
 import com.mytuin.gardenplanner.domain.repository.GrowingSpaceRepository
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
 import javax.inject.Inject
@@ -99,6 +100,31 @@ class GrowingSpaceRepositoryImpl
                     geometryData = newGeometry?.let { GeometryGeoJson.encode(it) },
                     updatedAt = effectiveAt,
                 )
+            }
+        }
+
+        override suspend fun updateFields(
+            id: String,
+            fields: GrowingSpaceFields,
+            updatedAt: Long,
+        ) {
+            val rows =
+                growingSpaceDao.updateFields(
+                    id = id,
+                    name = fields.name,
+                    spaceType = fields.spaceType,
+                    description = fields.description,
+                    notes = fields.notes,
+                    length = fields.lengthMetres,
+                    width = fields.widthMetres,
+                    height = fields.heightMetres,
+                    diameter = fields.diameterMetres,
+                    area = fields.areaSquareMetres,
+                    volume = fields.volumeCubicMetres,
+                    updatedAt = updatedAt,
+                )
+            if (rows == 0) {
+                throw NotFoundError("GrowingSpace", id)
             }
         }
 

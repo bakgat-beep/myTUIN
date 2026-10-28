@@ -4,7 +4,10 @@ import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mytuin.gardenplanner.domain.error.DomainError
+import com.mytuin.gardenplanner.domain.usecases.garden.ArchiveGrowingSpace
 import com.mytuin.gardenplanner.domain.usecases.garden.ObserveGrowingSpace
+import com.mytuin.gardenplanner.domain.usecases.garden.RestoreGrowingSpace
 import com.mytuin.gardenplanner.ui.navigation.Routes
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -21,6 +24,8 @@ class GrowingSpaceDetailViewModel
     constructor(
         savedStateHandle: SavedStateHandle,
         observeGrowingSpace: ObserveGrowingSpace,
+        private val archiveGrowingSpace: ArchiveGrowingSpace,
+        private val restoreGrowingSpace: RestoreGrowingSpace,
     ) : ViewModel() {
         private val growingSpaceId: String =
             checkNotNull(savedStateHandle[Routes.GROWING_SPACE_DETAIL_ARG_ID]) {
@@ -48,7 +53,37 @@ class GrowingSpaceDetailViewModel
             }
         }
 
+        fun archive() {
+            viewModelScope.launch {
+                try {
+                    archiveGrowingSpace(growingSpaceId)
+                    _uiState.update {
+                        it.copy(finishedEvent = GrowingSpaceDetailUiState.FinishedEvent.ARCHIVED)
+                    }
+                } catch (e: DomainError) {
+                    Log.w(TAG, "Failed to archive growing space", e)
+                }
+            }
+        }
+
+        fun restore() {
+            viewModelScope.launch {
+                try {
+                    restoreGrowingSpace(growingSpaceId)
+                    _uiState.update {
+                        it.copy(finishedEvent = GrowingSpaceDetailUiState.FinishedEvent.RESTORED)
+                    }
+                } catch (e: DomainError) {
+                    Log.w(TAG, "Failed to restore growing space", e)
+                }
+            }
+        }
+
+        fun onFinishedHandled() {
+            _uiState.update { it.copy(finishedEvent = null) }
+        }
+
         private companion object {
-            const val TAG = "GrowingSpaceDetailViewModel"
+            const val TAG = "GrowingSpaceDetailVM"
         }
     }

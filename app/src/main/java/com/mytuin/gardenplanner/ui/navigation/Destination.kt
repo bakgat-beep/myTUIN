@@ -30,12 +30,6 @@ sealed class Destination(
     }
 }
 
-/**
- * Non-tab routes.
- *
- * Flat string IDs everywhere. No nested graphs; each route carries
- * the ID(s) it needs as path arguments.
- */
 object Routes {
     const val CREATE_GARDEN: String = "create_garden"
 
@@ -48,9 +42,21 @@ object Routes {
     const val GROWING_SPACE_DETAIL_ARG_ID: String = "growingSpaceId"
     const val GROWING_SPACE_DETAIL_PATTERN: String = "growing_space/{$GROWING_SPACE_DETAIL_ARG_ID}"
 
+    const val CREATE_GROWING_SPACE_ARG_GARDEN_ID: String = "gardenId"
+    const val CREATE_GROWING_SPACE_PATTERN: String =
+        "create_growing_space/{$CREATE_GROWING_SPACE_ARG_GARDEN_ID}"
+
+    const val EDIT_GROWING_SPACE_ARG_ID: String = "growingSpaceId"
+    const val EDIT_GROWING_SPACE_PATTERN: String =
+        "edit_growing_space/{$EDIT_GROWING_SPACE_ARG_ID}"
+
     fun gardenDetail(gardenId: String): String = "garden_detail/$gardenId"
 
     fun growingSpaces(gardenId: String): String = "growing_spaces/$gardenId"
 
     fun growingSpaceDetail(growingSpaceId: String): String = "growing_space/$growingSpaceId"
+
+    fun createGrowingSpace(gardenId: String): String = "create_growing_space/$gardenId"
+
+    fun editGrowingSpace(growingSpaceId: String): String = "edit_growing_space/$growingSpaceId"
 }

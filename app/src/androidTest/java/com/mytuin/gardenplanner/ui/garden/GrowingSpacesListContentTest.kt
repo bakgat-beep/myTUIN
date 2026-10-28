@@ -19,11 +19,12 @@ class GrowingSpacesListContentTest {
     val composeRule = createComposeRule()
 
     @Test
-    fun no_spaces_state_shows_empty_copy_without_cta() {
+    fun no_spaces_state_shows_title_description_and_cta() {
         composeRule.setContent {
             MyTuinTheme {
                 GrowingSpacesListContent(
                     uiState = GrowingSpacesListUiState.NoSpaces,
+                    onCreateSpace = {},
                     onSpaceClick = {},
                 )
             }
@@ -32,6 +33,23 @@ class GrowingSpacesListContentTest {
         composeRule
             .onNodeWithText("Growing spaces you create will appear here.")
             .assertIsDisplayed()
+        composeRule.onNodeWithText("Add your first growing space").assertIsDisplayed()
+    }
+
+    @Test
+    fun empty_state_cta_invokes_onCreateSpace() {
+        var creates = 0
+        composeRule.setContent {
+            MyTuinTheme {
+                GrowingSpacesListContent(
+                    uiState = GrowingSpacesListUiState.NoSpaces,
+                    onCreateSpace = { creates += 1 },
+                    onSpaceClick = {},
+                )
+            }
+        }
+        composeRule.onNodeWithText("Add your first growing space").performClick()
+        assertEquals(1, creates)
     }
 
     @Test
@@ -40,6 +58,7 @@ class GrowingSpacesListContentTest {
             MyTuinTheme {
                 GrowingSpacesListContent(
                     uiState = GrowingSpacesListUiState.Error,
+                    onCreateSpace = {},
                     onSpaceClick = {},
                 )
             }
@@ -59,13 +78,13 @@ class GrowingSpacesListContentTest {
                                 sampleSpace("growingspace_2", "Bed 2", GrowingSpaceType.POT),
                             ),
                         ),
+                    onCreateSpace = {},
                     onSpaceClick = {},
                 )
             }
         }
         composeRule.onNodeWithText("Bed 1").assertIsDisplayed()
         composeRule.onNodeWithText("Bed 2").assertIsDisplayed()
-        // Type labels appear in the secondary line
         composeRule.onNodeWithText("Raised bed", substring = true).assertIsDisplayed()
         composeRule.onNodeWithText("Pot", substring = true).assertIsDisplayed()
     }
@@ -87,6 +106,7 @@ class GrowingSpacesListContentTest {
                                 ),
                             ),
                         ),
+                    onCreateSpace = {},
                     onSpaceClick = {},
                 )
             }
@@ -95,7 +115,7 @@ class GrowingSpacesListContentTest {
     }
 
     @Test
-    fun tapping_row_invokes_callback_with_id() {
+    fun tapping_row_invokes_onSpaceClick_with_id() {
         var capturedId: String? = null
         composeRule.setContent {
             MyTuinTheme {
@@ -104,6 +124,7 @@ class GrowingSpacesListContentTest {
                         GrowingSpacesListUiState.Ready(
                             listOf(sampleSpace("growingspace_1", "Bed 1", GrowingSpaceType.RAISED_BED)),
                         ),
+                    onCreateSpace = {},
                     onSpaceClick = { capturedId = it },
                 )
             }
@@ -121,6 +142,7 @@ class GrowingSpacesListContentTest {
                         GrowingSpacesListUiState.Ready(
                             listOf(sampleSpace("growingspace_1", "Bed 1", GrowingSpaceType.RAISED_BED)),
                         ),
+                    onCreateSpace = {},
                     onSpaceClick = {},
                 )
             }

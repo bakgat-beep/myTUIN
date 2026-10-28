@@ -4,22 +4,31 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -28,6 +37,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mytuin.gardenplanner.R
 import com.mytuin.gardenplanner.domain.model.garden.GrowingSpace
 import com.mytuin.gardenplanner.domain.vocabulary.GeometryType
+import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
 import com.mytuin.gardenplanner.ui.components.ErrorState
 import com.mytuin.gardenplanner.ui.theme.Spacing
 
@@ -35,10 +45,19 @@ import com.mytuin.gardenplanner.ui.theme.Spacing
 @Composable
 fun GrowingSpaceDetailScreen(
     onNavigateBack: () -> Unit,
+    onEdit: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: GrowingSpaceDetailViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(uiState.finishedEvent) {
+        if (uiState.finishedEvent != null) {
+            viewModel.onFinishedHandled()
+            onNavigateBack()
+        }
+    }
+
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -63,6 +82,9 @@ fun GrowingSpaceDetailScreen(
     ) { innerPadding ->
         GrowingSpaceDetailContent(
             uiState = uiState,
+            onEdit = onEdit,
+            onArchive = viewModel::archive,
+            onRestore = viewModel::restore,
             modifier = Modifier.padding(innerPadding),
         )
     }
@@ -71,6 +93,9 @@ fun GrowingSpaceDetailScreen(
 @Composable
 fun GrowingSpaceDetailContent(
     uiState: GrowingSpaceDetailUiState,
+    onEdit: () -> Unit,
+    onArchive: () -> Unit,
+    onRestore: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     when {
@@ -87,15 +112,36 @@ fun GrowingSpaceDetailContent(
                 modifier = modifier,
             )
         else ->
-            LoadedGrowingSpaceDetail(space = uiState.space, modifier = modifier)
+            LoadedGrowingSpaceDetail(
+                space = uiState.space,
+                onEdit = onEdit,
+                onArchive = onArchive,
+                onRestore = onRestore,
+                modifier = modifier,
+            )
     }
 }
 
 @Composable
 private fun LoadedGrowingSpaceDetail(
     space: GrowingSpace,
+    onEdit: () -> Unit,
+    onArchive: () -> Unit,
+    onRestore: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    var showArchiveConfirm by rememberSaveable { mutableStateOf(false) }
+
+    if (showArchiveConfirm) {
+        ArchiveConfirmDialog(
+            onConfirm = {
+                showArchiveConfirm = false
+                onArchive()
+            },
+            onDismiss = { showArchiveConfirm = false },
+        )
+    }
+
     Column(
         modifier =
             modifier
@@ -113,7 +159,60 @@ private fun LoadedGrowingSpaceDetail(
         DimensionsSection(space)
         GeometrySection(space)
         NotesSection(space)
+        DetailActions(
+            space = space,
+            onEdit = onEdit,
+            onRequestArchive = { showArchiveConfirm = true },
+            onRestore = onRestore,
+        )
     }
+}
+
+@Composable
+private fun DetailActions(
+    space: GrowingSpace,
+    onEdit: () -> Unit,
+    onRequestArchive: () -> Unit,
+    onRestore: () -> Unit,
+) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(Spacing.m, Alignment.Start),
+    ) {
+        Button(onClick = onEdit) {
+            Text(stringResource(R.string.growing_space_detail_edit_action))
+        }
+        if (space.status == RecordStatus.ARCHIVED) {
+            OutlinedButton(onClick = onRestore) {
+                Text(stringResource(R.string.growing_space_detail_restore_action))
+            }
+        } else {
+            OutlinedButton(onClick = onRequestArchive) {
+                Text(stringResource(R.string.growing_space_detail_archive_action))
+            }
+        }
+    }
+}
+
+@Composable
+private fun ArchiveConfirmDialog(
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.growing_space_archive_confirm_title)) },
+        text = { Text(stringResource(R.string.growing_space_archive_confirm_message)) },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(stringResource(R.string.growing_space_archive_confirm_confirm))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.growing_space_archive_confirm_cancel))
+            }
+        },
+    )
 }
 
 @Composable
