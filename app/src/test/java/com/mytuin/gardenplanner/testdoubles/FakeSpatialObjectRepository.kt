@@ -2,6 +2,7 @@ package com.mytuin.gardenplanner.testdoubles
 
 import com.mytuin.gardenplanner.domain.error.NotFoundError
 import com.mytuin.gardenplanner.domain.model.garden.SpatialObject
+import com.mytuin.gardenplanner.domain.model.garden.SpatialObjectFields
 import com.mytuin.gardenplanner.domain.repository.SpatialObjectRepository
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
 import kotlinx.coroutines.flow.Flow
@@ -78,4 +79,40 @@ class FakeSpatialObjectRepository : SpatialObjectRepository {
     fun snapshot(): List<SpatialObject> = store.value
 
     fun statusChangeCalls(): List<StatusChangeCall> = statusChangeCalls.toList()
+
+    data class FieldsUpdateCall(
+        val id: String,
+        val fields: SpatialObjectFields,
+        val at: Long,
+    )
+
+    private val fieldsUpdateCalls = mutableListOf<FieldsUpdateCall>()
+
+    override suspend fun updateFields(
+        id: String,
+        fields: SpatialObjectFields,
+        updatedAt: Long,
+    ) {
+        if (store.value.none { it.id == id }) {
+            throw NotFoundError("SpatialObject", id)
+        }
+        fieldsUpdateCalls.add(FieldsUpdateCall(id, fields, updatedAt))
+        store.value =
+            store.value.map { existing ->
+                if (existing.id == id) {
+                    existing.copy(
+                        objectType = fields.objectType,
+                        name = fields.name,
+                        description = fields.description,
+                        areaId = fields.areaId,
+                        notes = fields.notes,
+                        updatedAt = updatedAt,
+                    )
+                } else {
+                    existing
+                }
+            }
+    }
+
+    fun fieldsUpdateCalls(): List<FieldsUpdateCall> = fieldsUpdateCalls.toList()
 }

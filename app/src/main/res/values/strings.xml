@@ -194,4 +194,77 @@
     <string name="growing_space_archive_confirm_message">This space will be hidden from the list. Historical records remain.</string>
     <string name="growing_space_archive_confirm_confirm">Archive</string>
     <string name="growing_space_archive_confirm_cancel">Cancel</string>
+
+    <!-- Spatial object — InfrastructureType labels -->
+    <string name="spatial_object_type_path">Path</string>
+    <string name="spatial_object_type_fence">Fence</string>
+    <string name="spatial_object_type_wall">Wall</string>
+    <string name="spatial_object_type_gate">Gate</string>
+    <string name="spatial_object_type_building">Building</string>
+    <string name="spatial_object_type_shed">Shed</string>
+    <string name="spatial_object_type_greenhouse_structure">Greenhouse structure</string>
+    <string name="spatial_object_type_irrigation">Irrigation</string>
+    <string name="spatial_object_type_water_source">Water source</string>
+    <string name="spatial_object_type_drain">Drain</string>
+    <string name="spatial_object_type_compost_area">Compost area</string>
+    <string name="spatial_object_type_storage_area">Storage area</string>
+    <string name="spatial_object_type_support_structure">Support structure</string>
+    <string name="spatial_object_type_trellis">Trellis</string>
+    <string name="spatial_object_type_shade_structure">Shade structure</string>
+    <string name="spatial_object_type_lighting">Lighting</string>
+    <string name="spatial_object_type_utility">Utility</string>
+    <string name="spatial_object_type_other">Other</string>
+
+    <!-- Garden Detail additions (9e) -->
+    <string name="garden_detail_spatial_objects_section">Garden objects</string>
+    <string name="garden_detail_view_spatial_objects_action">View garden objects</string>
+
+    <!-- Spatial objects list -->
+    <string name="spatial_objects_list_title">Garden objects</string>
+    <string name="spatial_objects_list_empty_title">No garden objects yet</string>
+    <string name="spatial_objects_list_empty_description">Objects you create will appear here.</string>
+    <string name="spatial_objects_list_empty_description_show_archived">No objects in this garden.</string>
+    <string name="spatial_objects_list_error">We couldn\'t load your garden objects.</string>
+    <string name="spatial_objects_list_create_action">Create garden object</string>
+    <string name="spatial_objects_list_empty_action">Add your first garden object</string>
+    <string name="spatial_objects_list_show_archived">Show archived</string>
+    <string name="spatial_objects_list_hide_archived">Hide archived</string>
+
+    <!-- Spatial object detail -->
+    <string name="spatial_object_detail_title">Garden object</string>
+    <string name="spatial_object_detail_section_description">Description</string>
+    <string name="spatial_object_detail_section_geometry">Geometry</string>
+    <string name="spatial_object_detail_section_notes">Notes</string>
+    <string name="spatial_object_detail_type_and_status_format">%1$s · %2$s</string>
+    <string name="spatial_object_detail_load_error">We couldn\'t load this garden object.</string>
+    <string name="spatial_object_detail_edit_action">Edit</string>
+    <string name="spatial_object_detail_archive_action">Archive</string>
+    <string name="spatial_object_detail_restore_action">Restore</string>
+    <string name="spatial_object_archive_confirm_title">Archive this garden object?</string>
+    <string name="spatial_object_archive_confirm_message">This object will be hidden from the list. Historical records remain.</string>
+    <string name="spatial_object_archive_confirm_confirm">Archive</string>
+    <string name="spatial_object_archive_confirm_cancel">Cancel</string>
+
+    <!-- Spatial object form -->
+    <string name="form_spatial_object_type_label">Type</string>
+    <string name="form_spatial_object_name_label">Name (optional)</string>
+    <string name="form_spatial_object_description_label">Description</string>
+    <string name="form_spatial_object_notes_label">Notes</string>
+    <string name="form_spatial_object_area_label">Area</string>
+    <string name="form_spatial_object_area_none">No area</string>
+    <string name="form_spatial_object_area_unknown">Unknown area</string>
+    <string name="form_spatial_object_geometry_header">Geometry</string>
+    <string name="form_spatial_object_geometry_current_format">Current geometry: %1$s</string>
+    <string name="form_spatial_object_geometry_help_create">Enter four corners to define the object\'s rectangular footprint. All four are required.</string>
+    <string name="form_spatial_object_geometry_help_edit">Geometry editing is not available in this form. Use the future map editor to reshape an object.</string>
+    <string name="form_spatial_object_geometry_error">Enter four valid corners forming a non-zero rectangle</string>
+
+    <!-- Create spatial object -->
+    <string name="create_spatial_object_title">New garden object</string>
+    <string name="create_spatial_object_save_error">We couldn\'t save that change. Try again.</string>
+
+    <!-- Edit spatial object -->
+    <string name="edit_spatial_object_title">Edit garden object</string>
+    <string name="edit_spatial_object_save_error">We couldn\'t save that change. Try again.</string>
+    <string name="edit_spatial_object_load_error">We couldn\'t load this garden object.</string>
 </resources>

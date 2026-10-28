@@ -59,4 +59,26 @@ object Routes {
     fun createGrowingSpace(gardenId: String): String = "create_growing_space/$gardenId"
 
     fun editGrowingSpace(growingSpaceId: String): String = "edit_growing_space/$growingSpaceId"
+
+    const val SPATIAL_OBJECTS_ARG_GARDEN_ID: String = "gardenId"
+    const val SPATIAL_OBJECTS_PATTERN: String = "spatial_objects/{$SPATIAL_OBJECTS_ARG_GARDEN_ID}"
+
+    const val SPATIAL_OBJECT_DETAIL_ARG_ID: String = "spatialObjectId"
+    const val SPATIAL_OBJECT_DETAIL_PATTERN: String = "spatial_object/{$SPATIAL_OBJECT_DETAIL_ARG_ID}"
+
+    const val CREATE_SPATIAL_OBJECT_ARG_GARDEN_ID: String = "gardenId"
+    const val CREATE_SPATIAL_OBJECT_PATTERN: String =
+        "create_spatial_object/{$CREATE_SPATIAL_OBJECT_ARG_GARDEN_ID}"
+
+    const val EDIT_SPATIAL_OBJECT_ARG_ID: String = "spatialObjectId"
+    const val EDIT_SPATIAL_OBJECT_PATTERN: String =
+        "edit_spatial_object/{$EDIT_SPATIAL_OBJECT_ARG_ID}"
+
+    fun spatialObjects(gardenId: String): String = "spatial_objects/$gardenId"
+
+    fun spatialObjectDetail(spatialObjectId: String): String = "spatial_object/$spatialObjectId"
+
+    fun createSpatialObject(gardenId: String): String = "create_spatial_object/$gardenId"
+
+    fun editSpatialObject(spatialObjectId: String): String = "edit_spatial_object/$spatialObjectId"
 }

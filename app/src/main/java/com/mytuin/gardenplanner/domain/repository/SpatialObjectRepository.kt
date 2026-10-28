@@ -1,6 +1,7 @@
 package com.mytuin.gardenplanner.domain.repository
 
 import com.mytuin.gardenplanner.domain.model.garden.SpatialObject
+import com.mytuin.gardenplanner.domain.model.garden.SpatialObjectFields
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -30,5 +31,11 @@ interface SpatialObjectRepository {
     suspend fun restore(
         id: String,
         restoredAt: Long,
+    )
+
+    suspend fun updateFields(
+        id: String,
+        fields: SpatialObjectFields,
+        updatedAt: Long,
     )
 }

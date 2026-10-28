@@ -42,11 +42,15 @@ import com.mytuin.gardenplanner.R
 import com.mytuin.gardenplanner.data.database.GARDEN_DATABASE_VERSION
 import com.mytuin.gardenplanner.ui.garden.CreateGardenScreen
 import com.mytuin.gardenplanner.ui.garden.CreateGrowingSpaceScreen
+import com.mytuin.gardenplanner.ui.garden.CreateSpatialObjectScreen
 import com.mytuin.gardenplanner.ui.garden.EditGrowingSpaceScreen
+import com.mytuin.gardenplanner.ui.garden.EditSpatialObjectScreen
 import com.mytuin.gardenplanner.ui.garden.GardenDetailScreen
 import com.mytuin.gardenplanner.ui.garden.GardenScreen
 import com.mytuin.gardenplanner.ui.garden.GrowingSpaceDetailScreen
 import com.mytuin.gardenplanner.ui.garden.GrowingSpacesListScreen
+import com.mytuin.gardenplanner.ui.garden.SpatialObjectDetailScreen
+import com.mytuin.gardenplanner.ui.garden.SpatialObjectsListScreen
 import com.mytuin.gardenplanner.ui.home.DiagnosticsFooter
 import com.mytuin.gardenplanner.ui.home.HomeScreen
 import com.mytuin.gardenplanner.ui.inbox.InboxScreen
@@ -167,6 +171,10 @@ private fun ShellNavHost(
         growingSpaceDetailRoute(navController)
         createGrowingSpaceRoute(navController)
         editGrowingSpaceRoute(navController)
+        spatialObjectsRoute(navController)
+        spatialObjectDetailRoute(navController)
+        createSpatialObjectRoute(navController)
+        editSpatialObjectRoute(navController)
     }
 }
 
@@ -186,6 +194,9 @@ private fun NavGraphBuilder.gardenDetailRoute(navController: NavHostController) 
             onNavigateBack = { navController.popBackStack() },
             onNavigateToGrowingSpaces = {
                 navController.navigate(Routes.growingSpaces(gardenId))
+            },
+            onNavigateToSpatialObjects = {
+                navController.navigate(Routes.spatialObjects(gardenId))
             },
         )
     }
@@ -331,5 +342,82 @@ private fun AddActionSheet(onDismiss: () -> Unit) {
                 )
             }
         }
+    }
+}
+
+private fun NavGraphBuilder.spatialObjectsRoute(navController: NavHostController) {
+    composable(
+        route = Routes.SPATIAL_OBJECTS_PATTERN,
+        arguments =
+            listOf(
+                navArgument(Routes.SPATIAL_OBJECTS_ARG_GARDEN_ID) {
+                    type = NavType.StringType
+                },
+            ),
+    ) { backStackEntry ->
+        val gardenId =
+            backStackEntry.arguments?.getString(Routes.SPATIAL_OBJECTS_ARG_GARDEN_ID).orEmpty()
+        SpatialObjectsListScreen(
+            onNavigateBack = { navController.popBackStack() },
+            onCreateObject = {
+                navController.navigate(Routes.createSpatialObject(gardenId))
+            },
+            onObjectClick = { spatialObjectId ->
+                navController.navigate(Routes.spatialObjectDetail(spatialObjectId))
+            },
+        )
+    }
+}
+
+private fun NavGraphBuilder.spatialObjectDetailRoute(navController: NavHostController) {
+    composable(
+        route = Routes.SPATIAL_OBJECT_DETAIL_PATTERN,
+        arguments =
+            listOf(
+                navArgument(Routes.SPATIAL_OBJECT_DETAIL_ARG_ID) {
+                    type = NavType.StringType
+                },
+            ),
+    ) { backStackEntry ->
+        val spatialObjectId =
+            backStackEntry.arguments?.getString(Routes.SPATIAL_OBJECT_DETAIL_ARG_ID).orEmpty()
+        SpatialObjectDetailScreen(
+            onNavigateBack = { navController.popBackStack() },
+            onEdit = {
+                navController.navigate(Routes.editSpatialObject(spatialObjectId))
+            },
+        )
+    }
+}
+
+private fun NavGraphBuilder.createSpatialObjectRoute(navController: NavHostController) {
+    composable(
+        route = Routes.CREATE_SPATIAL_OBJECT_PATTERN,
+        arguments =
+            listOf(
+                navArgument(Routes.CREATE_SPATIAL_OBJECT_ARG_GARDEN_ID) {
+                    type = NavType.StringType
+                },
+            ),
+    ) {
+        CreateSpatialObjectScreen(
+            onNavigateBack = { navController.popBackStack() },
+        )
+    }
+}
+
+private fun NavGraphBuilder.editSpatialObjectRoute(navController: NavHostController) {
+    composable(
+        route = Routes.EDIT_SPATIAL_OBJECT_PATTERN,
+        arguments =
+            listOf(
+                navArgument(Routes.EDIT_SPATIAL_OBJECT_ARG_ID) {
+                    type = NavType.StringType
+                },
+            ),
+    ) {
+        EditSpatialObjectScreen(
+            onNavigateBack = { navController.popBackStack() },
+        )
     }
 }

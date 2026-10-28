@@ -119,10 +119,21 @@ complexity:
   # exactly one per new kind and is structural, not semantic. Every
   # arm is a one-line call. Excluded per-file so the rule remains
   # active everywhere else.
+  #
+  # GrowingSpaceLabels.kt and SpatialObjectLabels.kt contain flat
+  # `when` expressions over vocabulary enums (GrowingSpaceType,
+  # InfrastructureType). Each arm returns a string resource id. The
+  # branch count is dictated by the vocabulary, not by design
+  # choice; exhaustiveness is enforced by the compiler. A Map would
+  # lose that exhaustiveness check, which is the whole reason the
+  # `when` exists in this shape. Both files follow the same
+  # pattern: one file per vocabulary, at most a handful of such
+  # functions each.
   CyclomaticComplexMethod:
     excludes:
       - '**/data/repositories/PlantMultiValueMapper.kt'
       - '**/ui/garden/GrowingSpaceLabels.kt'
+      - '**/ui/garden/SpatialObjectLabels.kt'
 
 style:
   MagicNumber:

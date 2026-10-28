@@ -25,6 +25,7 @@ class GardenDetailContentTest {
                     uiState = GardenDetailUiState(isLoading = true),
                     onEditLocation = {},
                     onNavigateToGrowingSpaces = {},
+                    onNavigateToSpatialObjects = {},
                 )
             }
         }
@@ -39,6 +40,7 @@ class GardenDetailContentTest {
                     uiState = GardenDetailUiState(isLoading = false, loadError = true),
                     onEditLocation = {},
                     onNavigateToGrowingSpaces = {},
+                    onNavigateToSpatialObjects = {},
                 )
             }
         }
@@ -57,6 +59,7 @@ class GardenDetailContentTest {
                         ),
                     onEditLocation = {},
                     onNavigateToGrowingSpaces = {},
+                    onNavigateToSpatialObjects = {},
                 )
             }
         }
@@ -78,6 +81,7 @@ class GardenDetailContentTest {
                     uiState = GardenDetailUiState(isLoading = false, garden = sampleGarden()),
                     onEditLocation = {},
                     onNavigateToGrowingSpaces = {},
+                    onNavigateToSpatialObjects = {},
                 )
             }
         }
@@ -97,6 +101,7 @@ class GardenDetailContentTest {
                     uiState = GardenDetailUiState(isLoading = false, garden = sampleGarden()),
                     onEditLocation = { edits += 1 },
                     onNavigateToGrowingSpaces = {},
+                    onNavigateToSpatialObjects = {},
                 )
             }
         }
@@ -113,6 +118,7 @@ class GardenDetailContentTest {
                     uiState = GardenDetailUiState(isLoading = false, garden = sampleGarden()),
                     onEditLocation = {},
                     onNavigateToGrowingSpaces = { navigations += 1 },
+                    onNavigateToSpatialObjects = {},
                 )
             }
         }

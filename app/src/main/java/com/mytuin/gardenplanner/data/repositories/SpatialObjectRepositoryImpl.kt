@@ -7,6 +7,7 @@ import com.mytuin.gardenplanner.data.dao.SpatialObjectDao
 import com.mytuin.gardenplanner.domain.error.NotFoundError
 import com.mytuin.gardenplanner.domain.error.ValidationError
 import com.mytuin.gardenplanner.domain.model.garden.SpatialObject
+import com.mytuin.gardenplanner.domain.model.garden.SpatialObjectFields
 import com.mytuin.gardenplanner.domain.repository.SpatialObjectRepository
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
 import javax.inject.Inject
@@ -74,6 +75,27 @@ class SpatialObjectRepositoryImpl
             restoredAt: Long,
         ) {
             val rows = spatialObjectDao.updateStatus(id, RecordStatus.ACTIVE, restoredAt)
+            if (rows == 0) {
+                throw NotFoundError("SpatialObject", id)
+            }
+        }
+
+        override suspend fun updateFields(
+            id: String,
+            fields: SpatialObjectFields,
+            updatedAt: Long,
+        ) {
+            fields.areaId?.let { requireAreaExists(it) }
+            val rows =
+                spatialObjectDao.updateFields(
+                    id = id,
+                    objectType = fields.objectType,
+                    name = fields.name,
+                    description = fields.description,
+                    areaId = fields.areaId,
+                    notes = fields.notes,
+                    updatedAt = updatedAt,
+                )
             if (rows == 0) {
                 throw NotFoundError("SpatialObject", id)
             }
