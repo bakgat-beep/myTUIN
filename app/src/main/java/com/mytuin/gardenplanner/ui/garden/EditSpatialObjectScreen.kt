@@ -1,5 +1,6 @@
 package com.mytuin.gardenplanner.ui.garden
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,6 +14,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -27,6 +29,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mytuin.gardenplanner.R
 import com.mytuin.gardenplanner.domain.model.garden.Area
 import com.mytuin.gardenplanner.domain.model.garden.SpatialObject
+import com.mytuin.gardenplanner.domain.vocabulary.GeometryType
 import com.mytuin.gardenplanner.ui.components.ErrorState
 import com.mytuin.gardenplanner.ui.theme.Spacing
 
@@ -93,7 +96,7 @@ private fun EditSpatialObjectBody(
                 modifier = modifier,
             )
         else ->
-            EditSpatialObjectLoaded(
+            EditSpatialObjectContent(
                 spatialObject = spatialObject,
                 areas = areas,
                 isSaving = uiState.isSaving,
@@ -106,7 +109,7 @@ private fun EditSpatialObjectBody(
 }
 
 @Composable
-private fun EditSpatialObjectLoaded(
+fun EditSpatialObjectContent(
     spatialObject: SpatialObject,
     areas: List<Area>,
     isSaving: Boolean,
@@ -134,13 +137,14 @@ private fun EditSpatialObjectLoaded(
             enabled = !isSaving,
             mode = SpatialObjectFormMode.EDIT,
             areas = areas,
-            currentGeometryTypeLabel = stringResource(geometryTypeLabelRes(spatialObject.geometry.geometryType)),
+            currentGeometryTypeLabel =
+                stringResource(geometryTypeLabelRes(spatialObject.geometry.geometryType)),
         )
         if (saveError) {
             Text(
                 text = stringResource(R.string.edit_spatial_object_save_error),
-                style = androidx.compose.material3.MaterialTheme.typography.bodyMedium,
-                color = androidx.compose.material3.MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.error,
             )
         }
         SpatialObjectFormActions(
@@ -154,10 +158,10 @@ private fun EditSpatialObjectLoaded(
     }
 }
 
-@androidx.annotation.StringRes
-private fun geometryTypeLabelRes(type: com.mytuin.gardenplanner.domain.vocabulary.GeometryType): Int =
+@StringRes
+private fun geometryTypeLabelRes(type: GeometryType): Int =
     when (type) {
-        com.mytuin.gardenplanner.domain.vocabulary.GeometryType.POINT -> R.string.growing_space_detail_geometry_point
-        com.mytuin.gardenplanner.domain.vocabulary.GeometryType.LINE -> R.string.growing_space_detail_geometry_line
-        com.mytuin.gardenplanner.domain.vocabulary.GeometryType.POLYGON -> R.string.growing_space_detail_geometry_polygon
+        GeometryType.POINT -> R.string.growing_space_detail_geometry_point
+        GeometryType.LINE -> R.string.growing_space_detail_geometry_line
+        GeometryType.POLYGON -> R.string.growing_space_detail_geometry_polygon
     }

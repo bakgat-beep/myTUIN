@@ -129,6 +129,26 @@ class GardenDetailContentTest {
         assertEquals(1, navigations)
     }
 
+    @Test
+    fun view_garden_objects_button_invokes_callback() {
+        var navigations = 0
+        composeRule.setContent {
+            MyTuinTheme {
+                GardenDetailContent(
+                    uiState = GardenDetailUiState(isLoading = false, garden = sampleGarden()),
+                    onEditLocation = {},
+                    onNavigateToGrowingSpaces = {},
+                    onNavigateToSpatialObjects = { navigations += 1 },
+                )
+            }
+        }
+        composeRule
+            .onNodeWithText("View garden objects")
+            .performScrollTo()
+            .performClick()
+        assertEquals(1, navigations)
+    }
+
     private fun sampleGarden(): Garden =
         Garden(
             id = "garden_test_0001",
