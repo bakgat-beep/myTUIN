@@ -1,0 +1,6231 @@
+9f context bundle
+Generated: 11/01/2026 04:29:43
+
+===== FILE: app/src/main/java/com/mytuin/gardenplanner/ui/garden/debug/MapLibrePoc.kt =====
+
+package com.mytuin.gardenplanner.ui.garden.debug
+
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.viewinterop.AndroidView
+import com.mytuin.gardenplanner.R
+import com.mytuin.gardenplanner.domain.model.garden.Coordinate
+import com.mytuin.gardenplanner.domain.model.garden.Garden
+import com.mytuin.gardenplanner.domain.model.garden.Geometry
+import com.mytuin.gardenplanner.domain.model.garden.GrowingSpace
+import com.mytuin.gardenplanner.domain.repository.GardenRepository
+import com.mytuin.gardenplanner.domain.repository.GrowingSpaceRepository
+import com.mytuin.gardenplanner.ui.theme.Spacing
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
+import org.maplibre.android.camera.CameraPosition
+import org.maplibre.android.geometry.LatLng
+import org.maplibre.android.maps.MapLibreMap
+import org.maplibre.android.maps.MapView
+import org.maplibre.android.maps.Style
+import org.maplibre.android.style.layers.CircleLayer
+import org.maplibre.android.style.layers.FillLayer
+import org.maplibre.android.style.layers.LineLayer
+import org.maplibre.android.style.layers.PropertyFactory
+import org.maplibre.android.style.sources.GeoJsonSource
+import org.maplibre.geojson.Feature
+import org.maplibre.geojson.FeatureCollection
+import org.maplibre.geojson.Point
+import org.maplibre.geojson.Polygon
+
+@EntryPoint
+@InstallIn(SingletonComponent::class)
+interface PocEntryPoint {
+    fun gardenRepository(): GardenRepository
+
+    fun growingSpaceRepository(): GrowingSpaceRepository
+}
+
+private const val STYLE_URL = "https://demotiles.maplibre.org/style.json"
+
+private const val SOURCE_BOUNDARY = "poc-boundary"
+private const val SOURCE_SPACES = "poc-spaces"
+private const val SOURCE_SELECTED = "poc-selected"
+private const val SOURCE_VERTICES = "poc-vertices"
+
+private const val LAYER_SPACES_FILL = "poc-spaces-fill"
+private const val LAYER_SPACES_LINE = "poc-spaces-line"
+private const val LAYER_BOUNDARY_FILL = "poc-boundary-fill"
+private const val LAYER_BOUNDARY_LINE = "poc-boundary-line"
+private const val LAYER_SELECTED_FILL = "poc-selected-fill"
+private const val LAYER_SELECTED_LINE = "poc-selected-line"
+private const val LAYER_VERTICES = "poc-vertices-circle"
+
+private const val FALLBACK_LATITUDE = -43.5321
+private const val FALLBACK_LONGITUDE = 172.6362
+
+private const val FALLBACK_BOUNDARY_METRES = 10.0
+
+@Composable
+fun MapLibrePoc(modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+
+    val garden: Garden?
+    val spaces: List<GrowingSpace>
+    runBlocking {
+        val entryPoint =
+            EntryPointAccessors.fromApplication(
+                context.applicationContext,
+                PocEntryPoint::class.java,
+            )
+        garden =
+            entryPoint
+                .gardenRepository()
+                .observeGardens()
+                .first()
+                .firstOrNull()
+        spaces = garden?.let {
+            entryPoint
+                .growingSpaceRepository()
+                .observeGrowingSpacesInGarden(it.id)
+                .first()
+        } ?: emptyList()
+    }
+
+    if (garden == null) {
+        PocEmptyState(modifier)
+        return
+    }
+
+    val origin: Wgs84 =
+        Wgs84(
+            latitude = garden.latitude ?: FALLBACK_LATITUDE,
+            longitude = garden.longitude ?: FALLBACK_LONGITUDE,
+        )
+
+    var mapRef by remember { mutableStateOf<MapLibreMap?>(null) }
+    var selectedSpaceId by remember { mutableStateOf<String?>(null) }
+    var editedGeometry by remember { mutableStateOf<Geometry.Polygon?>(null) }
+    var styleVersion by remember { mutableStateOf(0) }
+
+    val initialBoundary = remember(spaces) { computeBoundary(spaces) }
+    var boundary by remember(spaces) { mutableStateOf(initialBoundary) }
+
+    Box(modifier = modifier.fillMaxSize()) {
+        AndroidView(
+            modifier = Modifier.fillMaxSize(),
+            factory = { ctx ->
+                MapView(ctx).apply {
+                    onCreate(null)
+                    getMapAsync { map ->
+                        mapRef = map
+                        map.setStyle(STYLE_URL) { style ->
+                            style.addSource(
+                                GeoJsonSource(SOURCE_BOUNDARY, boundaryFeature(boundary, origin)),
+                            )
+                            style.addSource(
+                                GeoJsonSource(SOURCE_SPACES, spacesFeatureCollection(spaces, origin)),
+                            )
+                            style.addSource(
+                                GeoJsonSource(SOURCE_SELECTED, emptyCollection()),
+                            )
+                            style.addSource(
+                                GeoJsonSource(SOURCE_VERTICES, emptyCollection()),
+                            )
+
+                            style.addLayer(
+                                FillLayer(LAYER_BOUNDARY_FILL, SOURCE_BOUNDARY)
+                                    .withProperties(
+                                        PropertyFactory.fillColor("#F2F0E9"),
+                                        PropertyFactory.fillOpacity(0.4f),
+                                        PropertyFactory.fillOutlineColor("#DDD9CE"),
+                                    ),
+                            )
+                            style.addLayer(
+                                LineLayer(LAYER_BOUNDARY_LINE, SOURCE_BOUNDARY)
+                                    .withProperties(
+                                        PropertyFactory.lineColor("#DDD9CE"),
+                                        PropertyFactory.lineWidth(2f),
+                                    ),
+                            )
+                            style.addLayer(
+                                FillLayer(LAYER_SPACES_FILL, SOURCE_SPACES)
+                                    .withProperties(
+                                        PropertyFactory.fillColor("#7D9A82"),
+                                        PropertyFactory.fillOpacity(0.5f),
+                                        PropertyFactory.fillOutlineColor("#356859"),
+                                    ),
+                            )
+                            style.addLayer(
+                                LineLayer(LAYER_SPACES_LINE, SOURCE_SPACES)
+                                    .withProperties(
+                                        PropertyFactory.lineColor("#356859"),
+                                        PropertyFactory.lineWidth(2.5f),
+                                    ),
+                            )
+                            style.addLayer(
+                                FillLayer(LAYER_SELECTED_FILL, SOURCE_SELECTED)
+                                    .withProperties(
+                                        PropertyFactory.fillColor("#B4863A"),
+                                        PropertyFactory.fillOpacity(0.35f),
+                                    ),
+                            )
+                            style.addLayer(
+                                LineLayer(LAYER_SELECTED_LINE, SOURCE_SELECTED)
+                                    .withProperties(
+                                        PropertyFactory.lineColor("#B4863A"),
+                                        PropertyFactory.lineWidth(3f),
+                                    ),
+                            )
+                            style.addLayer(
+                                CircleLayer(LAYER_VERTICES, SOURCE_VERTICES)
+                                    .withProperties(
+                                        PropertyFactory.circleColor("#23483E"),
+                                        PropertyFactory.circleRadius(7f),
+                                        PropertyFactory.circleStrokeColor("#FAF9F5"),
+                                        PropertyFactory.circleStrokeWidth(2f),
+                                    ),
+                            )
+                        }
+
+                        map.cameraPosition =
+                            CameraPosition
+                                .Builder()
+                                .target(LatLng(origin.latitude, origin.longitude))
+                                .zoom(18.5)
+                                .build()
+
+                        map.addOnMapClickListener { latLng ->
+                            handleMapClick(
+                                latLng = latLng,
+                                map = map,
+                                origin = origin,
+                                selectedSpaceId = selectedSpaceId,
+                                editedGeometry = editedGeometry,
+                                onSelect = { id ->
+                                    selectedSpaceId = id
+                                    editedGeometry = null
+                                    styleVersion += 1
+                                },
+                                onClearSelection = {
+                                    selectedSpaceId = null
+                                    editedGeometry = null
+                                    styleVersion += 1
+                                },
+                                onAddVertex = { coordinate ->
+                                    val current = editedGeometry
+                                    if (current != null) {
+                                        editedGeometry = appendVertex(current, coordinate)
+                                        styleVersion += 1
+                                    }
+                                },
+                            )
+                        }
+
+                        map.addOnMapLongClickListener { latLng ->
+                            if (editedGeometry != null) {
+                                val coordinate =
+                                    MetresToWgs84.toCoordinate(
+                                        origin,
+                                        Wgs84(latLng.latitude, latLng.longitude),
+                                    )
+                                editedGeometry = appendVertex(editedGeometry!!, coordinate)
+                                styleVersion += 1
+                                true
+                            } else {
+                                false
+                            }
+                        }
+                    }
+                }
+            },
+            update = { /* state-driven rendering happens via LaunchedEffect below */ },
+        )
+
+        LaunchedEffect(styleVersion, selectedSpaceId, editedGeometry, boundary) {
+            val map = mapRef ?: return@LaunchedEffect
+            map.getStyle { style ->
+                updateSources(
+                    style = style,
+                    boundary = boundary,
+                    spaces = spaces,
+                    selectedSpaceId = selectedSpaceId,
+                    editedGeometry = editedGeometry,
+                    origin = origin,
+                )
+            }
+        }
+
+        PocControls(
+            modifier =
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(Spacing.l),
+            selectedName = spaces.firstOrNull { it.id == selectedSpaceId }?.name,
+            isEditing = editedGeometry != null,
+            onStartEditing = {
+                val selected = spaces.firstOrNull { it.id == selectedSpaceId }
+                val polygon = selected?.geometry as? Geometry.Polygon
+                if (polygon != null) {
+                    editedGeometry = polygon
+                    styleVersion += 1
+                }
+            },
+            onFinishEditing = {
+                editedGeometry = null
+                styleVersion += 1
+            },
+            onReset = {
+                editedGeometry = null
+                selectedSpaceId = null
+                styleVersion += 1
+            },
+        )
+    }
+}
+
+@Composable
+private fun PocEmptyState(modifier: Modifier) {
+    Box(
+        modifier = modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = stringResource(R.string.poc_map_empty_state),
+            style = MaterialTheme.typography.bodyLarge,
+        )
+    }
+}
+
+@Composable
+private fun PocControls(
+    selectedName: String?,
+    isEditing: Boolean,
+    onStartEditing: () -> Unit,
+    onFinishEditing: () -> Unit,
+    onReset: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier) {
+        Text(
+            text = selectedName ?: stringResource(R.string.poc_map_no_selection),
+            style = MaterialTheme.typography.labelLarge,
+        )
+        Row(modifier = Modifier.padding(top = Spacing.s)) {
+            if (isEditing) {
+                Button(onClick = onFinishEditing) {
+                    Text(stringResource(R.string.poc_map_finish_editing))
+                }
+            } else {
+                Button(
+                    onClick = onStartEditing,
+                    enabled = selectedName != null,
+                ) {
+                    Text(stringResource(R.string.poc_map_edit))
+                }
+            }
+            Button(
+                onClick = onReset,
+                modifier = Modifier.padding(start = Spacing.s),
+            ) {
+                Text(stringResource(R.string.poc_map_reset))
+            }
+        }
+    }
+}
+
+private fun computeBoundary(spaces: List<GrowingSpace>): List<Coordinate> {
+    val polygons = spaces.mapNotNull { it.geometry as? Geometry.Polygon }
+    if (polygons.isEmpty()) {
+        return listOf(
+            Coordinate(-FALLBACK_BOUNDARY_METRES, -FALLBACK_BOUNDARY_METRES),
+            Coordinate(FALLBACK_BOUNDARY_METRES, -FALLBACK_BOUNDARY_METRES),
+            Coordinate(FALLBACK_BOUNDARY_METRES, FALLBACK_BOUNDARY_METRES),
+            Coordinate(-FALLBACK_BOUNDARY_METRES, FALLBACK_BOUNDARY_METRES),
+            Coordinate(-FALLBACK_BOUNDARY_METRES, -FALLBACK_BOUNDARY_METRES),
+        )
+    }
+    val xs = polygons.flatMap { polygon -> polygon.ring.map { it.x } }
+    val ys = polygons.flatMap { polygon -> polygon.ring.map { it.y } }
+    val minX = xs.min() - 2.0
+    val maxX = xs.max() + 2.0
+    val minY = ys.min() - 2.0
+    val maxY = ys.max() + 2.0
+    return listOf(
+        Coordinate(minX, minY),
+        Coordinate(maxX, minY),
+        Coordinate(maxX, maxY),
+        Coordinate(minX, maxY),
+        Coordinate(minX, minY),
+    )
+}
+
+private fun boundaryFeature(
+    boundary: List<Coordinate>,
+    origin: Wgs84,
+): Feature = Feature.fromGeometry(polygonGeometry(boundary, origin))
+
+private fun spacesFeatureCollection(
+    spaces: List<GrowingSpace>,
+    origin: Wgs84,
+): FeatureCollection {
+    val features =
+        spaces.mapNotNull { space ->
+            val polygon = space.geometry as? Geometry.Polygon ?: return@mapNotNull null
+            Feature
+                .fromGeometry(polygonGeometry(polygon.ring, origin))
+                .apply { addStringProperty("spaceId", space.id) }
+        }
+    return FeatureCollection.fromFeatures(features)
+}
+
+private fun polygonGeometry(
+    ring: List<Coordinate>,
+    origin: Wgs84,
+): Polygon {
+    val points =
+        ring.map { coordinate ->
+            val wgs = MetresToWgs84.toWgs84(origin, coordinate)
+            Point.fromLngLat(wgs.longitude, wgs.latitude)
+        }
+    return Polygon.fromLngLats(listOf(points))
+}
+
+private fun emptyCollection(): FeatureCollection = FeatureCollection.fromFeatures(emptyList<Feature>())
+
+private fun updateSources(
+    style: Style,
+    boundary: List<Coordinate>,
+    spaces: List<GrowingSpace>,
+    selectedSpaceId: String?,
+    editedGeometry: Geometry.Polygon?,
+    origin: Wgs84,
+) {
+    (style.getSourceAs<GeoJsonSource>(SOURCE_BOUNDARY))
+        ?.setGeoJson(boundaryFeature(boundary, origin))
+
+    (style.getSourceAs<GeoJsonSource>(SOURCE_SPACES))
+        ?.setGeoJson(spacesFeatureCollection(spaces, origin))
+
+    val selected =
+        if (editedGeometry != null) {
+            editedGeometry
+        } else {
+            (spaces.firstOrNull { it.id == selectedSpaceId }?.geometry as? Geometry.Polygon)
+        }
+
+    if (selected != null) {
+        val feature = Feature.fromGeometry(polygonGeometry(selected.ring, origin))
+        style
+            .getSourceAs<GeoJsonSource>(SOURCE_SELECTED)
+            ?.setGeoJson(FeatureCollection.fromFeatures(listOf(feature)))
+        style
+            .getSourceAs<GeoJsonSource>(SOURCE_VERTICES)
+            ?.setGeoJson(
+                FeatureCollection.fromFeatures(
+                    selected.ring.map { coordinate ->
+                        val wgs = MetresToWgs84.toWgs84(origin, coordinate)
+                        Feature.fromGeometry(
+                            Point.fromLngLat(wgs.longitude, wgs.latitude),
+                        )
+                    },
+                ),
+            )
+    } else {
+        style.getSourceAs<GeoJsonSource>(SOURCE_SELECTED)?.setGeoJson(emptyCollection())
+        style.getSourceAs<GeoJsonSource>(SOURCE_VERTICES)?.setGeoJson(emptyCollection())
+    }
+}
+
+private fun handleMapClick(
+    latLng: LatLng,
+    map: MapLibreMap,
+    origin: Wgs84,
+    selectedSpaceId: String?,
+    editedGeometry: Geometry.Polygon?,
+    onSelect: (String) -> Unit,
+    onClearSelection: () -> Unit,
+    onAddVertex: (Coordinate) -> Unit,
+): Boolean {
+    val pixel = map.projection.toScreenLocation(latLng)
+    val hits = map.queryRenderedFeatures(pixel, LAYER_SPACES_FILL)
+    if (hits.isNotEmpty()) {
+        val id = hits.first().getStringProperty("spaceId")
+        if (id != null) {
+            onSelect(id)
+            return true
+        }
+    }
+
+    if (editedGeometry != null) {
+        val coordinate =
+            MetresToWgs84.toCoordinate(
+                origin,
+                Wgs84(latLng.latitude, latLng.longitude),
+            )
+        onAddVertex(coordinate)
+        return true
+    }
+
+    if (selectedSpaceId != null) {
+        onClearSelection()
+        return true
+    }
+    return false
+}
+
+private fun appendVertex(
+    polygon: Geometry.Polygon,
+    coordinate: Coordinate,
+): Geometry.Polygon {
+    val ring = polygon.ring.toMutableList()
+    ring.add(ring.lastIndex, coordinate)
+    return Geometry.Polygon(ring)
+}
+
+===== FILE: app/src/main/java/com/mytuin/gardenplanner/ui/garden/debug/MetresToWgs84.kt =====
+
+package com.mytuin.gardenplanner.ui.garden.debug
+
+import com.mytuin.gardenplanner.domain.model.garden.Coordinate
+import kotlin.math.cos
+
+/**
+ * Garden-relative metres <-> WGS84 conversion for the MapLibre proof of
+ * concept.
+ *
+ * A149=c: the domain's Coordinate is metres from a garden datum
+ * (A50b=(i)). MapLibre's GeoJsonSource expects WGS84 lon/lat. This
+ * object is the only place that conversion happens (A157).
+ *
+ * A158=a: the datum is the Garden's existing latitude/longitude when
+ * present; otherwise a fallback constant supplied by the caller.
+ *
+ * The conversion is a flat equirectangular approximation. Valid for
+ * garden-scale distances (a few hundred metres at most). At 100 m from
+ * the datum the error is on the order of centimetres. The real Garden
+ * screen will need a decision about whether that is acceptable; for a
+ * PoC it is.
+ *
+ * No MapLibre types. Pure arithmetic, testable in src/test.
+ *
+ * PHASE_0_PROJECT_FOUNDATION §22, §23; DEC-039.
+ */
+data class Wgs84(
+    val latitude: Double,
+    val longitude: Double,
+)
+
+object MetresToWgs84 {
+    private const val METRES_PER_DEGREE_LATITUDE = 111_320.0
+
+    fun toWgs84(
+        origin: Wgs84,
+        coordinate: Coordinate,
+    ): Wgs84 {
+        val latitude = origin.latitude + coordinate.y / METRES_PER_DEGREE_LATITUDE
+        val longitude =
+            origin.longitude +
+                coordinate.x / metresPerDegreeLongitude(origin.latitude)
+        return Wgs84(latitude, longitude)
+    }
+
+    fun toCoordinate(
+        origin: Wgs84,
+        point: Wgs84,
+    ): Coordinate {
+        val y = (point.latitude - origin.latitude) * METRES_PER_DEGREE_LATITUDE
+        val x =
+            (point.longitude - origin.longitude) *
+                metresPerDegreeLongitude(origin.latitude)
+        return Coordinate(x, y)
+    }
+
+    private fun metresPerDegreeLongitude(latitude: Double): Double = METRES_PER_DEGREE_LATITUDE * cos(Math.toRadians(latitude))
+}
+
+===== FILE: app/src/test/java/com/mytuin/gardenplanner/ui/garden/debug/MetresToWgs84Test.kt =====
+
+package com.mytuin.gardenplanner.ui.garden.debug
+
+import com.mytuin.gardenplanner.domain.model.garden.Coordinate
+import kotlin.math.abs
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
+
+/**
+ * Tests for MetresToWgs84 (A159=b).
+ *
+ * Pure arithmetic, no MapLibre, no Android. JUnit 5 per A145=a.
+ *
+ * The conversion is an equirectangular approximation. Tests assert
+ * round-trip identity and known-value correctness at garden scale.
+ */
+class MetresToWgs84Test {
+    private val origin = Wgs84(latitude = -43.5321, longitude = 172.6362)
+
+    @Test
+    fun round_trip_is_identity_within_floating_point_tolerance() {
+        val coordinates =
+            listOf(
+                Coordinate(0.0, 0.0),
+                Coordinate(1.0, 0.0),
+                Coordinate(0.0, 1.0),
+                Coordinate(10.0, 10.0),
+                Coordinate(-5.0, 3.5),
+            )
+        coordinates.forEach { coordinate ->
+            val wgs = MetresToWgs84.toWgs84(origin, coordinate)
+            val back = MetresToWgs84.toCoordinate(origin, wgs)
+            assertEquals(coordinate.x, back.x, 1e-9, "x for $coordinate")
+            assertEquals(coordinate.y, back.y, 1e-9, "y for $coordinate")
+        }
+    }
+
+    @Test
+    fun one_metre_north_is_approximately_eight_point_nine_e_micro_degrees() {
+        val wgs = MetresToWgs84.toWgs84(origin, Coordinate(0.0, 1.0))
+        val deltaLat = wgs.latitude - origin.latitude
+        assertEquals(1.0 / 111_320.0, deltaLat, 1e-12)
+    }
+
+    @Test
+    fun one_metre_east_scales_with_cosine_of_latitude() {
+        val wgs = MetresToWgs84.toWgs84(origin, Coordinate(1.0, 0.0))
+        val deltaLon = wgs.longitude - origin.longitude
+        val expected = 1.0 / (111_320.0 * Math.cos(Math.toRadians(origin.latitude)))
+        assertEquals(expected, deltaLon, 1e-12)
+        // Sanity: at 43.5 degrees south, one degree of longitude is
+        // materially shorter than one degree of latitude.
+        assert(abs(deltaLon) > abs(1.0 / 111_320.0))
+    }
+
+    @Test
+    fun a_ten_metre_square_maps_to_a_square_in_wgs84() {
+        val corner = MetresToWgs84.toWgs84(origin, Coordinate(10.0, 10.0))
+        val back = MetresToWgs84.toCoordinate(origin, corner)
+        assertEquals(10.0, back.x, 1e-9)
+        assertEquals(10.0, back.y, 1e-9)
+    }
+}
+
+===== FILE: app/src/androidTest/java/com/mytuin/gardenplanner/ui/garden/debug/MapLibrePocTest.kt =====
+
+package com.mytuin.gardenplanner.ui.garden.debug
+
+import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithText
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.mytuin.gardenplanner.ui.theme.MyTuinTheme
+import org.junit.Rule
+import org.junit.Test
+import org.junit.runner.RunWith
+
+/**
+ * Compose test for MapLibrePoc (A159=c).
+ *
+ * The map view itself cannot be asserted from a JVM-side Compose test:
+ * MapLibre renders natively, and its content is not in the Compose
+ * semantics tree. What this test proves is that the composable
+ * renders without crashing and that the empty-state path is reached
+ * when no garden exists.
+ *
+ * The substantive proof of the coordinate pipeline is
+ * MetresToWgs84Test in src/test.
+ *
+ * JUnit 4 per A139=a. Compose UI tests remain on JUnit 4 because
+ * createComposeRule returns a JUnit 4 TestRule.
+ */
+@RunWith(AndroidJUnit4::class)
+class MapLibrePocTest {
+    @get:Rule
+    val composeRule = createComposeRule()
+
+    @Test
+    fun poc_renders_without_crashing() {
+        composeRule.setContent {
+            MyTuinTheme {
+                MapLibrePoc()
+            }
+        }
+        // If we reached this point without an exception, the composable
+        // and its MapView inflated successfully.
+    }
+
+    @Test
+    fun poc_shows_empty_state_text_when_no_garden_exists() {
+        composeRule.setContent {
+            MyTuinTheme {
+                MapLibrePoc()
+            }
+        }
+        // On a clean test device with no seeded Garden rows, the PoC
+        // renders its empty-state message. If a Garden exists from a
+        // previous test, this assertion will not fire; that is a
+        // device-state dependency, not a PoC defect. The MapLibrePocTest
+        // does not create gardens and the app's production database is
+        // not touched by tests.
+        composeRule
+            .onNodeWithText("Create a garden to see it on the map.")
+            .assertExists()
+    }
+}
+
+===== FILE: app/src/main/java/com/mytuin/gardenplanner/ui/garden/GardenScreen.kt =====
+
+package com.mytuin.gardenplanner.ui.garden
+
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Yard
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.mytuin.gardenplanner.BuildConfig
+import com.mytuin.gardenplanner.R
+import com.mytuin.gardenplanner.ui.components.EmptyState
+import com.mytuin.gardenplanner.ui.garden.debug.MapLibrePoc
+
+/**
+ * A148=a: the MapLibre proof of concept replaces the Garden tab in
+ * debug builds only. Release builds show the empty state until the
+ * real Garden screen lands.
+ */
+@Composable
+fun GardenScreen(modifier: Modifier = Modifier) {
+    if (BuildConfig.DEBUG) {
+        MapLibrePoc(modifier = modifier)
+    } else {
+        EmptyState(
+            title = stringResource(R.string.empty_garden_title),
+            description = stringResource(R.string.empty_garden_description),
+            icon = Icons.Filled.Yard,
+            modifier = modifier.fillMaxSize(),
+        )
+    }
+}
+
+===== FILE: app/src/main/java/com/mytuin/gardenplanner/domain/model/garden/Garden.kt =====
+
+package com.mytuin.gardenplanner.domain.model.garden
+
+import com.mytuin.gardenplanner.domain.vocabulary.Hemisphere
+import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
+
+/**
+ * Garden — domain model.
+ *
+ * V1_DATABASE_SCHEMA.md §11. DATA_MODEL.md §5.
+ * Field names are camelCase — see Plant.kt for the mapping rationale.
+ *
+ * Location is structured data, not vocabulary (V1_DATABASE_SCHEMA §11;
+ * CORE_ARCHITECTURE §22). Exact coordinates are private (V1_DATABASE_SCHEMA
+ * §11; CORE_ARCHITECTURE §80).
+ */
+data class Garden(
+    val id: String,
+    val name: String,
+    val description: String?,
+    val countryCode: String?,
+    val region: String?,
+    val locality: String?,
+    val latitude: Double?,
+    val longitude: Double?,
+    val timezone: String?,
+    val hemisphere: Hemisphere,
+    val status: RecordStatus,
+    val createdAt: Long,
+    val updatedAt: Long,
+)
+
+===== FILE: app/src/main/java/com/mytuin/gardenplanner/domain/repository/GardenRepository.kt =====
+
+package com.mytuin.gardenplanner.domain.repository
+
+import com.mytuin.gardenplanner.domain.model.garden.Garden
+import com.mytuin.gardenplanner.domain.model.garden.NewGardenLocation
+import kotlinx.coroutines.flow.Flow
+
+/**
+ * Repository interface for Garden.
+ *
+ * A231=a: observeGardens excludes archived by default. Callers that
+ * need archived gardens pass includeArchived = true.
+ *
+ * A234: archive and restore return Unit. A239: a missing garden
+ * throws NotFoundError.
+ */
+interface GardenRepository {
+    fun observeGardens(includeArchived: Boolean = false): Flow<List<Garden>>
+
+    fun observeGarden(id: String): Flow<Garden?>
+
+    suspend fun getGarden(id: String): Garden?
+
+    suspend fun insert(garden: Garden)
+
+    suspend fun updateLocation(
+        id: String,
+        location: NewGardenLocation,
+        updatedAt: Long,
+    )
+
+    suspend fun archive(
+        id: String,
+        archivedAt: Long,
+    )
+
+    suspend fun restore(
+        id: String,
+        restoredAt: Long,
+    )
+}
+
+===== FILE: app/src/main/java/com/mytuin/gardenplanner/domain/usecases/garden/ObserveGarden.kt =====
+
+package com.mytuin.gardenplanner.domain.usecases.garden
+
+import com.mytuin.gardenplanner.domain.model.garden.Garden
+import com.mytuin.gardenplanner.domain.repository.GardenRepository
+import javax.inject.Inject
+import kotlinx.coroutines.flow.Flow
+
+class ObserveGarden
+    @Inject
+    constructor(
+        private val repository: GardenRepository,
+    ) {
+        operator fun invoke(gardenId: String): Flow<Garden?> = repository.observeGarden(gardenId)
+    }
+
+===== FILE: app/src/main/java/com/mytuin/gardenplanner/domain/usecases/garden/ObserveGrowingSpacesInGarden.kt =====
+
+package com.mytuin.gardenplanner.domain.usecases.garden
+
+import com.mytuin.gardenplanner.domain.model.garden.GrowingSpace
+import com.mytuin.gardenplanner.domain.repository.GrowingSpaceRepository
+import javax.inject.Inject
+import kotlinx.coroutines.flow.Flow
+
+class ObserveGrowingSpacesInGarden
+    @Inject
+    constructor(
+        private val repository: GrowingSpaceRepository,
+    ) {
+        operator fun invoke(gardenId: String): Flow<List<GrowingSpace>> = repository.observeGrowingSpacesInGarden(gardenId)
+    }
+
+===== FILE: app/src/main/AndroidManifest.xml =====
+
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application
+        android:name=".GardenPlannerApplication"
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.MyTUIN">
+        <activity
+            android:name=".ui.MainActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.MyTUIN">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>
+
+===== FILE: app/src/debug/AndroidManifest.xml =====
+
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+      Debug-only INTERNET permission.
+
+      The MapLibre proof of concept (step 6h) loads MapLibre's demo
+      style from demotiles.maplibre.org. The release manifest does not
+      declare INTERNET, preserving PHASE_0_PROJECT_FOUNDATION §3.1's
+      offline-first principle for production. When offline tiles are
+      bundled (a later step), this debug manifest is deleted.
+    -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+</manifest>
+
+===== FILE: app/src/main/java/com/mytuin/gardenplanner/ui/theme/Color.kt =====
+
+package com.mytuin.gardenplanner.ui.theme
+
+import androidx.compose.ui.graphics.Color
+
+// Primary — V1_VISUAL_DESIGN_SPECIFICATION §5.1
+val Forest = Color(0xFF356859)
+val DeepForest = Color(0xFF23483E)
+val Sage = Color(0xFF7D9A82)
+
+// Neutrals — §6
+val WarmWhite = Color(0xFFFAF9F5)
+val Paper = Color(0xFFF2F0E9)
+val Stone = Color(0xFFDDD9CE)
+val MidStone = Color(0xFF9A978D)
+val Charcoal = Color(0xFF2D302C)
+
+// Semantic — §7
+val Moss = Color(0xFF557A55)
+val Ochre = Color(0xFFB4863A)
+val Clay = Color(0xFFA95645)
+val SlateBlue = Color(0xFF60788A)
+
+// Dark-theme surfaces — §53
+val DarkSurface = Color(0xFF2D302C)
+val DarkSurfaceVariant = Color(0xFF3A3E39)
+
+===== FILE: docs/DECISION_LOG.md =====
+
+Garden Planner & Manager — Decision Log
+
+Document: docs/DECISION_LOG.md
+Version: 0.1
+Status: Working specification
+Last updated: August 2026
+
+1. Purpose
+
+This document records important product, architectural, data, UX, and development decisions for the Garden Planner & Manager project.
+
+The purpose is to preserve the reasoning behind decisions so that:
+
+future development does not accidentally contradict established decisions;
+
+future chats can quickly understand the project's history;
+
+architectural decisions can be revisited deliberately rather than accidentally;
+
+new modules can be developed consistently;
+
+the project can evolve without repeatedly re-litigating settled questions.
+
+
+This document should record decisions and their rationale, not duplicate the full technical specifications contained in other project documents.
+
+
+---
+
+2. How to use this document
+
+A decision should be added when it is significant enough that a future developer could reasonably ask:
+
+> "Why did we build it this way?"
+
+
+
+Examples include:
+
+choosing a particular architectural approach;
+
+deciding that a piece of data belongs to one entity rather than another;
+
+deciding that something belongs in V1 or later;
+
+deciding that data must be preserved in a particular way;
+
+deciding that a module must remain independent;
+
+deciding how localisation works;
+
+deciding how recommendations are represented;
+
+deliberately rejecting an otherwise plausible approach.
+
+
+Minor implementation choices do not need to be recorded here.
+
+
+---
+
+3. Decision status
+
+Each decision should have one of the following statuses:
+
+Accepted
+
+The decision is currently part of the project specification.
+
+Provisional
+
+The decision is currently preferred but may reasonably change during implementation.
+
+Superseded
+
+A newer decision has replaced it.
+
+Rejected
+
+The approach was considered and deliberately rejected.
+
+Deferred
+
+The question has been recognised but deliberately postponed.
+
+
+---
+
+4. Decision format
+
+New decisions should use this structure:
+
+Decision ID: DEC-XXX
+Date: YYYY-MM-DD
+Status: Accepted / Provisional / Superseded / Rejected / Deferred
+Area: Product / Architecture / Data / UX / Development / Other
+
+Decision
+
+What was decided.
+
+Rationale
+
+Why it was decided.
+
+Consequences
+
+What this decision means for the project.
+
+Related documents
+
+Which project documents contain the detailed implementation/specification.
+
+Supersedes
+
+Any previous decision that this replaces.
+
+
+---
+
+5. Product decisions
+
+DEC-001 — The application is a Garden Planner & Manager
+
+Date: August 2026
+Status: Accepted
+Area: Product
+
+Decision
+
+The product will be developed as a broader Garden Planner & Manager, rather than merely a planting calendar or task/reminder application.
+
+The product should ultimately support a gardener in:
+
+understanding their garden;
+
+planning;
+
+recording what actually happens;
+
+observing outcomes;
+
+learning from those outcomes;
+
+making better future decisions.
+
+
+Rationale
+
+The project's value comes from connecting planning, action, observation, history and knowledge rather than treating them as unrelated features.
+
+Consequences
+
+V1 must establish a foundation capable of supporting the broader product.
+
+Future modules should be able to build on the core data and workflows without requiring the core product to be redesigned.
+
+Related documents
+
+docs/PROJECT_OVERVIEW.md
+
+docs/V1_SCOPE.md
+
+docs/DATA_MODEL.md
+
+docs/vocabularies/CORE_VOCABULARIES.md
+
+
+
+---
+
+6. Core product decisions
+
+DEC-002 — V1 must prioritise a reliable core product
+
+Date: August 2026
+Status: Accepted
+Area: Product
+
+Decision
+
+V1 will prioritise delivering a small, reliable core product rather than attempting to deliver the complete long-term Garden Planner & Manager vision.
+
+The core product must remain useful independently of future modules.
+
+Rationale
+
+A broad product can easily become fragile if too many features are introduced simultaneously.
+
+The core gardening workflow should therefore be stabilised before optional complexity is added.
+
+Consequences
+
+Future features may be deferred even if they are desirable.
+
+The architecture must nevertheless leave appropriate extension points for future functionality.
+
+Related documents
+
+docs/V1_SCOPE.md
+
+docs/CORE_ARCHITECTURE.md
+
+docs/MODULE_ARCHITECTURE.md
+
+docs/V1_IMPLEMENTATION_PLAN.md
+
+
+
+---
+
+DEC-003 — Future functionality must have minimal adverse impact on the core product
+
+Date: August 2026
+Status: Accepted
+Area: Architecture / Product
+
+Decision
+
+Optional and future modules should be designed so that they have minimal adverse impact on:
+
+core functionality;
+
+core reliability;
+
+core data;
+
+core development;
+
+core testing;
+
+core UX.
+
+
+Rationale
+
+The project is expected to grow substantially.
+
+Adding every future feature directly into the core would make the application increasingly fragile and difficult to maintain.
+
+Consequences
+
+New functionality should normally be implemented behind defined module/service boundaries.
+
+Optional functionality should not become a prerequisite for basic gardening functionality unless explicitly intended.
+
+
+---
+
+7. Modularity decisions
+
+DEC-004 — Features should be implemented as independently as reasonably practical
+
+Date: August 2026
+Status: Accepted
+Area: Architecture
+
+Decision
+
+The application's functions should be separated into modules/components/services with clear responsibilities and interfaces.
+
+Modules should be able to be:
+
+developed;
+
+tested;
+
+modified;
+
+replaced;
+
+expanded
+
+
+with minimal unnecessary changes to unrelated modules.
+
+Rationale
+
+The user specifically identified excessive cross-file coupling in another application as a major development problem.
+
+The Garden Planner & Manager should avoid reproducing that pattern.
+
+Consequences
+
+The architecture should favour:
+
+separation of concerns;
+
+stable interfaces;
+
+domain services;
+
+repository abstractions;
+
+feature modules;
+
+dependency injection where useful;
+
+focused responsibilities.
+
+
+The architecture should not pursue modularity for its own sake.
+
+Unnecessary abstraction and fragmentation should be avoided.
+
+Related documents
+
+docs/CORE_ARCHITECTURE.md
+
+docs/MODULE_ARCHITECTURE.md
+
+docs/V1_TECHNICAL_ARCHITECTURE.md
+
+docs/CONTRIBUTION_AND_DEVELOPMENT_GUIDELINES.md
+
+
+
+---
+
+DEC-005 — Minimise blast radius
+
+Date: August 2026
+Status: Accepted
+Area: Architecture / Development
+
+Decision
+
+A small change should not routinely require changes across large portions of the application.
+
+The project should actively monitor the blast radius of changes.
+
+Rationale
+
+Large blast radii indicate excessive coupling and make development increasingly fragile.
+
+Consequences
+
+If implementing a small feature repeatedly requires unrelated screens, services and entities to change, the architecture should be reviewed rather than simply accepting the coupling.
+
+
+---
+
+8. Data decisions
+
+DEC-006 — User data must survive future application versions
+
+Date: August 2026
+Status: Accepted
+Area: Data
+
+Decision
+
+The data model must be designed so that user data created in V1 can be preserved through future application versions wherever reasonably possible.
+
+This includes:
+
+plans;
+
+records;
+
+observations;
+
+history;
+
+garden information;
+
+plant information;
+
+other meaningful user-generated data.
+
+
+Rationale
+
+The application's long-term value depends partly on accumulating gardening history.
+
+A user should not lose years of information merely because the application has evolved.
+
+Consequences
+
+Database migrations are a first-class architectural concern.
+
+Schema changes must be planned with backward compatibility and migration in mind.
+
+Related documents
+
+docs/DATA_MODEL.md
+
+docs/DATA_MIGRATION_STRATEGY.md
+
+docs/TESTING_STRATEGY.md
+
+
+
+---
+
+DEC-007 — Historical records are durable
+
+Date: August 2026
+Status: Accepted
+Area: Data
+
+Decision
+
+Historical records should generally be treated as durable facts once recorded.
+
+Changing current information must not silently rewrite historical records unless such behaviour is explicitly intended and documented.
+
+Rationale
+
+The application is intended to learn from what actually happened.
+
+Historical integrity is therefore essential.
+
+Consequences
+
+The data model must distinguish appropriately between:
+
+current state;
+
+planned state;
+
+actual historical events;
+
+observations;
+
+inferred information.
+
+
+
+---
+
+DEC-008 — Planned and actual events must remain distinct
+
+Date: August 2026
+Status: Accepted
+Area: Data / Product
+
+Decision
+
+A plan is not evidence that an event actually occurred.
+
+The application must distinguish between:
+
+what was planned;
+
+what was completed/recorded;
+
+what was observed.
+
+
+Rationale
+
+A gardening plan can change.
+
+If planned actions were automatically treated as historical facts, the application's history would become unreliable.
+
+Consequences
+
+Planning, task management and historical event recording must have clearly defined semantics.
+
+This distinction must be protected by automated tests.
+
+
+---
+
+9. Canonical language decisions
+
+DEC-009 — English is the canonical data language
+
+Date: August 2026
+Status: Accepted
+Area: Data / Localisation
+
+Decision
+
+The underlying data model uses English canonical identifiers.
+
+This includes:
+
+entity identifiers;
+
+controlled vocabulary identifiers;
+
+relationship identifiers;
+
+enum values;
+
+machine-readable classifications;
+
+import/export identifiers;
+
+rule identifiers.
+
+
+Rationale
+
+A stable canonical language provides a consistent machine-readable data layer independent of user-facing language.
+
+Consequences
+
+Canonical identifiers must not change merely because the user changes language.
+
+Related documents
+
+docs/vocabularies/CORE_VOCABULARIES.md
+
+docs/VOCABULARY_INDEX.md
+
+docs/DATA_MODEL.md
+
+
+
+---
+
+DEC-010 — Localisation applies to the user experience, not the underlying data
+
+Date: August 2026
+Status: Accepted
+Area: UX / Data
+
+Decision
+
+The application should eventually support multiple user-facing languages, including Afrikaans.
+
+Localisation should affect:
+
+labels;
+
+descriptions;
+
+instructions;
+
+messages;
+
+user-facing terminology;
+
+other presentation content.
+
+
+It should not change the underlying canonical data.
+
+Rationale
+
+The same garden data should remain structurally identical regardless of the user's language.
+
+This also supports future import/export and interoperability.
+
+Consequences
+
+Translation resources must map user-facing text to stable canonical concepts.
+
+The data model must not use translated strings as identifiers.
+
+
+---
+
+10. Knowledge and recommendation decisions
+
+DEC-011 — Gardening knowledge is separate from user garden history
+
+Date: August 2026
+Status: Accepted
+Area: Data / Knowledge
+
+Decision
+
+General gardening knowledge should be separated from an individual user's garden records.
+
+For example:
+
+General knowledge:
+
+a plant's typical requirements;
+
+environmental preferences;
+
+known associations;
+
+common problems.
+
+
+User information:
+
+what the user planted;
+
+what happened;
+
+what they observed;
+
+what they tried;
+
+what outcome occurred.
+
+
+Rationale
+
+The application must be able to distinguish general knowledge from individual experience.
+
+Consequences
+
+Knowledge should not overwrite user records.
+
+User observations should not automatically become universal gardening facts.
+
+
+---
+
+DEC-012 — Recommendations must be explainable
+
+Date: August 2026
+Status: Accepted
+Area: Product / Architecture
+
+Decision
+
+Recommendations should be accompanied by an understandable basis where practical.
+
+The application should be able to distinguish:
+
+known information;
+
+inferred information;
+
+assumptions;
+
+uncertainty;
+
+recommendation rationale.
+
+
+Rationale
+
+Gardening conditions are variable and often uncertain.
+
+The application should help the user make decisions rather than present uncertain conclusions as unquestionable facts.
+
+Consequences
+
+Recommendation rules should retain enough information to explain why a recommendation was generated.
+
+
+---
+
+DEC-013 — Unknown information must remain distinguishable from negative information
+
+Date: August 2026
+Status: Accepted
+Area: Data / Recommendations
+
+Decision
+
+The application must distinguish between:
+
+known positive;
+
+known negative;
+
+unknown/not recorded;
+
+uncertain/inferred where appropriate.
+
+
+Rationale
+
+For gardening, absence of information is not necessarily evidence of absence.
+
+For example:
+
+> "soil pH has not been tested"
+
+
+
+is different from:
+
+> "soil pH is known to be unsuitable."
+
+
+
+Consequences
+
+The data model and recommendation system must not treat missing information as a definitive negative unless explicitly specified by a rule.
+
+
+---
+
+11. V1 scope decisions
+
+DEC-014 — V1 should not attempt to implement the complete product vision
+
+Date: August 2026
+Status: Accepted
+Area: Product
+
+Decision
+
+V1 should focus on the core functionality defined in the V1 scope.
+
+Advanced functionality should be deferred where implementing it would:
+
+significantly increase complexity;
+
+delay the core product;
+
+introduce unnecessary dependencies;
+
+create architectural fragility.
+
+
+Rationale
+
+A functional, reliable foundation is more valuable than a broad but fragile first release.
+
+
+---
+
+DEC-015 — Future functionality should be anticipated, not prematurely implemented
+
+Date: August 2026
+Status: Accepted
+Area: Architecture / Product
+
+Decision
+
+V1 should be future-proofed where reasonably practical, but should not implement speculative functionality merely because it may be useful later.
+
+Rationale
+
+There is a balance between:
+
+under-designing
+
+and:
+
+over-engineering.
+
+The project should establish stable foundations without building large abstractions for hypothetical requirements.
+
+Consequences
+
+Future requirements should be considered when defining stable data structures and interfaces, but implementation should remain focused on V1 needs.
+
+
+---
+
+12. Offline-first decisions
+
+DEC-016 — Core functionality should work offline
+
+Date: August 2026
+Status: Accepted
+Area: Product / Architecture
+
+Decision
+
+The core Garden Planner & Manager functionality should be usable without an internet connection.
+
+Rationale
+
+Gardening frequently occurs outdoors and in locations where reliable connectivity cannot be assumed.
+
+Offline operation also improves resilience and privacy.
+
+Consequences
+
+Core data should be stored locally.
+
+Future online features must not unnecessarily make core functionality dependent on network availability.
+
+
+---
+
+13. Import/export decisions
+
+DEC-017 — User data should be exportable
+
+Date: August 2026
+Status: Accepted
+Area: Data / Product
+
+Decision
+
+The application should provide a reliable way to export user data.
+
+Rationale
+
+Export supports:
+
+backup;
+
+portability;
+
+migration;
+
+user confidence;
+
+future interoperability.
+
+
+Consequences
+
+The export format should use stable canonical identifiers and preserve meaningful relationships.
+
+
+---
+
+DEC-018 — Import/export should support long-term data portability
+
+Date: August 2026
+Status: Accepted
+Area: Data
+
+Decision
+
+Import/export should be designed as a durable data interchange mechanism rather than merely a convenience feature.
+
+Rationale
+
+The application is expected to evolve substantially.
+
+A stable interchange mechanism provides an additional safeguard against vendor/application lock-in and future migration problems.
+
+Consequences
+
+Changes to the data model should consider their effect on import/export.
+
+Round-trip testing should be used.
+
+
+---
+
+14. Testing decisions
+
+DEC-019 — Testing is part of architecture
+
+Date: August 2026
+Status: Accepted
+Area: Development / Architecture
+
+Decision
+
+Testing should be designed alongside functionality rather than added only at the end.
+
+Rationale
+
+The project's modularity and data-preservation goals require confidence that changes do not cause unrelated regressions.
+
+Consequences
+
+Modules should be designed in ways that make their important behaviour independently testable.
+
+
+---
+
+DEC-020 — Data loss is a release-blocking concern
+
+Date: August 2026
+Status: Accepted
+Area: Testing / Data
+
+Decision
+
+Known defects that can cause unintended user-data loss, corruption or destructive migration should normally block release.
+
+Rationale
+
+The accumulated garden record is one of the application's most valuable assets.
+
+A feature that works perfectly but destroys historical data is unacceptable.
+
+
+---
+
+15. Development decisions
+
+DEC-021 — Prefer simple architecture over unnecessary sophistication
+
+Date: August 2026
+Status: Accepted
+Area: Architecture / Development
+
+Decision
+
+The project should actively challenge proposed complexity.
+
+Before introducing an abstraction, framework, service, dependency or architectural layer, ask:
+
+Is it necessary?
+
+What problem does it solve?
+
+Could a simpler solution work?
+
+Does it reduce or increase coupling?
+
+Does it make testing easier or harder?
+
+Will it help future modules?
+
+Does it create maintenance burden?
+
+
+Rationale
+
+Future-proofing does not mean building the most elaborate architecture possible.
+
+The goal is a robust architecture with enough structure to grow safely.
+
+
+---
+
+DEC-022 — Avoid premature abstraction
+
+Date: August 2026
+Status: Accepted
+Area: Development
+
+Decision
+
+The project should not create elaborate generic abstractions solely because something might eventually need them.
+
+Abstraction should normally be introduced when:
+
+a real recurring need exists;
+
+a stable boundary is identifiable;
+
+the abstraction reduces coupling or duplication;
+
+its benefits outweigh its complexity.
+
+
+Rationale
+
+Premature abstractions can become constraints rather than safeguards.
+
+
+---
+
+DEC-023 — Explainable development instructions are required
+
+Date: August 2026
+Status: Accepted
+Area: Development
+
+Decision
+
+Development guidance should explain not only what to do but, where useful, what the action accomplishes and why it is being done.
+
+Rationale
+
+The project is being developed in a workflow where the user may execute development instructions without extensive programming experience.
+
+Clear explanations reduce the risk of blindly making changes that have unintended consequences.
+
+Consequences
+
+Implementation instructions should be explicit and ordered.
+
+
+---
+
+16. Documentation decisions
+
+DEC-024 — Documentation is part of the project
+
+Date: August 2026
+Status: Accepted
+Area: Development
+
+Decision
+
+Important product and architectural knowledge should be maintained in project documentation rather than relying on conversation history.
+
+Rationale
+
+The project is large enough that conversation history alone is not a reliable long-term specification.
+
+Documentation also makes it possible to continue development in a new chat without reconstructing decisions from memory.
+
+Consequences
+
+Significant decisions should be recorded in the appropriate .md document.
+
+
+---
+
+DEC-025 — Each document should have a defined responsibility
+
+Date: August 2026
+Status: Accepted
+Area: Documentation
+
+Decision
+
+Project documents should each have a clear purpose.
+
+The project should avoid creating large documents that simply duplicate other specifications.
+
+Rationale
+
+Duplicated documentation eventually becomes contradictory.
+
+A smaller set of authoritative documents is easier to maintain.
+
+
+---
+
+DEC-026 — Project documentation must be sufficient to restart development
+
+Date: August 2026
+Status: Accepted
+Area: Documentation
+
+Decision
+
+The documentation set should eventually contain enough information for a new development chat to understand:
+
+what the product is;
+
+what V1 includes;
+
+what it deliberately excludes;
+
+the data model;
+
+architecture;
+
+module boundaries;
+
+UX;
+
+technical implementation;
+
+testing;
+
+migration;
+
+important decisions;
+
+future direction.
+
+
+Rationale
+
+Development may need to move between conversations.
+
+The project should not depend on a single conversation retaining all context.
+
+
+---
+
+17. Documentation maintenance rules
+
+DEC-027 — Decisions should be updated when superseded
+
+Date: August 2026
+Status: Accepted
+Area: Documentation
+
+Decision
+
+When an accepted decision changes, the old decision should not simply be deleted.
+
+Instead:
+
+1. mark the old decision Superseded;
+
+
+2. identify the new decision;
+
+
+3. record the reason for the change;
+
+
+4. update affected specifications.
+
+
+
+Rationale
+
+Preserving decision history helps explain how the architecture evolved.
+
+
+---
+
+DEC-028 — Specifications are authoritative over conversation history
+
+Date: August 2026
+Status: Accepted
+Area: Documentation
+
+Decision
+
+Once a decision or specification has been formally recorded in project documentation, that documentation should be treated as the authoritative project reference unless explicitly revised.
+
+Rationale
+
+Conversation discussion is exploratory.
+
+The project documentation represents the current agreed state.
+
+
+---
+
+18. Decisions about future development
+
+DEC-029 — New modules should be independently developable where practical
+
+Date: August 2026
+Status: Accepted
+Area: Architecture / Development
+
+Decision
+
+Future modules should be documented sufficiently that they can be developed semi-independently and subsequently integrated into the overall application.
+
+Rationale
+
+This supports:
+
+parallel development;
+
+staged development;
+
+reduced core-product disruption;
+
+easier testing;
+
+easier future continuation in separate development chats.
+
+
+Consequences
+
+Each substantial future module should eventually have:
+
+a defined purpose;
+
+scope;
+
+entities/interfaces;
+
+dependencies;
+
+UX requirements;
+
+data requirements;
+
+testing requirements;
+
+integration requirements.
+
+
+
+---
+
+DEC-030 — Core functionality should not depend unnecessarily on optional modules
+
+Date: August 2026
+Status: Accepted
+Area: Architecture
+
+Decision
+
+Optional modules should not become mandatory dependencies of the core product unless explicitly approved.
+
+Rationale
+
+The core product must remain reliable even while future modules are unfinished, disabled or unavailable.
+
+Consequences
+
+The architecture should favour optional integration points where appropriate.
+
+
+---
+
+19. Deliberately deferred decisions
+
+The following areas are recognised but should not be prematurely fixed unless required for V1.
+
+DEC-031 — Advanced recommendation/AI approach
+
+Date: August 2026
+Status: Deferred
+Area: Product / Architecture
+
+Decision
+
+The exact long-term approach to advanced recommendation intelligence is deferred.
+
+Potential future approaches may include:
+
+increasingly sophisticated rule systems;
+
+statistical approaches;
+
+machine-learning approaches;
+
+AI-assisted reasoning;
+
+combinations of these.
+
+
+Rationale
+
+V1 should establish trustworthy structured data and explainable rules before committing to sophisticated intelligence.
+
+
+---
+
+DEC-032 — Cloud synchronisation
+
+Date: August 2026
+Status: Deferred
+Area: Architecture / Product
+
+Decision
+
+Cloud synchronisation is not required for the V1 core product.
+
+Rationale
+
+Offline-first operation is a priority.
+
+Cloud functionality can be evaluated later without making it a prerequisite for core gardening functionality.
+
+
+---
+
+DEC-033 — Social/community functionality
+
+Date: August 2026
+Status: Deferred
+Area: Product
+
+Decision
+
+Social/community features are not part of the V1 core.
+
+Rationale
+
+They would introduce substantial additional complexity, moderation requirements, privacy considerations and infrastructure.
+
+
+---
+
+DEC-034 — Commercial ecosystem/integrations
+
+Date: August 2026
+Status: Deferred
+Area: Product
+
+Decision
+
+Retailer, supplier, product marketplace and other commercial integrations are deferred.
+
+Rationale
+
+They are not required to establish the core Garden Planner & Manager product.
+
+
+---
+
+20. Rejected approaches
+
+DEC-035 — Build the complete product before validating the core
+
+Date: August 2026
+Status: Rejected
+Area: Product
+
+Decision
+
+The project will not attempt to build the entire long-term feature set before establishing a reliable V1 core.
+
+Rationale
+
+This would increase development time, coupling and risk while delaying validation of the fundamental product.
+
+
+---
+
+DEC-036 — Treat all functionality as one tightly coupled application layer
+
+Date: August 2026
+Status: Rejected
+Area: Architecture
+
+Decision
+
+The application will not be designed as a tightly coupled collection of screens where each new feature requires widespread modification.
+
+Rationale
+
+This directly conflicts with the project's modularity and maintainability objectives.
+
+
+---
+
+DEC-037 — Use translated strings as underlying data identifiers
+
+Date: August 2026
+Status: Rejected
+Area: Data / Localisation
+
+Decision
+
+Translated user-facing text will not be used as canonical database identifiers.
+
+Rationale
+
+It would make localisation, migration, imports, exports and interoperability unnecessarily fragile.
+
+
+---
+
+21. Decision review process
+
+A significant proposed change should be evaluated against existing decisions.
+
+Before changing an established architectural or product decision, ask:
+
+1. What problem are we solving?
+
+
+2. Why is the existing decision insufficient?
+
+
+3. What new complexity does the change introduce?
+
+
+4. What existing functionality could be affected?
+
+
+5. What happens to existing user data?
+
+
+6. What modules are affected?
+
+
+7. What tests must change?
+
+
+8. What documentation must change?
+
+
+9. Is this genuinely required now?
+
+
+10. Could the change be deferred?
+
+
+
+If the answer indicates that an existing decision should change, update this document rather than silently diverging from it.
+
+
+---
+
+22. Current architectural principles derived from the decision log
+
+The accumulated decisions can be summarised into the following principles.
+
+1. Protect the core
+
+The core gardening workflow must remain reliable.
+
+2. Protect the data
+
+User history should survive application evolution.
+
+3. Separate planning from reality
+
+A plan is not an event.
+
+4. Separate knowledge from experience
+
+General gardening knowledge is not the same thing as what happened in one user's garden.
+
+5. Keep uncertainty explicit
+
+Unknown is not the same as false.
+
+6. Keep the canonical data language stable
+
+English identifiers underpin the data model.
+
+7. Localise the experience, not the data
+
+Users can interact with the application in different languages without changing the underlying data.
+
+8. Keep modules reasonably independent
+
+A feature should not unnecessarily require changes throughout the application.
+
+9. Minimise blast radius
+
+Small changes should remain small changes.
+
+10. Prefer simple solutions
+
+Future-proofing should not become over-engineering.
+
+11. Test what matters
+
+Data integrity and core workflows receive the highest testing priority.
+
+12. Document important reasoning
+
+The project should not depend on conversation memory.
+
+13. Build for evolution
+
+V1 should provide a foundation for V2+ without prematurely implementing every future idea.
+
+
+---
+
+23. Decision log maintenance
+
+This document should be updated when:
+
+a significant architectural decision is made;
+
+a major product scope decision is made;
+
+an important data-model decision is made;
+
+an existing decision is changed;
+
+an important approach is deliberately rejected;
+
+a previously deferred question is resolved.
+
+
+Do not record every implementation detail.
+
+The purpose of this document is to preserve important decisions and their reasoning.
+
+The project specifications remain responsible for the detailed implementation requirements.
+
+---
+
+DEC-038 — Native Android (Kotlin + Jetpack Compose) is the V1 technology stack
+
+Date: September 2026
+Status: Accepted
+Area: Architecture / Development
+
+Decision
+
+V1 is developed as a native Android application using:
+
+- Kotlin
+- Jetpack Compose
+- Android Jetpack (Navigation, lifecycle, viewmodel)
+- Room over SQLite
+- Kotlin Coroutines
+- Kotlin Flow
+- Hilt for dependency injection
+- Android Studio / Gradle
+
+Flutter / Dart is not the V1 stack. Cross-platform support is not a V1
+requirement.
+
+Rationale
+
+PHASE_0_PROJECT_FOUNDATION.md, V1_IMPLEMENTATION_PLAN.md and
+IMPLEMENTATION_PLAN.md all specify the native Android stack.
+V1_TECHNICAL_ARCHITECTURE.md had retained older Flutter/Dart content
+that conflicted with those documents. ARCHITECTURE_PLAN.md already
+adjudicated the conflict in favour of native Android. This decision
+records that adjudication formally and removes the conflict from the
+specification set.
+
+Consequences
+
+- V1_TECHNICAL_ARCHITECTURE.md is rewritten to reflect the native
+  Android stack. All framework-agnostic content (layering, module
+  ownership, domain semantics, recommendation architecture, data
+  authority, migration, import/export pipeline) is unchanged. Only the
+  technology-specific passages change.
+- The domain layer remains Android-independent in principle so that
+  domain logic is testable without the Android runtime and could in
+  principle be ported later. V1 does not attempt cross-platform.
+- A future iOS application, if ever pursued, would be a separate
+  client against the same domain semantics. It is not part of V1.
+
+Related documents
+
+docs/V1_TECHNICAL_ARCHITECTURE.md
+docs/PHASE_0_PROJECT_FOUNDATION.md
+docs/ARCHITECTURE_PLAN.md
+docs/V1_IMPLEMENTATION_PLAN.md
+docs/IMPLEMENTATION_PLAN.md
+
+Supersedes
+
+Any earlier implicit assumption that V1 was Flutter-based.
+
+---
+
+DEC-039 — Map and spatial rendering technology
+
+Date: September 2026
+Status: Accepted
+Area: Architecture / Presentation
+
+Decision
+
+V1 uses MapLibre GL Native (Android) as the map rendering engine,
+accessed through a thin Compose wrapper. The map library is treated
+as an implementation detail of the spatial presentation layer, not as
+part of the domain.
+
+The domain stores geometry and dimensions in a technology-independent
+form (see V1_DATABASE_SCHEMA.md §13–15). The map component consumes
+and produces that form. Replacing the map library must not require
+changes to garden records or spatial history.
+
+If the Phase 0 proof of concept reveals that MapLibre cannot support
+the required editing interactions within the V1 timeline, the fallback
+is a Compose Canvas renderer for V1, with the same domain contract.
+This is the only pre-approved fallback and does not require a new
+decision.
+
+Rationale
+
+- The required map is a garden-planning view, not a street or routing
+  map. It shows polygons, lines, points, dimensions and overlays.
+- Offline-first operation is a core product constraint. MapLibre
+  supports offline tile caching without a paid tier or account.
+- No mandatory external account or Google Play Services dependency
+  aligns with the offline-first and privacy-first principles.
+- Vector tiles allow the earthy, low-contrast palette required by
+  V1_VISUAL_DESIGN_SPECIFICATION §28–29 to be applied to the base
+  map, not just overlays.
+- No per-user licensing cost or vendor terms that constrain offline
+  behaviour.
+
+Rejected alternatives
+
+- Google Maps SDK — Play Services dependency, offline tile
+  restrictions in the standard terms, styling limits, and a
+  mandatory Google account for some configurations. Poor fit for
+  offline-first.
+- Mapbox — strong product but per-user pricing and vendor terms that
+  make offline caching awkward at scale.
+- osmdroid — raster-only, dated visual language, awkward offline.
+- Pure Compose Canvas — viable but reimplements tile loading,
+  gesture handling, hit-testing and layer composition. Accepted as
+  fallback only.
+
+Consequences
+
+- Phase 0 §22 proof of concept demonstrates: displaying tiles,
+  displaying a polygon garden boundary, displaying a growing-space
+  polygon, selecting a spatial object, and basic geometry editing.
+- The map wrapper lives in ui/garden/ and depends on domain spatial
+  types, never the reverse.
+- MapLibre styles are defined as project assets, not inline in code.
+- The spatial data model is defined independently and does not
+  reference MapLibre types.
+
+Related documents
+
+docs/V1_TECHNICAL_ARCHITECTURE.md §23–24
+docs/GARDEN_VOCABULARIES.md
+docs/V1_DATABASE_SCHEMA.md §13–15
+docs/PHASE_0_PROJECT_FOUNDATION.md §22
+
+---
+
+DEC-040 — Vocabulary implementation pattern
+
+Date: September 2026
+Status: Accepted
+Area: Data / Architecture
+
+Decision
+
+Controlled vocabularies are implemented according to the four
+categories defined in VOCABULARY_INDEX.md §3, using the following
+patterns uniformly across the codebase.
+
+1. Fixed enum (hemisphere, activity status, recommendation status,
+   confidence, information state, evidence type, and the other
+   genuinely bounded vocabularies)
+
+   Kotlin `enum class` with an explicit canonical identifier:
+
+       enum class Hemisphere(val id: String) {
+           NORTHERN("northern"),
+           SOUTHERN("southern"),
+           EQUATORIAL("equatorial"),
+           GLOBAL("global"),
+           UNKNOWN("unknown")
+       }
+
+   The `id` is the value stored in Room, used in rules, and written
+   to import/export. The enum constant name is a code-level
+   convenience and MUST NOT be used as a stored value.
+
+   Room stores these as TEXT columns. Room TypeConverters map
+   enum <-> id. Reading an unknown id from the database is a
+   validation error, not a silent fallback.
+
+2. Reference data (plants, cultivars, sources, specific problems,
+   specific pests/diseases when they carry their own attributes)
+
+   Room entities. Reference data is authored, versioned, and shipped
+   as seed content, or imported as knowledge packages.
+
+3. User-extensible reference data (custom rotation groups, custom
+   organisational tags)
+
+   Room entities with an `owner` or `is_system` column. User-created
+   values are never promoted to system knowledge automatically.
+
+4. Structured value (pH, temperature, quantity, dimension, date
+   range, coordinate)
+
+   Kotlin value classes wrapping the underlying primitive with unit
+   and validation. Not stored as vocabulary strings.
+
+Display labels are never stored. Display strings are resolved through
+the localisation layer from the canonical id.
+
+Rationale
+
+- Storing enum ordinals is unsafe: inserting a new value renumbers
+  existing records. Canonical ids are stable.
+- A uniform pattern across all fixed vocabularies prevents the
+  common drift where some vocabularies become enums, others become
+  sealed classes, and others become string constants.
+- Making the id explicit makes localisation a pure mapping concern
+  and keeps rules and queries independent of display language.
+- Reference data as Room entities (not enums) is required because
+  reference data grows without a code release.
+
+Consequences
+
+- A single `VocabularyId` pattern is established in core/. All
+  fixed vocabularies follow it.
+- Phase 0 implements at least one fixed enum (Hemisphere) and one
+  Room-backed reference entity (Plant) to demonstrate both patterns
+  in the vertical slice.
+- Validation functions exist to verify that a string is a valid id
+  in a given vocabulary, used by import and by domain validation.
+- No translated string may be written to a database column or used
+  as a rule input.
+
+Related documents
+
+docs/VOCABULARY_INDEX.md §3, §14–17
+docs/vocabularies/CORE_VOCABULARIES.md
+docs/vocabularies/*.md
+docs/PHASE_0_PROJECT_FOUNDATION.md §12
+docs/V1_TECHNICAL_ARCHITECTURE.md §18
+
+---
+
+DEC-041 — Historical change mechanism for state entities
+
+Date: September 2026
+Status: Accepted
+Area: Data
+
+Decision
+
+The application distinguishes two kinds of persistent record.
+
+Event records
+  Activities, observations, measurements, harvests, harvest losses,
+  user decisions, recommendation records.
+
+  These are inherently historical. They are created once and are not
+  "updated" in the ordinary sense. Ordinary corrections are handled
+  by explicit correction records or by a documented modification
+  reason and audit trail. They require no separate history mechanism.
+
+State records
+  Growing space geometry and dimensions, plant instance location,
+  and — as later requirements arise — other mutable garden state.
+
+  For state records, historical change is captured using companion
+  history tables written in the same transaction as the current-state
+  update.
+
+  Pattern:
+
+      GrowingSpace           (current state)
+      GrowingSpaceHistory    (append-only, references GrowingSpace)
+
+  Each history row records the prior value, the effective period
+  (valid_from, valid_to), the recorded_at timestamp, and the reason
+  for the change where relevant.
+
+  Current state is read from the primary table. Historical state is
+  queried from the history table using effective-period predicates.
+
+  History rows are append-only. They are never updated in place.
+
+Rationale
+
+- Most entities in the schema are event records and need no history
+  mechanism. Applying a bitemporal model to the entire schema would
+  add complexity to every query for no benefit.
+- State entities that need history need it because the question
+  "what did this space look like when the 2025 crop was planted?"
+  is a real V1 product question (V1_DATABASE_SCHEMA §15).
+- Companion history tables are simpler to implement and to query in
+  Room than fully bitemporal rows, and do not complicate uniqueness
+  constraints on the primary table.
+- Append-only history rows make migration and audit straightforward.
+
+Rejected alternatives
+
+- Full bitemporal columns on every mutable entity. Adds complexity
+  to every query and every constraint for a benefit only a few
+  entities require.
+- Event-sourced state. Correct but disproportionate for V1.
+- Effective-dated rows in the primary table (current is the row
+  with valid_to IS NULL). More elegant but harder to constrain and
+  to map cleanly through Room.
+
+Consequences
+
+- Phase 0 delivers the pattern for GrowingSpace as the vertical
+  slice's history-safe edit demonstration.
+- Subsequent state entities adopt the pattern only when a real
+  requirement exists. No speculative history tables.
+- The pattern is documented in V1_DATABASE_SCHEMA.md §15 so that
+  Phase 1 schema work follows it.
+
+Related documents
+
+docs/V1_DATABASE_SCHEMA.md §15
+docs/DATA_MODEL.md §11, §63
+docs/DATA_MIGRATION_STRATEGY.md
+docs/CORE_ARCHITECTURE.md §20
+docs/IMPLEMENTATION_PLAN.md §13
+
+---
+
+DEC-042 — User preference storage split
+
+Date: September 2026
+Status: Accepted
+Area: Data / Architecture
+
+Decision
+
+User preferences are split by whether they participate in garden data
+queries or reasoning.
+
+Garden-affecting preferences → Room
+
+  Favourite plants, plants to avoid, water-conservation priority,
+  pollinator priority, low-maintenance preference, food-production
+  priority, native-plant preference, experimentation preference.
+
+  These participate in recommendation candidate generation,
+  filtering, and rule evaluation. They are garden data and live in
+  Room alongside other garden records. They are exported with the
+  garden. They are versioned by the same migration discipline.
+
+Display / device preferences → Jetpack DataStore
+
+  Theme (light/dark/system), unit system (metric/imperial), UI
+  language, notification category settings, quiet periods,
+  last-viewed screen, temporary filter state.
+
+  These are per-device, do not participate in reasoning, and do not
+  belong in an export. They are not migrated by the garden schema
+  migration mechanism.
+
+Stored measurements remain in canonical units regardless of the
+user's unit preference. Conversion to display units happens at the
+presentation layer only. Changing the unit preference must never
+alter a stored measurement.
+
+Rationale
+
+- Recommendation rules need to query and join against garden-
+  affecting preferences. DataStore is not queryable for this purpose.
+- Display preferences must survive as local state across garden
+  imports and exports without polluting the interchange format.
+- Splitting the two prevents the common failure where a unit
+  preference change silently rewrites historical measurements.
+
+Consequences
+
+- Phase 0 establishes both patterns: a Room-backed Preference entity
+  and a DataStore-backed PreferencesRepository.
+- The export format includes garden-affecting preferences and
+  excludes display preferences.
+- Presentation of any measurement performs a canonical → display
+  conversion using the current unit preference; the stored value is
+  never rewritten.
+
+Related documents
+
+docs/V1_SCOPE.md §7
+docs/MODULE_ARCHITECTURE.md §18
+docs/V1_USER_EXPERIENCE.md §25
+docs/IMPORT_EXPORT_SPECIFICATION.md §4
+docs/V1_TECHNICAL_ARCHITECTURE.md §21
+
+---
+
+DEC-043 — Phase 0 (project foundation) is complete
+
+Date: September 2026
+Status: Accepted
+Area: Architecture / Development / Data
+
+Decision
+
+Phase 0 of the Garden Planner & Manager project is complete.
+
+All 26 deliverables listed in
+PHASE_0_PROJECT_FOUNDATION.md §30 are met. All acceptance criteria in
+§31 pass. The vertical slice required by §36 — Create Garden → Create
+Growing Space → Persist → Reload → Verify history-safe edit — passes
+as an automated instrumented test.
+
+Phase 1 (data and persistence foundation) may begin.
+
+Rationale
+
+PHASE_0_PROJECT_FOUNDATION.md §36 states that Phase 0 ends when both
+the §30 deliverable list is met and the §31 acceptance criteria pass.
+Both conditions are satisfied.
+
+The evidence for each §30 and §31 item is recorded in the Phase 0
+closure walkthrough conducted in development discussion in September
+2026. Every item was verified against a running build, a passing test,
+      or a committed artefact. No item was declared met on the strength of
+      intent or design alone.
+
+The foundation supports Phase 1 without requiring restructuring. The
+layered package boundaries, the schema versioning mechanism, the
+migration test harness, the vocabulary enforcement, the repository and
+use-case patterns, the dependency injection setup, and the offline
+verification method are all in place and will be used as-is by Phase 1
+work.
+
+Consequences
+
+- Phase 1 work begins.
+
+- The following versions are pinned and were current at closure:
+  AGP 8.7.3, Kotlin 2.1.0, Compose BOM 2025.01.00, Room 2.6.1,
+  Hilt 2.54, DataStore 1.1.7, MapLibre 11.8.7, Spotless 8.9.0,
+  ktlint 1.5.0, detekt 1.23.8, JUnit 5.11.3, JUnit 4.13.2,
+  MockK 1.13.13, Turbine 1.2.0, Robolectric 4.14.1.
+
+- Application version is 0.1.0. Database schema version is 4.
+  Schema versions 1 through 4 are committed in app/schemas/.
+
+- Three gaps are recorded explicitly rather than hidden:
+
+  1. Export does not exist. The §31 criteria requiring garden-affecting
+     preferences to survive export and display preferences to be
+     excluded from export are met conditionally: the repository
+     structures that make this possible are in place, but no export
+     code exists. This is Phase 7 work per IMPLEMENTATION_PLAN.md §9.
+
+  2. MapLibre drag-vertex-to-move is not implemented. The other five
+     interactions §22 requires are demonstrated. The gap is
+     documented in MapLibrePoc.kt and is acceptable because the proof
+     of concept is scheduled for deletion when the real Garden screen
+     lands.
+
+  3. Robolectric is used by one test (RoomOnJvmTest). The library is
+     on the classpath and exercised, satisfying §30 item 21, but it
+     is not a widely-used part of the test strategy.
+
+- Phase 0 artefacts are debug-gated and scheduled for removal:
+  MapLibrePoc, DiagnosticsFooter, and the INTERNET permission in
+  app/src/debug/AndroidManifest.xml. Each disappears when its
+  replacement lands.
+
+- No V1 gardening workflow is end-to-end functional in the UI. Phase 0
+  is a foundation. The five primary screens show empty states; the
+  Garden tab shows the MapLibre proof of concept in debug builds. This
+  is the intended state at Phase 0 closure.
+
+- The specification set remains authoritative. Phase 1 work is bound
+  by the same rules that governed Phase 0: ask for the relevant
+  specification sections before writing code, never invent vocabulary
+  identifiers, flag every specification ambiguity rather than resolving
+  it silently.
+
+Related documents
+
+docs/PHASE_0_PROJECT_FOUNDATION.md
+docs/IMPLEMENTATION_PLAN.md
+docs/ARCHITECTURE_PLAN.md
+docs/CORE_ARCHITECTURE.md
+docs/V1_TECHNICAL_ARCHITECTURE.md
+docs/MODULE_ARCHITECTURE.md
+docs/V1_DATABASE_SCHEMA.md
+docs/DATA_MODEL.md
+docs/DATA_MIGRATION_STRATEGY.md
+docs/TESTING_STRATEGY.md
+docs/DEVELOPMENT_WORKFLOW.md
+docs/OFFLINE_VERIFICATION.md
+docs/DECISION_LOG.md (DEC-038 through DEC-042)
+docs/vocabularies/*.md
+
+Supersedes
+
+No earlier decision. This is the first decision to record Phase 0
+completion.
+
+---
+
+DEC-044 — PlantInstance carries its own geometry
+
+Date: September 2026
+Status: Accepted
+Area: Data
+
+Decision
+
+PlantInstance gains an optional geometry field, using the same
+representation as GrowingSpace: a point, line or polygon in the
+garden's local spatial frame, stored as paired geometry_type and
+geometry_data columns.
+
+V1_DATABASE_SCHEMA §19 is updated to list geometry among the
+optional fields.
+
+Rationale
+
+The schema as originally drafted (§19, v0.3) modelled PlantInstance
+location through two relationships: growing_space_id and
+spatial_object_id. During Phase 1 step 1b a case surfaced that
+neither can express: a tree.
+
+B3 recorded the clarification that a tree is logically a plant, not
+a spatial object. That resolves the vocabulary question but leaves
+the location question open. A tree cannot be "inside a GrowingSpace"
+in any meaningful sense, and attaching it to a SpatialObject such as
+a path or a water source does not describe the tree's own location.
+The only faithful representation is to give the PlantInstance its
+own geometry.
+
+Extending geometry to PlantInstance rather than creating a
+separate tree-specific entity follows DEC-021 (prefer simple
+architecture) and §74 (deliberate V1 simplifications). The same
+mechanism applies naturally to other location shapes:
+specimen shrubs, hedge lines drawn as a line, and a bed-wide
+sowing batch drawn as a polygon.
+
+Consequences
+
+- PlantInstance.geometry is optional. A plant inside a bed may
+  carry no individual geometry; the growing_space_id relationship
+  is sufficient.
+- PlantInstance may now carry a location via any of three paths:
+  growing_space_id, spatial_object_id, or its own geometry.
+  These are not mutually exclusive and are not required to be
+  consistent by schema. Consistency, if needed, is a domain
+  concern.
+- PlantInstance geometry changes are not tracked in a history
+  table in step 2a. DEC-041 names PlantInstance location among
+  the state records that need history; that is step 2b's scope.
+  The geometry column added here is the field that step 2b will
+  write history for.
+- The geometry serialisation reuses GeometryGeoJson and the paired
+  geometry_type/geometry_data pattern already established for
+  GrowingSpace and SpatialObject. No new geometry code.
+
+Related documents
+
+docs/V1_DATABASE_SCHEMA.md §19
+docs/DATA_MODEL.md §15, §17
+docs/DECISION_LOG.md DEC-041, DEC-021
+docs/vocabularies/GARDEN_VOCABULARIES.md §7
+
+Supersedes
+
+No earlier decision. This extends PlantInstance's representation
+within the existing spatial model.
+
+---
+
+DEC-045 — Observation is linked to an Activity
+
+Date: September 2026
+Status: Accepted
+Area: Data
+
+Decision
+
+Every Observation is linked to an Activity of type observation via
+a required activity_id foreign key.
+
+The Activity is the timeline entry: it records that the observation
+was made, at what time and in what spatial context. The Observation
+carries the content: what was observed, with what confidence.
+
+Recording an observation creates both rows in a single transaction.
+
+Rationale
+
+V1_DATABASE_SCHEMA §30 defines Observation as a standalone entity
+with its own required fields. ACTIVITY_VOCABULARIES §3.7 lists
+observation as a valid activity type. The two documents were in
+tension: if both existed without a link, they would describe one
+event twice with no structural way to correlate them.
+
+Three readings were considered:
+
+(i)   Observation is an Activity. Rejected: §30 gives Observation
+an entity shape with distinct required fields that do not
+fit the Activity shape.
+(ii)  Observation is a distinct entity, activity_type = observation
+is the timeline entry, and the two records are linked.
+(iii) activity_type = observation is a legacy value. Rejected:
+ACTIVITY_VOCABULARIES §3.7 lists it as current.
+
+Reading (ii) was chosen. It preserves both documents' intent, gives
+the timeline a uniform record type, and makes the Observation
+participate in the same activity-scoped queries the rest of the
+schema uses.
+
+Consequences
+
+- observation.activity_id is required and references activity with
+  RESTRICT.
+- ObservationRepositoryImpl.insert creates both rows in a single
+  transaction. The Activity's content is derived from the
+  Observation: activity_type = observation, occurred_at =
+  observed_at, location refs = the Observation's, status = active.
+- Observation has no status column. Archiving the Observation
+  archives the linked Activity; the DAO's default queries join the
+  activity table to filter archived rows.
+- The same pattern extends naturally to Measurement and Harvest,
+  both of which have their own entity shape and are also legitimate
+  things that happened. Each will be considered on its own merits;
+  this decision does not automatically bind them.
+
+Related documents
+
+docs/V1_DATABASE_SCHEMA.md §30
+docs/vocabularies/ACTIVITY_VOCABULARIES.md §3.7, §33
+docs/DECISION_LOG.md DEC-007, DEC-008
+
+Supersedes
+
+No earlier decision. This resolves a latent ambiguity between §30
+and ACTIVITY_VOCABULARIES §3.7.
+
+---
+
+DEC-046 — Unified QuantityUnit vocabulary for activity, measurement and plant numeric facts
+
+Date: October 2026
+Status: Accepted
+Area: Data
+
+Decision
+
+Two previously separate unit vocabularies — ActivityQuantityUnit
+(introduced with Activity in step 3a) and MeasurementUnit
+(introduced with Measurement in step 3c) — are unified into a
+single QuantityUnit vocabulary.
+
+The unified vocabulary contains every value from both prior
+vocabularies, plus three new values needed by Plant §41 numeric
+facts: centimetre, day, week. Twenty-eight values in total.
+
+The hour/hours and minute/minutes collisions (Activity used
+singular; Measurement used plural) are resolved in favour of the
+singular form. A manual database migration
+(Migrations.MIGRATION_19_20) rewrites any existing measurement.unit
+value of 'hours' or 'minutes' to 'hour' or 'minute' respectively.
+
+Rationale
+
+The two vocabularies were created in separate steps before their
+overlap was noticed. They share a substantial value set (litre,
+millilitre, gram, kilogram, metre, etc.) with no semantic
+difference. VOCABULARY_INDEX §13.1 explicitly discourages
+duplicate concepts across vocabularies.
+
+Step 4c (Plant §41 numeric facts) needs a unit vocabulary covering
+the union of both prior sets plus three new units. Creating a third
+vocabulary would have tripled the duplication. Unifying now is
+cheaper than unifying later, and cost-free in data terms: no
+production data exists.
+
+Consequences
+
+- ActivityQuantityUnit and MeasurementUnit enums are deleted.
+  Every Kotlin reference to them becomes a reference to
+  QuantityUnit.
+
+- No SQL schema change. The Activity.unit and Measurement.unit
+  columns are still TEXT; only the set of permitted id values
+  grows, and two existing ids are renamed.
+
+- MIGRATION_19_20 is the project's first non-auto migration. The
+  pattern (a data-only migration registered via Room's
+  addMigrations) is recorded here as the precedent for future
+  data rewrites.
+
+- The unit vocabulary is now stable for future plant facts
+  (step 4c-B), soil records, harvests and any other numeric fact
+  entity. New units are added by extending QuantityUnit.
+
+Rejected alternatives
+
+- Extend MeasurementUnit and use it for plant facts (option A of
+  step 4c). Rejected because Activity would remain on a separate
+  vocabulary, and the naming would become a misnomer.
+
+- Create a new PlantValueUnit just for plant facts (option B of
+  step 4c). Rejected because it duplicates values from two
+  existing vocabularies.
+
+Related documents
+
+docs/V1_DATABASE_SCHEMA.md
+docs/DECISION_LOG.md DEC-040
+docs/vocabularies/ACTIVITY_VOCABULARIES.md §20
+
+---
+
+DEC-047 — Plant §41 field set is stored across seven categories
+
+Date: October 2026
+Status: Accepted
+Area: Data
+
+Decision
+
+The field set that PLANT_VOCABULARIES §41 presents as a flat list of
+approximately 80 fields is stored across seven categories, each
+chosen for the shape of the fields it contains:
+
+§41.1  Scalar classifications on `plant` (14 fields)
+§41.2  Multi-value classifications in `plant_multi_value`
+(11 kinds)
+§41.3  Numeric facts in `plant_numeric_fact` (15 kinds)
+§41.4  Temporal facts in `plant_temporal_fact` (6 kinds)
+§41.5  Free-text notes in `plant_note` (14 kinds)
+§41.6  Relationships in `plant_relationship`,
+`plant_problem_relationship`, `plant_source` (9 fields)
+§41.7  Reference data (`rotation_group` entity)
+
+PLANT_VOCABULARIES §41 is rewritten to reflect this structure. The
+flat field list it previously presented is removed.
+
+Rationale
+
+Three documents were in tension.
+
+PLANT_VOCABULARIES §41 lists ~80 fields for the Plant record and
+reads, on first encounter, as a request for an 80-column table.
+
+PLANT_VOCABULARIES §29 states that most of those fields are "plant
+knowledge, reference data, measurements, ranges or relationships
+rather than vocabulary values."
+
+V1_DATABASE_SCHEMA §21 states that "a lightweight generic knowledge
+structure may be used where appropriate rather than creating a
+separate table for every type of horticultural fact," and adds that
+"the implementation may split frequently queried knowledge types
+into specialised tables where this materially improves validation
+or performance."
+
+Reading §41 literally yields an unwieldy single table. Reading §21
+alone yields an entity-attribute-value table with no compile-time
+type safety, awkward range support, and expensive full-plant loads.
+Neither reading serves the codebase.
+
+The seven-category structure preserves the intent of §21 — no
+separate table per fact type, extensible without schema churn for
+the numeric, temporal and note categories — while keeping the type
+safety and validation the rest of the codebase relies on for the
+scalar and multi-value fields.
+
+Rejected alternatives
+
+Pure flat columns.
+
+Put every §41 field on the `plant` table. Rejected because it
+produces an ~80-column entity; makes ranges and ranges-with-
+typical-values impossible without two or three columns per
+numeric field; forces null-everywhere rows for plants that do
+not populate the many optional fields; and makes the entity
+unusable for any purpose that needs only a small subset of the
+data.
+
+Pure generic knowledge structure.
+
+A single table with `subject_type`, `subject_id`,
+`knowledge_type`, `value`, `unit` and the other fields listed in
+§21. Rejected because it loses compile-time type safety; makes
+range semantics (min/max/typical) awkward to express; makes
+partial loads expensive; and reduces the ability to validate a
+value against its expected type in the mapper.
+
+Consequences
+
+- PLANT_VOCABULARIES §41 is rewritten around the seven categories.
+  The rewritten section documents each category, lists its fields,
+  names the table where applicable, and explains why each field
+  belongs where it does.
+
+- V1_DATABASE_SCHEMA §16 gains a one-sentence reference to
+  PLANT_VOCABULARIES §41 for the full plant field set. The schema
+  document continues to own the table definitions themselves.
+
+- Adding a new §41 field follows the "pick the category that fits"
+  rule recorded in the rewritten §41. A field that does not fit any
+  category triggers a decision review rather than being forced into
+  an unsuitable one.
+
+- Five §41 fields remain deferred because their vocabularies have
+  not been authored: `fertility_requirement`, `toxicity`,
+  `toxic_parts`, `preservation_methods`, `support_type`. The
+  rewritten §41 records them explicitly so the gap is visible.
+
+- The category structure is extensible. If a future requirement
+  introduces a field whose shape does not fit any of the seven
+  categories — for example, a per-region set of rows rather than a
+  single row with optional context — that is a signal to review the
+  category list, not to force the field into an ill-fitting one.
+
+Related documents
+
+docs/vocabularies/PLANT_VOCABULARIES.md §41
+docs/V1_DATABASE_SCHEMA.md §16, §21
+docs/DECISION_LOG.md DEC-046
+docs/DECISION_LOG.md DEC-040
+
+Supersedes
+
+No earlier decision. This is the first formal record of the §41
+storage structure. The implementation that this decision documents
+was produced incrementally across Phase 1 steps 4a–4e.
+
+---
+
+DEC-048 — Plant §41 is fully implemented
+
+Date: October 2026
+Status: Accepted
+Area: Data
+
+Decision
+
+The five §41 fields previously deferred are now implemented. Their
+vocabularies are:
+
+FertilityRequirement (6 values, §41.1 scalar)
+Toxicity (5 values, §41.1 scalar)
+ToxicPart (10 values, §41.2 multi-value)
+PreservationMethod (8 values, §41.2 multi-value)
+SupportType (9 values, §41.2 multi-value)
+
+PLANT_VOCABULARIES §41.8 is updated to note that no fields remain
+deferred.
+
+Rationale
+
+Each of these fields was deferred because no vocabulary document
+enumerated its values. The value sets above are derived from the
+patterns established by neighbouring vocabularies:
+
+- FertilityRequirement follows the scale of DroughtTolerance (§14)
+  and WaterloggingTolerance (§15): very_low through very_high.
+- Toxicity follows the sensitive/tolerant pattern of FrostSensitivity
+  (§12) adapted for a safety context: non_toxic through highly_toxic.
+- ToxicPart, PreservationMethod and SupportType are multi-value
+  enumerations derived from the §41 field descriptions and, for
+  SupportType, the illustrative examples in §23.
+
+No individual value is a new concept the application did not already
+reference. They fill enumerations whose field names existed in §41
+without value definitions.
+
+Consequences
+
+- Two new scalar columns on plant, both nullable.
+- Three new PlantMultiValueKind values; three new variants in
+  PlantMultiValue; three new mapper arms.
+- PLANT_VOCABULARIES §41 is now complete. Any future addition to
+  that list will go through the same "choose the category that fits"
+  rule recorded in DEC-047.
+
+Related documents
+
+docs/vocabularies/PLANT_VOCABULARIES.md §41
+docs/DECISION_LOG.md DEC-047
+
+Supersedes
+
+No earlier decision. This closes the deferrals recorded in the
+pre-code statements for Phase 1 steps 4 and 4c.
+
+---
+
+DEC-049 — intervention_type and target-type enum decisions
+
+Date: October 2026
+Status: Accepted
+Area: Data
+
+Decision
+
+Two open questions are resolved without schema change.
+
+1. `intervention_type` on Activity remains deferred.
+
+ACTIVITY_VOCABULARIES §3.8 defers intervention categories to "the
+Problem/Intervention domain where required". No such vocabulary
+exists. PROBLEM_VOCABULARIES provides ProblemCategory,
+ProblemSeverity, ProblemStatus and ProblemPriority, none of which
+is an intervention category. Without a vocabulary, adding
+`intervention_type` would mean either a free-text column (which
+breaches DEC-040) or an invented vocabulary (which breaches the
+"no invented identifiers" rule).
+
+The field is deferred until ACTIVITY_VOCABULARIES §3.8 is
+expanded with an intervention-category section. This is a
+documentation task, not a schema task.
+
+2. PlanTargetType, RecommendationSubjectType and
+   InboxItemRelatedEntityType remain separate enums.
+
+PlanTargetType and RecommendationSubjectType currently share
+identical value sets. InboxItemRelatedEntityType differs
+(observation, experiment in place of cultivar, area, spatial
+object). The step 6 R2 decision recorded the reason for keeping
+PlanTargetType and RecommendationSubjectType separate:
+independent evolution. That reasoning is now formally extended to
+cover all three.
+
+A future unification into a shared GardenEntityType remains
+possible if a real requirement surfaces. Until then, the three
+remain separate.
+
+Rationale
+
+Both items are decisions not to act. Recording them explicitly
+prevents future work from drifting into either silently. The
+alternative — leaving them as inline comments in past commits —
+would lose the reasoning the next time someone revisits the
+question.
+
+Consequences
+
+- `intervention_type` is a known gap in Activity. Users cannot
+  categorise an intervention beyond its being an activity of type
+  `intervention`. This matches Phase 1's scope.
+
+- No change to the three target-type enums.
+
+Related documents
+
+docs/vocabularies/ACTIVITY_VOCABULARIES.md §3.8
+docs/DECISION_LOG.md DEC-040, DEC-047
+docs/DECISION_LOG.md DEC-036 in step 6 (RecommendationSubjectType)
+
+Supersedes
+
+No earlier decision. This records resolution of items flagged in
+earlier Phase 1 steps.
+
+===== FILE: docs/V1_SCREEN_SPECIFICATION.md =====
+
+Garden Planner & Manager — V1 Screen Specification
+
+Document: docs/V1_SCREEN_SPECIFICATION.md
+Version: 0.2
+Status: Working specification
+Last updated: August 2026
+
+
+---
+
+1. Purpose
+
+This document defines the functional screen specification for Version 1 of the Garden Planner & Manager.
+
+It translates the product scope, UX specification, data model and vocabulary architecture into a practical screen structure.
+
+It defines:
+
+V1 screens;
+
+screen responsibilities;
+
+primary actions;
+
+navigation;
+
+information hierarchy;
+
+important states;
+
+relationships between screens;
+
+progressive disclosure requirements.
+
+
+It does not prescribe pixel-level visual design.
+
+Visual design, component styling and implementation details should remain flexible unless they affect usability, accessibility or the functional requirements defined here.
+
+
+---
+
+2. Screen design principles
+
+All V1 screens should follow these principles.
+
+2.1 Action before data
+
+The screen should make clear:
+
+1. what matters;
+
+
+2. what the user can do;
+
+
+3. why it matters;
+
+
+4. additional information.
+
+
+
+
+---
+
+2.2 Progressive disclosure
+
+Show only the information needed for the current task.
+
+Additional explanation and technical detail should be available through:
+
+expandable sections;
+
+detail views;
+
+information controls;
+
+secondary screens.
+
+
+
+---
+
+2.3 Context over complexity
+
+Where the application already knows the relevant context, use it.
+
+For example, opening:
+
+> Add → Water
+
+
+
+from Bed 2 should preselect Bed 2.
+
+The user must always be able to change the context.
+
+
+---
+
+2.4 Unknown is a valid state
+
+Screens must distinguish between:
+
+unknown;
+
+not recorded;
+
+not measured;
+
+not applicable;
+
+observed;
+
+measured;
+
+estimated;
+
+inferred.
+
+
+Do not display missing information as though it were negative information.
+
+
+---
+
+2.5 History is preserved
+
+Screens that edit garden information must not accidentally erase historical records.
+
+Current state and historical state should remain distinguishable.
+
+
+---
+
+2.6 Recommendations are explainable
+
+Important recommendations must provide access to:
+
+factors considered;
+
+positive factors;
+
+negative factors;
+
+missing information;
+
+confidence;
+
+source/personal-history effects where applicable;
+
+conditions that could change the result.
+
+
+
+---
+
+3. Primary navigation
+
+V1 uses five primary destinations:
+
+1. Home
+
+
+2. Garden
+
+
+3. Plants
+
+
+4. Planner
+
+
+5. Inbox
+
+
+
+A prominent + Add action is available globally.
+
+Primary navigation should remain stable throughout V1.
+
+Secondary features should normally live within one of these destinations rather than becoming additional top-level destinations.
+
+
+---
+
+4. Global Add action
+
+The global Add action provides rapid access to common garden activities and records.
+
+4.1 Primary options
+
+Plant
+
+Water
+
+Harvest
+
+Observe
+
+Feed
+
+Prune
+
+Intervention
+
+
+A More option may expose less-common actions.
+
+
+---
+
+4.2 Contextual behaviour
+
+The Add action should inherit useful context.
+
+Example:
+
+Garden
+  ↓
+Bed 2
+  ↓
++ Add
+  ↓
+Water
+
+The Water screen should preselect Bed 2.
+
+The user can change the location before saving.
+
+
+---
+
+4.3 Save behaviour
+
+After saving, provide concise confirmation.
+
+Examples:
+
+Plant added.
+
+Watering recorded.
+
+Harvest recorded.
+
+Observation saved.
+
+
+Where practical, provide:
+
+Undo;
+
+View.
+
+
+
+---
+
+5. Home
+
+Purpose
+
+Home answers:
+
+> What matters now?
+
+
+
+It is not primarily a statistics dashboard.
+
+
+---
+
+5.1 Content hierarchy
+
+Recommended order:
+
+1. Current priorities
+
+
+2. Upcoming activities or planting windows
+
+
+3. Important Inbox items
+
+
+4. Planning opportunities
+
+
+5. Active experiments, where relevant
+
+
+6. Garden status
+
+
+7. Recent activity
+
+
+
+The exact sections may be omitted when they contain nothing useful.
+
+
+---
+
+5.2 Current priorities
+
+Show only items requiring meaningful attention.
+
+Examples:
+
+frost-sensitive planting approaching;
+
+important garden task;
+
+unresolved problem;
+
+important soil issue;
+
+experiment requiring measurement.
+
+
+Each item should explain why it matters.
+
+
+---
+
+5.3 Upcoming
+
+May include:
+
+planned activities;
+
+planting windows;
+
+expected transitions;
+
+upcoming reminders.
+
+
+Planned activities must remain clearly distinct from completed activities.
+
+
+---
+
+5.4 New garden state
+
+A newly created garden should show a useful setup state rather than an empty dashboard.
+
+Example sequence:
+
+1. Set garden location
+
+
+2. Add a growing space
+
+
+3. Add known conditions
+
+
+4. Add plants
+
+
+
+Optional steps can be skipped.
+
+
+---
+
+5.5 Recent activity
+
+May show:
+
+plantings;
+
+watering;
+
+harvests;
+
+observations;
+
+interventions;
+
+other significant events.
+
+
+Recent activity should be concise and link to the underlying record.
+
+
+---
+
+6. Garden
+
+Purpose
+
+Garden represents the physical garden and its spatial information.
+
+The Garden area contains:
+
+map;
+
+areas;
+
+growing spaces;
+
+infrastructure;
+
+plants;
+
+conditions;
+
+layers;
+
+filters;
+
+history.
+
+
+
+---
+
+7. Garden map
+
+The map is the primary Garden screen.
+
+7.1 Required interactions
+
+The user can:
+
+pan;
+
+zoom;
+
+select objects;
+
+create objects;
+
+move objects;
+
+resize objects;
+
+edit geometry;
+
+inspect objects;
+
+toggle layers;
+
+filter visible information;
+
+view historical states.
+
+
+
+---
+
+7.2 Map objects
+
+Objects may include:
+
+areas;
+
+growing spaces;
+
+plants;
+
+infrastructure;
+
+soil information;
+
+experiments;
+
+problems;
+
+other supported spatial records.
+
+
+Overlapping objects must be supported.
+
+
+---
+
+7.3 Object selection
+
+Selecting an object should display a concise information panel.
+
+Example:
+
+Bed 2
+
+Raised bed
+3 m × 1 m
+
+Current plants
+Tomato
+Lettuce
+
+Conditions
+Light: Good
+Water: Unknown
+
+[Details]
+
+
+---
+
+7.4 Map layers
+
+V1 should support the layers required by implemented functionality.
+
+Potential layers include:
+
+Growing spaces
+
+Current plants
+
+Planned planting
+
+Historical planting
+
+Infrastructure
+
+Soil
+
+Light
+
+Water
+
+Rotation
+
+Problems
+
+Experiments
+
+
+Layers should have sensible defaults.
+
+
+---
+
+7.5 Map filters
+
+Potential filters include:
+
+area;
+
+growing space;
+
+plant;
+
+family;
+
+cultivar;
+
+lifecycle;
+
+current/planned/historical;
+
+season;
+
+problem;
+
+suitability;
+
+rotation group;
+
+experiment.
+
+
+Active filters must be visible and easy to remove.
+
+
+---
+
+8. Growing space creation
+
+Entry
+
+Garden → + Add → Growing Space
+
+Required information
+
+Name
+
+Type
+
+Shape/geometry
+
+Dimensions or geometry
+
+
+Optional information
+
+conditions;
+
+notes;
+
+characteristics;
+
+infrastructure relationships.
+
+
+The minimum viable record should be quick to create.
+
+
+---
+
+9. Growing space detail
+
+Purpose
+
+Provides a complete practical view of a growing space.
+
+Content
+
+Identity
+
+name;
+
+type;
+
+dimensions;
+
+location.
+
+
+Current contents
+
+plants;
+
+planned plants.
+
+
+Conditions
+
+light;
+
+water;
+
+soil;
+
+other recorded conditions.
+
+
+Planning
+
+suitable planting opportunities;
+
+current plans;
+
+rotation information.
+
+
+History
+
+previous plantings;
+
+observations;
+
+harvests;
+
+interventions;
+
+other relevant events.
+
+
+Actions
+
+Add plant;
+
+Plan;
+
+Observe;
+
+Add condition;
+
+View history;
+
+Edit.
+
+
+
+---
+
+10. Spatial editing
+
+Editing a growing space should allow geometry and dimensions to be changed directly.
+
+Changing:
+
+3 m × 1 m
+
+to:
+
+4 m × 1 m
+
+must update current spatial calculations without deleting historical information.
+
+Historical records remain associated with the growing space.
+
+
+---
+
+11. Garden history
+
+Purpose
+
+Allows the user to understand what happened in a location over time.
+
+The user should be able to select:
+
+current;
+
+year;
+
+date/range where supported.
+
+
+Example:
+
+History
+
+Current
+2025
+2024
+2023
+
+The user should be able to answer:
+
+> What was planted here?
+
+
+
+without navigating through individual activity records.
+
+
+---
+
+12. Plants
+
+Purpose
+
+Plants is the user's primary entry point for plant knowledge and garden plant records.
+
+It must clearly distinguish:
+
+Plant Library;
+
+My Plants.
+
+
+
+---
+
+13. Plant Library
+
+Purpose
+
+Provides general plant knowledge.
+
+Required capabilities
+
+search;
+
+browse;
+
+filter;
+
+open plant;
+
+view growing requirements;
+
+view timing;
+
+view relationships;
+
+view problems;
+
+view cultivars;
+
+view sources where relevant.
+
+
+Plant Library information is not the user's personal garden record.
+
+
+---
+
+14. My Plants
+
+Purpose
+
+Shows plants actually grown or planned by the user.
+
+Each record may connect to:
+
+plant;
+
+cultivar;
+
+location;
+
+planting event;
+
+activities;
+
+observations;
+
+problems;
+
+harvests;
+
+outcomes;
+
+history.
+
+
+
+---
+
+15. Plant search
+
+Search should support:
+
+common names;
+
+canonical names;
+
+configured aliases;
+
+cultivars where appropriate.
+
+
+Results should clearly indicate whether the result is:
+
+a plant;
+
+a cultivar;
+
+a user's plant instance.
+
+
+
+---
+
+16. Plant detail
+
+Plant detail should prioritise practical gardening information.
+
+Header
+
+plant name;
+
+image where available;
+
+lifecycle;
+
+basic classification.
+
+
+Suitability
+
+Show an accessible summary such as:
+
+Suitability
+Good candidate
+Confidence: Moderate
+
+Conditions
+
+Relevant dimensions only:
+
+Light
+
+Water
+
+Soil
+
+Fertility
+
+Temperature
+
+Frost
+
+Timing
+
+Space
+
+Other applicable requirements
+
+
+Timing
+
+Show relevant current timing.
+
+Example:
+
+Now
+Indoor sowing
+
+Next
+Transplant
+
+Garden
+
+Show relevant personal information.
+
+Example:
+
+You have grown this plant in Bed 2.
+
+Relationships
+
+Show relevant relationships such as:
+
+companion plants;
+
+related plants;
+
+rotation relationships.
+
+
+Problems
+
+Show relevant pests, diseases and other problems.
+
+Technical information should be expandable.
+
+
+---
+
+17. Cultivar detail
+
+Cultivars should be accessible from the relevant plant.
+
+The screen must distinguish:
+
+Plant characteristics
+
+from:
+
+Cultivar-specific characteristics
+
+Where information is inherited from the parent plant, the UI should not imply that it was independently established for the cultivar.
+
+
+---
+
+18. Add plant
+
+Entry
+
++ Add → Plant
+
+Minimum workflow
+
+1. Select plant
+
+
+2. Select cultivar if known
+
+
+3. Select location
+
+
+4. Enter actual or planned date
+
+
+5. Save
+
+
+
+Optional details may be added afterwards.
+
+The workflow should remain short.
+
+
+---
+
+19. Plant instance detail
+
+This screen represents the user's actual plant or planting record.
+
+Content
+
+plant;
+
+cultivar;
+
+location;
+
+planting date;
+
+status;
+
+relevant activities;
+
+observations;
+
+problems;
+
+harvests;
+
+outcomes;
+
+history.
+
+
+Actions
+
+Record activity;
+
+Observe;
+
+Harvest;
+
+Move;
+
+Edit;
+
+View history.
+
+
+
+---
+
+20. Planner
+
+Purpose
+
+Planner answers:
+
+> What should I grow or do next?
+
+
+
+It supports both:
+
+forward planning;
+
+planning a selected space.
+
+
+
+---
+
+21. Planner overview
+
+The Planner may contain:
+
+current plans;
+
+upcoming planting opportunities;
+
+empty spaces;
+
+recommendations;
+
+unresolved planning decisions.
+
+
+The user should be able to start from either:
+
+What should I plant next?
+
+or:
+
+What can I grow here?
+
+
+---
+
+22. Empty-space planning
+
+Entry
+
+Garden → Growing Space → Plan
+
+or:
+
+Planner → Select space
+
+Workflow
+
+1. Select space
+
+
+2. Select planning period if needed
+
+
+3. Review available information
+
+
+4. Generate candidates
+
+
+5. Compare candidates
+
+
+6. Open explanations
+
+
+7. Select candidate
+
+
+8. Create plan or leave unplanned
+
+
+
+
+---
+
+23. Recommendation list
+
+Each candidate should provide a concise explanation.
+
+Example structure:
+
+Tomato
+
+Good candidate
+
+Light       Excellent
+Water       Good
+Soil        Excellent
+Temperature Marginal
+Rotation    Poor
+Space       Excellent
+
+Confidence
+Moderate
+
+Why?
+Your space has suitable summer light and soil.
+Recent tomato planting creates a rotation concern.
+
+Only materially relevant dimensions should be shown.
+
+
+---
+
+24. Recommendation detail
+
+The user can open:
+
+> Why?
+
+
+
+The detail view should explain:
+
+1. information used;
+
+
+2. factors supporting the recommendation;
+
+
+3. factors reducing suitability;
+
+
+4. missing information;
+
+
+5. confidence;
+
+
+6. personal history effects;
+
+
+7. user preferences affecting the result;
+
+
+8. conditions that could change the recommendation.
+
+
+
+
+---
+
+25. Conditional recommendations
+
+The screen must support recommendations such as:
+
+Good candidate if drainage is improved.
+
+Suitable once frost risk decreases.
+
+Potentially suitable, but soil pH should be confirmed.
+
+The UI should make the condition obvious.
+
+
+---
+
+26. Recommendation states
+
+The UI should support the core recommendation states:
+
+Recommended
+
+Conditional
+
+Possible
+
+Marginal
+
+Not recommended
+
+Unsuitable
+
+Insufficient information
+
+Expired
+
+
+Do not reduce all states to a simple good/bad indicator.
+
+
+---
+
+27. Recommendation confidence
+
+Confidence must be displayed separately from suitability.
+
+Example:
+
+Suitability
+Good
+
+Confidence
+Moderate
+
+Why?
+Winter sunlight information is incomplete.
+
+A strong recommendation can still have limited confidence when important information is uncertain.
+
+
+---
+
+28. Recommendation with insufficient information
+
+When information is insufficient, the application should explain what is missing.
+
+Example:
+
+Potentially suitable
+
+Confidence: Low
+
+Missing information
+Winter sunlight
+
+[Add information]
+[Continue anyway]
+
+The user must be allowed to continue.
+
+
+---
+
+29. "Nothing now" recommendation
+
+The Planner must support a valid result of:
+
+Nothing suitable right now
+
+The explanation should state why.
+
+Example:
+
+No suitable crop currently fits this space and timing.
+
+Consider improving drainage before planting.
+
+
+---
+
+30. Planning decision
+
+When the user chooses a recommendation, the application may record a UserDecision.
+
+Possible decisions include:
+
+accepted;
+
+rejected;
+
+modified;
+
+overridden;
+
+deferred;
+
+cancelled.
+
+
+A decision does not prove that planting or another activity occurred.
+
+
+---
+
+31. Planning override
+
+If the user chooses an option that the application considers unsuitable, allow it.
+
+Example:
+
+Tomato
+
+Not recommended
+
+Reason:
+Recent tomato planting creates a rotation concern.
+
+[Plant anyway]
+
+If selected:
+
+You chose to plant this despite the recommendation.
+
+[Continue]
+
+The application may record the override.
+
+It must not block the user merely because a recommendation disagrees.
+
+
+---
+
+32. Plan detail
+
+A plan represents intended future activity.
+
+It should show:
+
+planned activity;
+
+plant/location where applicable;
+
+planned date or period;
+
+status;
+
+related recommendation where applicable;
+
+notes;
+
+completion status.
+
+
+Planned information must never automatically become completed activity evidence.
+
+
+---
+
+33. Recurring plans
+
+A recurring plan may specify:
+
+Water every 3 days
+
+The interface should show:
+
+recurrence;
+
+upcoming occurrences;
+
+completed occurrences;
+
+skipped occurrences.
+
+
+Each actual occurrence remains an independent activity record.
+
+
+---
+
+34. Partial completion
+
+Plans involving multiple targets must support partial completion.
+
+Example:
+
+Water Beds 1–4
+
+Completed
+Beds 1–3
+
+Remaining
+Bed 4
+
+The plan should remain partially completed until resolved.
+
+
+---
+
+35. Quick Add
+
+Quick Add is the primary rapid-recording workflow.
+
+Actions
+
+Plant
+
+Water
+
+Harvest
+
+Observe
+
+Feed
+
+Prune
+
+Intervention
+
+
+Additional actions may appear under More.
+
+
+---
+
+36. Quick Add activity screens
+
+Simple activity records should normally fit on one screen.
+
+Example:
+
+Harvest
+
+Plant       Tomato
+Location    Bed 2
+Quantity    5
+Unit        Count
+Date        Today
+
+[Save]
+
+Optional information should be hidden or secondary.
+
+
+---
+
+37. Water
+
+Minimum fields:
+
+target/location;
+
+date/time;
+
+amount or method where known.
+
+
+The user should be able to save without knowing an exact volume if that information is unavailable.
+
+
+---
+
+38. Feed
+
+Minimum fields:
+
+target/location;
+
+date;
+
+material/product if known;
+
+amount if known.
+
+
+Complex application details should remain optional.
+
+
+---
+
+39. Prune
+
+Minimum fields:
+
+target;
+
+date;
+
+category/type where useful.
+
+
+Optional notes can be added afterwards.
+
+
+---
+
+40. Intervention
+
+Intervention should provide enough structure to record what was done without requiring a complex treatment workflow.
+
+Possible information:
+
+target;
+
+problem;
+
+intervention type;
+
+date;
+
+material/method where relevant;
+
+result;
+
+notes.
+
+
+V1 should avoid unnecessary chemical-treatment complexity.
+
+
+---
+
+41. Harvest
+
+Minimum fields
+
+plant;
+
+location;
+
+quantity;
+
+unit;
+
+date.
+
+
+Weight is optional.
+
+Supported units may include:
+
+count;
+
+bunch;
+
+basket;
+
+container;
+
+other.
+
+
+
+---
+
+42. Harvest size
+
+Optional size categories:
+
+Very small
+
+Small
+
+Regular
+
+Large
+
+Very large
+
+
+Size must not be required.
+
+
+---
+
+43. Harvest loss
+
+Loss is recorded separately from harvest.
+
+Minimum information:
+
+plant;
+
+quantity;
+
+unit;
+
+cause if known;
+
+date.
+
+
+The application must not invent a precise lost yield.
+
+
+---
+
+44. Observation
+
+Observation must be one of the simplest records to create.
+
+Workflow
+
+1. Select context
+
+
+2. Select observation type
+
+
+3. Record relevant fields
+
+
+4. Optionally add notes
+
+
+5. Optionally record confidence
+
+
+6. Save
+
+
+
+
+---
+
+45. Structured observation types
+
+The application should show fields according to the selected observation type.
+
+Examples:
+
+Soil
+
+moisture;
+
+pooling;
+
+texture;
+
+compaction;
+
+visible organic matter.
+
+
+Plant
+
+growth;
+
+flowering;
+
+fruiting;
+
+damage;
+
+symptoms.
+
+
+The application should not show one enormous generic observation form.
+
+
+---
+
+46. Observation versus diagnosis
+
+Observation screens must never imply that an observation is a diagnosis.
+
+Example:
+
+Observation
+
+Leaves yellowing
+
+A subsequent analysis may show:
+
+Possible causes
+
+Nutrient deficiency
+Low confidence
+
+Water stress
+Moderate confidence
+
+Disease
+Low confidence
+
+The original observation remains unchanged.
+
+
+---
+
+47. Soil
+
+Soil information should support both measured and approximate information.
+
+The user can record:
+
+measured properties;
+
+observations;
+
+estimates;
+
+inferred properties.
+
+
+
+---
+
+48. Soil overview
+
+The soil screen should show known information first.
+
+Example:
+
+Soil
+
+pH
+6.7
+Measured — Home test kit
+
+Drainage
+Probably slow
+Estimated from observations
+
+Salinity
+Unknown
+
+Each value should identify its information state where useful.
+
+
+---
+
+49. Soil observation
+
+The user may record proxy observations when measurements are unavailable.
+
+Example workflow:
+
+Soil → Drainage → Add observation
+
+Potential questions:
+
+Does water pool after rain?
+
+How long does it remain?
+
+Does the soil feel saturated?
+
+Does water drain quickly after digging?
+
+
+
+---
+
+50. Soil estimate
+
+An estimate should clearly distinguish itself from measurement.
+
+Example:
+
+Estimated drainage
+
+Probably slow
+
+Confidence
+Low
+
+Why?
+Based on your recorded observations.
+
+This is not a measured soil property.
+
+
+---
+
+51. Soil measurement
+
+Measured values should preserve:
+
+value;
+
+unit;
+
+date;
+
+method/source;
+
+location;
+
+confidence where applicable.
+
+
+Example:
+
+pH
+6.7
+
+Method
+Home test kit
+
+Date
+12 March 2026
+
+
+---
+
+52. Soil testing prompt
+
+When testing could materially improve a recommendation:
+
+A soil test may be worthwhile.
+
+Your current information cannot distinguish between several likely causes.
+
+[Add test result]
+[Continue without testing]
+
+Testing must remain optional.
+
+
+---
+
+53. Inbox
+
+Purpose
+
+Inbox is a prioritised work queue.
+
+It contains actionable or useful items rather than every possible notification.
+
+
+---
+
+54. Inbox categories
+
+Items may include:
+
+Action;
+
+Warning;
+
+Observation request;
+
+Information request;
+
+Experiment;
+
+Knowledge.
+
+
+
+---
+
+55. Inbox priority
+
+Priorities should distinguish:
+
+Important
+
+Likely to require attention.
+
+Useful
+
+Worth considering.
+
+Informational
+
+Interesting but not urgent.
+
+The visual treatment must not rely on colour alone.
+
+
+---
+
+56. Inbox item detail
+
+Each significant item should explain:
+
+what it is;
+
+why it exists;
+
+what the user can do;
+
+relevant evidence;
+
+what happens if ignored where meaningful.
+
+
+Example:
+
+Rotation warning
+
+Solanaceae were grown here last season.
+
+Why this matters
+Repeated planting of related crops can increase certain disease
+and soil-related risks.
+
+[View history]
+[Plan alternative]
+[Mute]
+
+
+---
+
+57. Inbox actions
+
+Users may:
+
+complete;
+
+mute;
+
+dismiss;
+
+open related information.
+
+
+
+---
+
+58. Mute
+
+Mute options may include:
+
+temporarily;
+
+until a date;
+
+category;
+
+context;
+
+permanently.
+
+
+Muted items remain reviewable.
+
+
+---
+
+59. Dismiss
+
+Dismiss means:
+
+> I have dealt with this or otherwise consider it resolved.
+
+
+
+Dismissal must not automatically mean:
+
+> Never show this type of item again.
+
+
+
+
+---
+
+60. Search
+
+Search should be available from appropriate list screens and globally where practical.
+
+Searchable concepts include:
+
+plants;
+
+cultivars;
+
+growing spaces;
+
+problems;
+
+activities;
+
+observations.
+
+
+Aliases should resolve to canonical entities where configured.
+
+
+---
+
+61. Filters
+
+Filters should appear when a list is large enough to benefit from them.
+
+Filters must be:
+
+understandable;
+
+reversible;
+
+visible when active;
+
+easy to clear.
+
+
+Avoid complex filter configuration for ordinary tasks.
+
+
+---
+
+62. Empty states
+
+Every major screen must have a useful empty state.
+
+Example:
+
+You haven't added any plants yet.
+
+Add a plant to start building your garden record.
+
+[Add plant]
+[Browse Plant Library]
+
+Empty states should explain the purpose of the screen where useful.
+
+
+---
+
+63. Error states
+
+Errors should use plain language.
+
+Example:
+
+We couldn't save that change.
+
+[Retry]
+[Cancel]
+
+Details
+
+Technical information may be available through Details but should not be the primary message.
+
+
+---
+
+64. Undo
+
+Where practical, provide Undo after actions such as:
+
+deletion;
+
+moving an object;
+
+completing an activity;
+
+changing important information.
+
+
+Actions that can destroy significant historical information require stronger protection.
+
+
+---
+
+65. Editing historical information
+
+Ordinary corrections may update a record directly.
+
+Where an edit changes the meaning of a historical measurement or event, preserve the historical distinction.
+
+Example:
+
+Soil pH
+6.7
+Measured in 2025
+
+A later correction should not silently make it appear that the original measurement was always different.
+
+
+---
+
+66. Import/export
+
+Import/export is an advanced function.
+
+The user-facing workflow is:
+
+1. Select file
+
+
+2. Validate
+
+
+3. Review summary
+
+
+4. Review errors/conflicts
+
+
+5. Cancel or continue
+
+
+6. Confirm
+
+
+7. Import
+
+
+8. Review result
+
+
+
+The application must not silently import invalid data.
+
+
+---
+
+67. Import result
+
+Example:
+
+Import complete
+
+14 records imported successfully.
+
+2 records require attention.
+
+[Review issues]
+[Done]
+
+Each problem should identify:
+
+affected record;
+
+problem;
+
+required action.
+
+
+Raw database errors should not be required.
+
+
+---
+
+68. Preferences
+
+Preferences should remain optional.
+
+Potential preferences include:
+
+favourite plants;
+
+plants to avoid;
+
+food production priority;
+
+native preference;
+
+pollinator preference;
+
+low-maintenance preference;
+
+water conservation;
+
+experimentation;
+
+space utilisation.
+
+
+Preferences influence recommendations but should not silently hide information.
+
+
+---
+
+69. Preference conflict
+
+Example:
+
+Lettuce
+
+Suitability
+Excellent
+
+Preference
+You marked lettuce as a plant to avoid.
+
+Result
+Excluded by preference
+
+The application should make the reason visible.
+
+
+---
+
+70. Personal history
+
+When personal history materially affects a recommendation, show it explicitly.
+
+Example:
+
+Your garden history
+
+Carrots have had poor establishment in this bed
+during three recorded seasons with poor drainage.
+
+This is based on your garden history and is not necessarily
+a universal horticultural rule.
+
+
+---
+
+71. Personal-history recommendation
+
+Example:
+
+Tomato
+
+General suitability
+Good
+
+Your history
+Poor results with this cultivar in Bed 2
+during the previous two seasons.
+
+Recommendation
+Consider another cultivar or growing space.
+
+The user should be able to inspect the relevant historical records.
+
+
+---
+
+72. Experiments
+
+Experiments are an advanced feature.
+
+Creation
+
+Create experiment
+
+Possible fields:
+
+question;
+
+hypothesis;
+
+treatment;
+
+control;
+
+measurements;
+
+timeframe.
+
+
+The experiment should reuse ordinary activities, observations and measurements.
+
+
+---
+
+73. Experiment detail
+
+Show:
+
+question;
+
+hypothesis;
+
+setup;
+
+treatment/control;
+
+observations;
+
+measurements;
+
+results;
+
+conclusion.
+
+
+Clearly distinguish:
+
+Observed result
+
+from:
+
+Conclusion
+
+
+---
+
+74. Notifications
+
+V1 notifications should remain limited.
+
+Prioritise genuinely time-sensitive information.
+
+Potential settings include:
+
+category;
+
+reminder frequency;
+
+quiet periods;
+
+muted contexts.
+
+
+Avoid building a complex notification-management system unless required by actual V1 functionality.
+
+
+---
+
+75. Cross-linking
+
+Screens should provide direct access to related records.
+
+Examples:
+
+Plant
+  → My Plants
+
+Plant instance
+  → History
+
+Problem
+  → Affected plants
+
+Growing space
+  → Current plants
+  → History
+  → Soil
+  → Recommendations
+
+The user should never need to understand the underlying relationship model.
+
+
+---
+
+76. Context preservation
+
+Navigation should preserve useful context.
+
+Example:
+
+Garden
+→ Bed 2
+→ Tomato
+→ History
+
+Returning should ideally return to the relevant Bed 2 context.
+
+
+---
+
+77. Accessibility requirements
+
+All V1 screens should support:
+
+readable text;
+
+sufficient contrast;
+
+touch-friendly controls;
+
+accessible labels;
+
+text scaling;
+
+predictable navigation;
+
+meaningful icons;
+
+non-colour-only status communication.
+
+
+For example:
+
+Good ✓
+
+should communicate meaning without relying solely on green.
+
+
+---
+
+78. Mobile interaction
+
+The primary interaction model is touch.
+
+Prioritise minimal taps for:
+
+Quick Add;
+
+plant search;
+
+map interaction;
+
+harvest;
+
+observation;
+
+planning.
+
+
+Complex configuration may use deeper screens.
+
+
+---
+
+79. Offline behaviour
+
+Core screens must work from locally stored data without Internet access.
+
+Offline functionality must include, where applicable:
+
+Home;
+
+Garden;
+
+Plants;
+
+Planner using stored knowledge;
+
+Quick Add;
+
+observations;
+
+harvests;
+
+history.
+
+
+If a feature genuinely requires connectivity, the screen should state that dependency without implying that the entire application is unavailable.
+
+Example:
+
+Weather unavailable offline.
+
+Your saved garden information and planning tools
+continue to work normally.
+
+
+---
+
+80. Screen-state requirements
+
+Every major screen should consider at least these states:
+
+1. populated;
+
+
+2. empty;
+
+
+3. loading where applicable;
+
+
+4. error;
+
+
+5. offline;
+
+
+6. filtered;
+
+
+7. partially configured;
+
+
+8. insufficient information.
+
+
+
+Not every state requires a unique visual treatment, but the user must understand what is happening.
+
+
+---
+
+81. Minimum V1 screen set
+
+The following functional screens are sufficient as the initial V1 screen architecture.
+
+Primary
+
+Home
+
+Garden Map
+
+Plants
+
+Plant Library
+
+My Plants
+
+Planner
+
+Inbox
+
+
+Garden
+
+Growing Space Detail
+
+Add/Edit Growing Space
+
+Garden History
+
+
+Plants
+
+Plant Search
+
+Plant Detail
+
+Cultivar Detail where required
+
+Add Plant
+
+Plant Instance Detail
+
+
+Planning
+
+Planner Overview
+
+Empty Space Planning
+
+Recommendation List
+
+Recommendation Detail
+
+Plan Detail
+
+
+Recording
+
+Quick Add
+
+Plant Activity
+
+Water
+
+Feed
+
+Prune
+
+Intervention
+
+Harvest
+
+Harvest Loss
+
+Observation
+
+Soil Observation
+
+Soil Measurement
+
+
+Supporting
+
+Soil Detail
+
+Inbox Item Detail
+
+Search
+
+Filter
+
+Preferences
+
+Experiment Detail/Create
+
+Import/Export
+
+
+Some of these may be implemented as sheets, dialogs or nested views rather than full standalone pages.
+
+
+---
+
+82. Screen ownership
+
+Each screen should have a clear primary domain.
+
+Screen	Primary responsibility
+
+Home	Current priorities
+Garden	Spatial garden
+Growing Space	Individual growing space
+Plants	User plant management
+Plant Library	General plant knowledge
+Plant Detail	General plant knowledge
+Plant Instance	User's actual plant
+Planner	Planning decisions
+Recommendation	Suitability explanation
+Inbox	Prioritised work
+Quick Add	Rapid recording
+Soil	Soil information
+History	Past garden state
+Experiment	Optional structured experimentation
+Preferences	Recommendation preferences
+Import/Export	Advanced data management
+
+
+A screen may display related information but should not become the owner of unrelated functionality.
+
+
+---
+
+83. Avoiding unnecessary screens
+
+The screen architecture should not become more complicated simply because the data model is sophisticated.
+
+A simple action should remain simple.
+
+For example:
+
++ Add
+→ Harvest
+→ Save
+
+should not require several separate screens merely to populate optional database fields.
+
+Conversely, a complex operation such as importing data may legitimately require multiple stages.
+
+
+---
+
+84. Relationship to the data model
+
+Screens must present user concepts rather than database entities.
+
+Do not expose terms such as:
+
+PlantInstance entity;
+
+Observation entity;
+
+Activity relationship;
+
+RecommendationFactor record.
+
+
+Use:
+
+My plant;
+
+Record observation;
+
+Activity;
+
+Why this recommendation?
+
+
+The screen architecture may map to sophisticated underlying entities without exposing that complexity.
+
+
+---
+
+85. Relationship to vocabularies
+
+Screens use canonical vocabulary identifiers internally.
+
+User-facing labels come from localisation.
+
+For example:
+
+Stored:
+partial_shade
+
+Displayed:
+Partial shade
+
+Business logic must not depend on displayed labels.
+
+
+---
+
+86. Relationship to recommendations
+
+Recommendation screens must remain independent from any particular recommendation algorithm.
+
+The screen should consume structured results such as:
+
+recommendation state;
+
+confidence;
+
+factors;
+
+reasons;
+
+missing information;
+
+evidence;
+
+personal-history effects.
+
+
+This allows the recommendation engine to evolve without requiring a redesign of the entire application.
+
+
+---
+
+87. Relationship to future modules
+
+Future functionality should preferably connect to existing screens.
+
+Examples:
+
+Weather:
+
+Garden → Conditions
+Planner → Timing
+
+Community knowledge:
+
+Plant → Sources
+Recommendation → Evidence
+
+Advanced analytics:
+
+History → Analysis
+
+New functionality should not unnecessarily create additional top-level navigation.
+
+
+---
+
+88. V1 screen acceptance criteria
+
+The screen architecture is acceptable when an ordinary gardener can:
+
+Garden setup
+
+create a garden;
+
+add a growing space;
+
+represent its dimensions;
+
+record basic conditions.
+
+
+Plant management
+
+find a plant;
+
+understand general plant information;
+
+add a plant to the garden;
+
+record a cultivar;
+
+view the plant's garden history.
+
+
+Planning
+
+select an empty space;
+
+ask what could grow there;
+
+understand the recommendation;
+
+create a plan;
+
+override a recommendation.
+
+
+Recording
+
+record planting;
+
+record watering;
+
+record feeding;
+
+record pruning;
+
+record an observation;
+
+record a harvest;
+
+record a loss.
+
+
+History
+
+see previous plantings;
+
+review observations;
+
+review harvests;
+
+understand how history affects recommendations.
+
+
+Soil
+
+record known soil information;
+
+record observations;
+
+record measurements;
+
+distinguish estimates from measurements;
+
+understand when testing may help.
+
+
+Inbox
+
+identify important items;
+
+understand why they matter;
+
+complete, mute or dismiss them.
+
+
+
+---
+
+89. V1 screen non-goals
+
+The V1 screen architecture does not need dedicated primary screens for:
+
+social networking;
+
+community feeds;
+
+mandatory accounts;
+
+AI chat;
+
+professional GIS;
+
+complex statistical dashboards;
+
+sophisticated weather dashboards;
+
+fully automated garden design;
+
+complex chemical treatment management;
+
+gamification;
+
+achievement systems.
+
+
+These may be added later without changing the core navigation if justified.
+
+
+---
+
+90. Screen design test
+
+Every new screen should be challenged with the following questions:
+
+1. What user problem does this screen solve?
+
+
+2. Could the task be completed more simply within an existing screen?
+
+
+3. Is the screen exposing database structure rather than a user concept?
+
+
+4. Does it support a core gardening workflow?
+
+
+5. Can a casual user ignore advanced functionality?
+
+
+6. Are important explanations available without cluttering the primary view?
+
+
+7. Are unknown and uncertain information represented honestly?
+
+
+8. Does the screen preserve historical information?
+
+
+9. Does it work offline where the underlying function should work offline?
+
+
+10. Does it fit the existing navigation model?
+
+
+
+If a new screen cannot justify itself, prefer integrating its function into an existing screen.
+
+
+---
+
+91. V1 UX hierarchy
+
+Across all screens, information should generally appear in this order:
+
+1. What matters
+
+
+2. What can I do
+
+
+3. What happened / what is known
+
+
+4. Why
+
+
+5. What is uncertain
+
+
+6. Additional detail
+
+
+
+This hierarchy should be preserved even where the underlying data model is complex.
+
+
+---
+
+92. Final principle
+
+The screen architecture should make the application feel like:
+
+> A garden notebook that understands your garden.
+
+
+
+The user should experience:
+
+simple navigation;
+
+fast recording;
+
+useful planning;
+
+understandable recommendations;
+
+preserved history;
+
+progressive detail.
+
+
+The application may contain sophisticated data, rules and relationships behind the scenes.
+
+The screens should make that sophistication useful without making it visible unnecessarily.
+
+
+===== MISSING FILES =====
+(none)

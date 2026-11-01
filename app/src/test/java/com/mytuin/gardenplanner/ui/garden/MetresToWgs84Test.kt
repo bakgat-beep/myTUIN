@@ -1,18 +1,10 @@
-package com.mytuin.gardenplanner.ui.garden.debug
+package com.mytuin.gardenplanner.ui.garden
 
 import com.mytuin.gardenplanner.domain.model.garden.Coordinate
 import kotlin.math.abs
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-/**
- * Tests for MetresToWgs84 (A159=b).
- *
- * Pure arithmetic, no MapLibre, no Android. JUnit 5 per A145=a.
- *
- * The conversion is an equirectangular approximation. Tests assert
- * round-trip identity and known-value correctness at garden scale.
- */
 class MetresToWgs84Test {
     private val origin = Wgs84(latitude = -43.5321, longitude = 172.6362)
 
@@ -47,8 +39,6 @@ class MetresToWgs84Test {
         val deltaLon = wgs.longitude - origin.longitude
         val expected = 1.0 / (111_320.0 * Math.cos(Math.toRadians(origin.latitude)))
         assertEquals(expected, deltaLon, 1e-12)
-        // Sanity: at 43.5 degrees south, one degree of longitude is
-        // materially shorter than one degree of latitude.
         assert(abs(deltaLon) > abs(1.0 / 111_320.0))
     }
 

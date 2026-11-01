@@ -134,6 +134,7 @@ complexity:
       - '**/data/repositories/PlantMultiValueMapper.kt'
       - '**/ui/garden/GrowingSpaceLabels.kt'
       - '**/ui/garden/SpatialObjectLabels.kt'
+      - '**/ui/garden/MapShapeStyle.kt'
 
 style:
   MagicNumber:

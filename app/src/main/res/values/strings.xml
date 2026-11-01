@@ -20,12 +20,6 @@
 
     <string name="diagnostics_format">myTUIN %1$s · schema %2$d</string>
 
-    <string name="poc_map_empty_state">Create a garden to see it on the map.</string>
-    <string name="poc_map_no_selection">Tap a growing space to select it.</string>
-    <string name="poc_map_edit">Edit geometry</string>
-    <string name="poc_map_finish_editing">Finish editing</string>
-    <string name="poc_map_reset">Reset</string>
-
     <string name="empty_home_title">Your garden at a glance</string>
     <string name="empty_home_description">Priorities, upcoming work and recent activity will appear here.</string>
     <string name="empty_garden_title">Your garden spaces</string>
@@ -267,4 +261,12 @@
     <string name="edit_spatial_object_title">Edit garden object</string>
     <string name="edit_spatial_object_save_error">We couldn\'t save that change. Try again.</string>
     <string name="edit_spatial_object_load_error">We couldn\'t load this garden object.</string>
+
+    <!-- Garden map (9f) -->
+    <string name="garden_map_no_garden_title">Your garden spaces</string>
+    <string name="garden_map_no_garden_description">Create a garden to see it on the map.</string>
+    <string name="garden_map_no_geometries_title">No garden layout yet</string>
+    <string name="garden_map_no_geometries_description">Add a growing space or garden object with geometry to see it on the map.</string>
+    <string name="garden_map_error">We couldn\'t load the garden map.</string>
+    <string name="garden_map_recentre_action">Re-centre map</string>
 </resources>

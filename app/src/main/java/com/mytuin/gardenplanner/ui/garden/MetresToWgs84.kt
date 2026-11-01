@@ -1,11 +1,11 @@
-package com.mytuin.gardenplanner.ui.garden.debug
+package com.mytuin.gardenplanner.ui.garden
 
 import com.mytuin.gardenplanner.domain.model.garden.Coordinate
 import kotlin.math.cos
 
 /**
- * Garden-relative metres <-> WGS84 conversion for the MapLibre proof of
- * concept.
+ * Garden-relative metres <-> WGS84 conversion for the production
+ * Garden map (Step 9f).
  *
  * A149=c: the domain's Coordinate is metres from a garden datum
  * (A50b=(i)). MapLibre's GeoJsonSource expects WGS84 lon/lat. This
@@ -16,9 +16,7 @@ import kotlin.math.cos
  *
  * The conversion is a flat equirectangular approximation. Valid for
  * garden-scale distances (a few hundred metres at most). At 100 m from
- * the datum the error is on the order of centimetres. The real Garden
- * screen will need a decision about whether that is acceptable; for a
- * PoC it is.
+ * the datum the error is on the order of centimetres.
  *
  * No MapLibre types. Pure arithmetic, testable in src/test.
  *

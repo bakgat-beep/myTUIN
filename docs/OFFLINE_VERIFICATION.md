@@ -170,7 +170,7 @@ names itself. Diagnose by:
 
 ### MapLibre proof of concept
 
-`MapLibrePoc` loads MapLibre's demo style from
+The current garden map implementation loads MapLibre's demo style from
 `https://demotiles.maplibre.org/style.json`. Offline, the fetch cannot
 succeed.
 
@@ -190,6 +190,8 @@ all — would always render an empty map.
 This is not a Phase 0 blocker. `MapLibrePoc` is scheduled for deletion
 when the real Garden screen lands. It is recorded here so the future
 step inherits the finding rather than rediscovering it.
+
+**This is still to be resolved in the current garden map implementation.**
 
 ### Release build
 

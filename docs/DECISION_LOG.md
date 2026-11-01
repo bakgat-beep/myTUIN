@@ -2372,3 +2372,39 @@ Supersedes
 
 No earlier decision. This records resolution of items flagged in
 earlier Phase 1 steps.
+
+---
+
+**DEC-050 — Garden map basemap is provisional online demo tiles**
+Date: November 2026
+Status: Provisional
+Area: Architecture / Product
+
+**Decision**
+Step 9f renders the Garden map over MapLibre's public demo basemap
+(https://demotiles.maplibre.org/style.json), the same source the Phase 0 proof of concept used.
+INTERNET permission moves from the debug manifest to the main manifest. This is an explicit,
+provisional deviation from DEC-016 (offline-first) for the Garden tab only; all other core screens
+remain fully offline.
+
+**Rationale**
+The user chose to retain the POC's basemap rather than deliver a no-basemap "site plan" view in 9f.
+The trade-off is accepted: the Garden tab requires connectivity until the basemap is migrated. 
+MapLibreStyleConstants.STYLE_URL is a single constant; switching to no-basemap or a bundled style
+is a one-line change plus a manifest revert.
+
+**Consequences**
+- The Garden tab does not render in airplane mode. Offline verification of other screens is
+  unchanged.
+- The demo tile server is not licensed for production. A real tile source (bundled, cached, or
+  self-hosted) is owed before any user-facing release.
+- The basemap can be removed at any time by setting STYLE_URL = null; the map then renders shapes
+  on a neutral background with no INTERNET needed.
+
+**Related documents**
+docs/DECISION_LOG.md DEC-016
+docs/OFFLINE_VERIFICATION.md (must be updated to note the Garden tab exception)
+docs/V1_SCREEN_SPECIFICATION.md §7, §79
+
+**Supersedes**
+No earlier decision. This is the first formal record of the online basemap choice.

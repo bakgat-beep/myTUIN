@@ -4,7 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mytuin.gardenplanner.domain.model.garden.SpatialObject
-import com.mytuin.gardenplanner.domain.repository.SpatialObjectRepository
+import com.mytuin.gardenplanner.domain.usecases.garden.ObserveSpatialObjectsInGarden
 import com.mytuin.gardenplanner.ui.navigation.Routes
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -22,7 +22,7 @@ class SpatialObjectsListViewModel
     @Inject
     constructor(
         savedStateHandle: SavedStateHandle,
-        spatialObjectRepository: SpatialObjectRepository,
+        observeSpatialObjectsInGarden: ObserveSpatialObjectsInGarden,
     ) : ViewModel() {
         private val gardenId: String =
             checkNotNull(savedStateHandle[Routes.SPATIAL_OBJECTS_ARG_GARDEN_ID]) {
@@ -31,17 +31,12 @@ class SpatialObjectsListViewModel
 
         private val showArchived = MutableStateFlow(false)
 
-        // Two queries, one per mode, always subscribed. Room caches
-        // emissions, so the cost is a second observer, not a second
-        // round-trip. Toggling is instant because both flows are
-        // already warm. The explicit Flow<SpatialObjectsListUiState>
-        // type on the val widens combine's inferred return so that
-        // the subsequent .catch can emit the Error arm of the
-        // sealed interface.
+        // Explicit Flow<SpatialObjectsListUiState> widens combine's
+        // inferred subtype so .catch can emit the Error arm.
         private val baseFlow: Flow<SpatialObjectsListUiState> =
             combine(
-                spatialObjectRepository.observeSpatialObjectsInGarden(gardenId, includeArchived = false),
-                spatialObjectRepository.observeSpatialObjectsInGarden(gardenId, includeArchived = true),
+                observeSpatialObjectsInGarden(gardenId, includeArchived = false),
+                observeSpatialObjectsInGarden(gardenId, includeArchived = true),
                 showArchived,
             ) { active, all, showArch ->
                 val objects: List<SpatialObject> = if (showArch) all else active

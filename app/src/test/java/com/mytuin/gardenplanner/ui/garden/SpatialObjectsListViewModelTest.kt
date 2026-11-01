@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import com.mytuin.gardenplanner.domain.model.garden.Coordinate
 import com.mytuin.gardenplanner.domain.model.garden.Geometry
 import com.mytuin.gardenplanner.domain.model.garden.SpatialObject
+import com.mytuin.gardenplanner.domain.usecases.garden.ObserveSpatialObjectsInGarden
 import com.mytuin.gardenplanner.domain.vocabulary.InfrastructureType
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
 import com.mytuin.gardenplanner.testdoubles.FakeSpatialObjectRepository
@@ -67,7 +68,10 @@ class SpatialObjectsListViewModelTest {
 
     private fun newViewModel(repo: FakeSpatialObjectRepository): SpatialObjectsListViewModel {
         val handle = SavedStateHandle(mapOf(Routes.SPATIAL_OBJECTS_ARG_GARDEN_ID to "garden-1"))
-        return SpatialObjectsListViewModel(handle, repo)
+        return SpatialObjectsListViewModel(
+            savedStateHandle = handle,
+            observeSpatialObjectsInGarden = ObserveSpatialObjectsInGarden(repo),
+        )
     }
 
     @Test
