@@ -81,4 +81,6 @@ object Routes {
     fun createSpatialObject(gardenId: String): String = "create_spatial_object/$gardenId"
 
     fun editSpatialObject(spatialObjectId: String): String = "edit_spatial_object/$spatialObjectId"
+
+    const val GARDEN_HISTORY: String = "garden_history"
 }

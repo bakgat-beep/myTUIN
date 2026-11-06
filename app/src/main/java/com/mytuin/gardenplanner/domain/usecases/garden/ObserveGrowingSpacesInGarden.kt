@@ -10,5 +10,8 @@ class ObserveGrowingSpacesInGarden
     constructor(
         private val repository: GrowingSpaceRepository,
     ) {
-        operator fun invoke(gardenId: String): Flow<List<GrowingSpace>> = repository.observeGrowingSpacesInGarden(gardenId)
+        operator fun invoke(
+            gardenId: String,
+            includeArchived: Boolean = false,
+        ): Flow<List<GrowingSpace>> = repository.observeGrowingSpacesInGarden(gardenId, includeArchived)
     }

@@ -1,0 +1,1846 @@
+9h context bundle
+Generated: 11/06/2026 16:09:09
+
+===== FILE: app/src/main/java/com/mytuin/gardenplanner/ui/garden/GardenMapViewModel.kt =====
+
+package com.mytuin.gardenplanner.ui.garden
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.mytuin.gardenplanner.domain.model.garden.Area
+import com.mytuin.gardenplanner.domain.model.garden.Garden
+import com.mytuin.gardenplanner.domain.model.garden.GrowingSpace
+import com.mytuin.gardenplanner.domain.model.garden.SpatialObject
+import com.mytuin.gardenplanner.domain.repository.GardenRepository
+import com.mytuin.gardenplanner.domain.usecases.garden.ObserveAreasInGarden
+import com.mytuin.gardenplanner.domain.usecases.garden.ObserveGrowingSpacesInGarden
+import com.mytuin.gardenplanner.domain.usecases.garden.ObserveSpatialObjectsInGarden
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+
+/**
+ * Step 9f: the Garden map observes one garden (the first active
+ * garden returned by the repository), plus its areas, growing spaces
+ * and spatial objects, and exposes them as a single GardenMapUiState.
+ *
+ * The choice of "first garden" matches the POC and Q5's "one garden,
+ * no in-map switcher" scope. Multi-garden selection is a Home-screen
+ * concern and remains unimplemented.
+ *
+ * The ViewModel is where domain entities stop: it maps Garden /
+ * Area / GrowingSpace / SpatialObject into MapShape values, which
+ * carry only geometry plus a semantic kind. MapLibre never sees
+ * domain models.
+ */
+@OptIn(ExperimentalCoroutinesApi::class)
+@HiltViewModel
+class GardenMapViewModel
+    @Inject
+    constructor(
+        gardenRepository: GardenRepository,
+        private val observeGrowingSpacesInGarden: ObserveGrowingSpacesInGarden,
+        private val observeSpatialObjectsInGarden: ObserveSpatialObjectsInGarden,
+        private val observeAreasInGarden: ObserveAreasInGarden,
+    ) : ViewModel() {
+        private val baseFlow: Flow<GardenMapUiState> =
+            gardenRepository
+                .observeGardens()
+                .map { gardens -> gardens.firstOrNull() }
+                .flatMapLatest { garden ->
+                    if (garden == null) {
+                        flowOf<GardenMapUiState>(GardenMapUiState.NoGarden)
+                    } else {
+                        gardenFlow(garden)
+                    }
+                }
+
+        val uiState: StateFlow<GardenMapUiState> =
+            baseFlow
+                .catch { emit(GardenMapUiState.Error) }
+                .stateIn(
+                    scope = viewModelScope,
+                    started = SharingStarted.WhileSubscribed(5_000),
+                    initialValue = GardenMapUiState.Loading,
+                )
+
+        private fun gardenFlow(garden: Garden): Flow<GardenMapUiState> =
+            combine(
+                observeAreasInGarden(garden.id),
+                observeSpatialObjectsInGarden(garden.id),
+                observeGrowingSpacesInGarden(garden.id),
+            ) { areas, objects, spaces ->
+                buildState(garden, areas, objects, spaces)
+            }
+
+        private fun buildState(
+            garden: Garden,
+            areas: List<Area>,
+            objects: List<SpatialObject>,
+            spaces: List<GrowingSpace>,
+        ): GardenMapUiState {
+            val shapes = mutableListOf<MapShape>()
+            areas.forEach { area ->
+                val geometry = area.geometry ?: return@forEach
+                shapes += MapShape(area.id, MapShapeKind.Area, geometry)
+            }
+            objects.forEach { obj ->
+                shapes += MapShape(obj.id, MapShapeKind.SpatialObject(obj.objectType), obj.geometry)
+            }
+            spaces.forEach { space ->
+                val geometry = space.geometry ?: return@forEach
+                shapes += MapShape(space.id, MapShapeKind.GrowingSpace(space.spaceType), geometry)
+            }
+            if (shapes.isEmpty()) return GardenMapUiState.NoGeometries
+            return GardenMapUiState.Ready(
+                gardenName = garden.name,
+                origin = originOf(garden),
+                shapes = shapes,
+                viewport = MapViewport.union(shapes),
+            )
+        }
+
+        private fun originOf(garden: Garden): Wgs84 =
+            Wgs84(
+                latitude = garden.latitude ?: FALLBACK_LATITUDE,
+                longitude = garden.longitude ?: FALLBACK_LONGITUDE,
+            )
+
+        private companion object {
+            const val FALLBACK_LATITUDE = -43.5321
+            const val FALLBACK_LONGITUDE = 172.6362
+        }
+    }
+
+===== FILE: app/src/main/java/com/mytuin/gardenplanner/ui/garden/GardenMapUiState.kt =====
+
+package com.mytuin.gardenplanner.ui.garden
+
+/**
+ * State for the Garden map screen (Step 9f).
+ *
+ * Five distinct states: loading, no garden, garden-with-no-geometry,
+ * ready with shapes, error. The user must understand which of these
+ * applies — the empty-state message differs materially between
+ * NoGarden ("create a garden") and NoGeometries ("add a shape").
+ */
+sealed interface GardenMapUiState {
+    data object Loading : GardenMapUiState
+
+    data object NoGarden : GardenMapUiState
+
+    data object NoGeometries : GardenMapUiState
+
+    data class Ready(
+        val gardenName: String,
+        val origin: Wgs84,
+        val shapes: List<MapShape>,
+        val viewport: MapViewport,
+    ) : GardenMapUiState
+
+    data object Error : GardenMapUiState
+}
+
+===== FILE: app/src/main/java/com/mytuin/gardenplanner/ui/garden/GardenMapScreen.kt =====
+
+package com.mytuin.gardenplanner.ui.garden
+
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Yard
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.mytuin.gardenplanner.R
+import com.mytuin.gardenplanner.domain.model.garden.Geometry
+import com.mytuin.gardenplanner.ui.components.EmptyState
+import com.mytuin.gardenplanner.ui.components.ErrorState
+
+@Composable
+fun GardenMapScreen(
+    uiState: GardenMapUiState,
+    editState: GardenMapEditUiState,
+    onSelectShape: (String) -> Unit,
+    onClearSelection: () -> Unit,
+    onSaveGeometry: (MapShape, Geometry) -> Unit,
+    onArchiveSelected: (MapShape) -> Unit,
+    onUndoSelected: (MapShape) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    when (uiState) {
+        GardenMapUiState.Loading ->
+            Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        GardenMapUiState.NoGarden ->
+            EmptyState(
+                title = stringResource(R.string.garden_map_no_garden_title),
+                description = stringResource(R.string.garden_map_no_garden_description),
+                icon = Icons.Filled.Yard,
+                modifier = modifier.fillMaxSize(),
+            )
+        GardenMapUiState.NoGeometries ->
+            EmptyState(
+                title = stringResource(R.string.garden_map_no_geometries_title),
+                description = stringResource(R.string.garden_map_no_geometries_description),
+                icon = Icons.Filled.Yard,
+                modifier = modifier.fillMaxSize(),
+            )
+        GardenMapUiState.Error ->
+            ErrorState(
+                message = stringResource(R.string.garden_map_error),
+                modifier = modifier,
+            )
+        is GardenMapUiState.Ready ->
+            GardenMapCanvas(
+                uiState = uiState,
+                editState = editState,
+                onSelectShape = onSelectShape,
+                onClearSelection = onClearSelection,
+                onSaveGeometry = onSaveGeometry,
+                onArchiveSelected = onArchiveSelected,
+                onUndoSelected = onUndoSelected,
+                modifier = modifier.fillMaxSize(),
+            )
+    }
+}
+
+===== FILE: app/src/main/java/com/mytuin/gardenplanner/ui/garden/GardenScreen.kt =====
+
+package com.mytuin.gardenplanner.ui.garden
+
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+
+@Composable
+fun GardenScreen(
+    modifier: Modifier = Modifier,
+    viewModel: GardenMapViewModel = hiltViewModel(),
+    editViewModel: GardenMapEditViewModel = hiltViewModel(),
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val editState by editViewModel.uiState.collectAsStateWithLifecycle()
+    GardenMapScreen(
+        uiState = uiState,
+        editState = editState,
+        onSelectShape = editViewModel::selectShape,
+        onClearSelection = editViewModel::clearSelection,
+        onSaveGeometry = editViewModel::saveGeometry,
+        onArchiveSelected = editViewModel::archiveSelected,
+        onUndoSelected = editViewModel::undoLastEdit,
+        modifier = modifier,
+    )
+}
+
+===== FILE: app/src/main/java/com/mytuin/gardenplanner/ui/garden/GardenMapCanvas.kt =====
+
+package com.mytuin.gardenplanner.ui.garden
+
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MyLocation
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableIntState
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.mytuin.gardenplanner.R
+import com.mytuin.gardenplanner.domain.model.garden.Coordinate
+import com.mytuin.gardenplanner.domain.model.garden.Geometry
+import com.mytuin.gardenplanner.ui.theme.Spacing
+import kotlin.math.log2
+import org.maplibre.android.camera.CameraPosition
+import org.maplibre.android.geometry.LatLng
+import org.maplibre.android.maps.MapLibreMap
+import org.maplibre.android.maps.MapView
+import org.maplibre.android.maps.Style
+import org.maplibre.android.style.sources.GeoJsonSource
+
+@Composable
+fun GardenMapCanvas(
+    uiState: GardenMapUiState.Ready,
+    editState: GardenMapEditUiState,
+    onSelectShape: (String) -> Unit,
+    onClearSelection: () -> Unit,
+    onSaveGeometry: (MapShape, Geometry) -> Unit,
+    onArchiveSelected: (MapShape) -> Unit,
+    onUndoSelected: (MapShape) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val session = rememberMapEditorSession(editState, uiState.shapes)
+    val drawState = rememberMapDrawState()
+    val selectedShape = editState.selectedShapeId?.let { id -> uiState.shapes.firstOrNull { it.id == id } }
+
+    LaunchedEffect(selectedShape?.id) {
+        drawState.exitDraw()
+    }
+
+    GardenMapContent(
+        session = session,
+        drawState = drawState,
+        uiState = uiState,
+        editState = editState,
+        selectedShape = selectedShape,
+        actions =
+            GardenMapActions(
+                onSelectShape = onSelectShape,
+                onClearSelection = onClearSelection,
+                onSaveGeometry = onSaveGeometry,
+                onArchiveSelected = onArchiveSelected,
+                onUndoSelected = onUndoSelected,
+            ),
+        modifier = modifier,
+    )
+}
+
+private data class GardenMapActions(
+    val onSelectShape: (String) -> Unit,
+    val onClearSelection: () -> Unit,
+    val onSaveGeometry: (MapShape, Geometry) -> Unit,
+    val onArchiveSelected: (MapShape) -> Unit,
+    val onUndoSelected: (MapShape) -> Unit,
+)
+
+private class MapEditorSession(
+    val mapView: MapView,
+) {
+    val mapRef: MutableState<MapLibreMap?> = mutableStateOf(null)
+    val styleRef: MutableState<Style?> = mutableStateOf(null)
+    val styleVersion: MutableIntState = mutableIntStateOf(0)
+    val recenterTrigger: MutableIntState = mutableIntStateOf(0)
+    val controller: MapEditorController = MapEditorController()
+    var stateRef: MutableState<GardenMapEditUiState> = mutableStateOf(GardenMapEditUiState())
+    var shapesRef: MutableState<List<MapShape>> = mutableStateOf(emptyList())
+}
+
+@Composable
+private fun rememberMapEditorSession(
+    editState: GardenMapEditUiState,
+    shapes: List<MapShape>,
+): MapEditorSession {
+    val context = LocalContext.current
+    val session = remember(context) { MapEditorSession(MapView(context).also { it.onCreate(null) }) }
+    LaunchedEffect(editState, shapes) {
+        session.stateRef.value = editState
+        session.shapesRef.value = shapes
+    }
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(session.mapView, lifecycleOwner) {
+        val observer =
+            LifecycleEventObserver { _, event ->
+                when (event) {
+                    Lifecycle.Event.ON_START -> session.mapView.onStart()
+                    Lifecycle.Event.ON_RESUME -> session.mapView.onResume()
+                    Lifecycle.Event.ON_PAUSE -> session.mapView.onPause()
+                    Lifecycle.Event.ON_STOP -> session.mapView.onStop()
+                    else -> Unit
+                }
+            }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+            session.mapView.onDestroy()
+        }
+    }
+    return session
+}
+
+@Composable
+private fun GardenMapContent(
+    session: MapEditorSession,
+    drawState: MapDrawState,
+    uiState: GardenMapUiState.Ready,
+    editState: GardenMapEditUiState,
+    selectedShape: MapShape?,
+    actions: GardenMapActions,
+    modifier: Modifier = Modifier,
+) {
+    Box(modifier = modifier) {
+        GardenMapAndroidView(
+            mapView = session.mapView,
+            originSupplier = { uiState.origin },
+            session = session,
+            drawStateSupplier = { drawState },
+            actions = actions,
+        )
+        ShapeLayersEffect(
+            styleRef = session.styleRef.value,
+            styleVersion = session.styleVersion.intValue,
+            shapes = uiState.shapes,
+            origin = uiState.origin,
+        )
+        SelectionLayersEffect(
+            styleRef = session.styleRef.value,
+            styleVersion = session.styleVersion.intValue,
+            selectedShape = selectedShape,
+            mode = drawState.mode,
+            controller = session.controller,
+            origin = uiState.origin,
+        )
+        DrawPreviewEffect(
+            styleRef = session.styleRef.value,
+            styleVersion = session.styleVersion.intValue,
+            drawState = drawState,
+            origin = uiState.origin,
+        )
+        FitViewportEffect(
+            mapRef = session.mapRef.value,
+            styleVersion = session.styleVersion.intValue,
+            viewport = uiState.viewport,
+            origin = uiState.origin,
+            recenterTrigger = session.recenterTrigger.intValue,
+        )
+        MapOverlayControls(
+            selectedShape = selectedShape,
+            drawState = drawState,
+            isSaving = editState.isSaving,
+            onRecenter = { session.recenterTrigger.intValue += 1 },
+            onArchiveSelected = actions.onArchiveSelected,
+            onUndoSelected = actions.onUndoSelected,
+            onSaveGeometry = actions.onSaveGeometry,
+        )
+    }
+}
+
+@Composable
+private fun GardenMapAndroidView(
+    mapView: MapView,
+    originSupplier: () -> Wgs84,
+    session: MapEditorSession,
+    drawStateSupplier: () -> MapDrawState,
+    actions: GardenMapActions,
+    modifier: Modifier = Modifier,
+) {
+    AndroidView(
+        modifier = modifier.fillMaxSize(),
+        factory = {
+            mapView.apply {
+                getMapAsync { map ->
+                    session.mapRef.value = map
+                    map.setStyle(MapLibreStyleConstants.STYLE_URL) { style ->
+                        session.styleRef.value = style
+                        GardenMapStyle.install(style)
+                        MapEditorLayers.install(style)
+                        session.styleVersion.intValue += 1
+                    }
+                    val bundle =
+                        GardenMapEditorBridge.EditorStateBundle(
+                            stateSupplier = { session.stateRef.value },
+                            drawStateSupplier = drawStateSupplier,
+                            shapesSupplier = { session.shapesRef.value },
+                            originSupplier = originSupplier,
+                        )
+                    GardenMapEditorBridge.installTapHandler(
+                        map = map,
+                        bundle = bundle,
+                        tapHandlers =
+                            GardenMapEditorBridge.TapHandlers(
+                                onSelect = actions.onSelectShape,
+                                onClearSelection = actions.onClearSelection,
+                                onAddDrawVertex = { drawStateSupplier().addVertex(it) },
+                            ),
+                    )
+                    GardenMapEditorBridge.installTouchHandler(
+                        mapView = mapView,
+                        map = map,
+                        controller = session.controller,
+                        bundle = bundle,
+                        onSave = actions.onSaveGeometry,
+                    )
+                    GardenMapEditorBridge.installLongPressHandler(
+                        map = map,
+                        bundle = bundle,
+                        onGeometryReplace = actions.onSaveGeometry,
+                    )
+                }
+            }
+        },
+    )
+}
+
+@Composable
+private fun ShapeLayersEffect(
+    styleRef: Style?,
+    styleVersion: Int,
+    shapes: List<MapShape>,
+    origin: Wgs84,
+) {
+    LaunchedEffect(styleVersion, shapes) {
+        if (styleVersion == 0) return@LaunchedEffect
+        val style = styleRef ?: return@LaunchedEffect
+        style
+            .getSourceAs<GeoJsonSource>(MapLibreStyleConstants.SOURCE_AREAS)
+            ?.setGeoJson(GardenMapFeatures.areas(shapes, origin))
+        style
+            .getSourceAs<GeoJsonSource>(MapLibreStyleConstants.SOURCE_SPATIAL_OBJECTS)
+            ?.setGeoJson(GardenMapFeatures.spatialObjects(shapes, origin))
+        style
+            .getSourceAs<GeoJsonSource>(MapLibreStyleConstants.SOURCE_GROWING_SPACES)
+            ?.setGeoJson(GardenMapFeatures.growingSpaces(shapes, origin))
+    }
+}
+
+@Composable
+private fun SelectionLayersEffect(
+    styleRef: Style?,
+    styleVersion: Int,
+    selectedShape: MapShape?,
+    mode: MapEditMode,
+    controller: MapEditorController,
+    origin: Wgs84,
+) {
+    LaunchedEffect(
+        styleVersion,
+        selectedShape?.id,
+        mode,
+        controller.isDragging,
+        controller.dragCurrentMeters,
+    ) {
+        if (styleVersion == 0) return@LaunchedEffect
+        val style = styleRef ?: return@LaunchedEffect
+        val geometry = controller.inProgressGeometry() ?: selectedShape?.geometry
+        if (geometry != null) {
+            style
+                .getSourceAs<GeoJsonSource>(MapEditorLayers.SOURCE_SELECTION)
+                ?.setGeoJson(MapEditorFeatures.selection(geometry, origin))
+        } else {
+            style
+                .getSourceAs<GeoJsonSource>(MapEditorLayers.SOURCE_SELECTION)
+                ?.setGeoJson(MapEditorFeatures.empty())
+        }
+        val showVertices = mode == MapEditMode.SELECT && !controller.isDragging && geometry is Geometry.Polygon
+        val vertexCollection =
+            if (showVertices) {
+                MapEditorFeatures.vertices(geometry as Geometry.Polygon, origin)
+            } else {
+                MapEditorFeatures.empty()
+            }
+        style
+            .getSourceAs<GeoJsonSource>(MapEditorLayers.SOURCE_VERTICES)
+            ?.setGeoJson(vertexCollection)
+    }
+}
+
+@Composable
+private fun DrawPreviewEffect(
+    styleRef: Style?,
+    styleVersion: Int,
+    drawState: MapDrawState,
+    origin: Wgs84,
+) {
+    LaunchedEffect(styleVersion, drawState.vertices) {
+        if (styleVersion == 0) return@LaunchedEffect
+        val style = styleRef ?: return@LaunchedEffect
+        val vertices = drawState.vertices
+        val lineCollection =
+            if (vertices.size >= 2) {
+                MapEditorFeatures.drawPreview(vertices, origin)
+            } else {
+                MapEditorFeatures.empty()
+            }
+        style
+            .getSourceAs<GeoJsonSource>(MapEditorLayers.SOURCE_DRAW_LINE)
+            ?.setGeoJson(lineCollection)
+        style
+            .getSourceAs<GeoJsonSource>(MapEditorLayers.SOURCE_DRAW_VERTICES)
+            ?.setGeoJson(MapEditorFeatures.drawVertices(vertices, origin))
+    }
+}
+
+@Composable
+private fun FitViewportEffect(
+    mapRef: MapLibreMap?,
+    styleVersion: Int,
+    viewport: MapViewport,
+    origin: Wgs84,
+    recenterTrigger: Int,
+) {
+    LaunchedEffect(styleVersion, viewport, recenterTrigger) {
+        if (styleVersion == 0) return@LaunchedEffect
+        val map = mapRef ?: return@LaunchedEffect
+        fitViewport(map, viewport, origin)
+    }
+}
+
+@Composable
+private fun BoxScope.MapOverlayControls(
+    selectedShape: MapShape?,
+    drawState: MapDrawState,
+    isSaving: Boolean,
+    onRecenter: () -> Unit,
+    onArchiveSelected: (MapShape) -> Unit,
+    onUndoSelected: (MapShape) -> Unit,
+    onSaveGeometry: (MapShape, Geometry) -> Unit,
+) {
+    if (selectedShape != null) {
+        MapEditorControlPanel(
+            mode = drawState.mode,
+            isSaving = isSaving,
+            canCloseRing = drawState.vertices.size >= MIN_POLYGON_VERTEX_COUNT,
+            callbacks =
+                MapEditorCallbacks(
+                    onModeChange = { mode ->
+                        when (mode) {
+                            MapEditMode.SELECT -> drawState.exitDraw()
+                            MapEditMode.DRAW -> drawState.enterDraw()
+                        }
+                    },
+                    onDelete = { onArchiveSelected(selectedShape) },
+                    onUndo = { onUndoSelected(selectedShape) },
+                    onCloseRing = {
+                        val polygon = drawState.buildPolygon()
+                        if (polygon != null) {
+                            onSaveGeometry(selectedShape, polygon)
+                            drawState.exitDraw()
+                        }
+                    },
+                    onClearVertices = drawState::clearVertices,
+                    onCancelDraw = drawState::exitDraw,
+                ),
+            modifier =
+                Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(Spacing.l),
+        )
+    }
+    FloatingActionButton(
+        onClick = onRecenter,
+        modifier =
+            Modifier
+                .align(Alignment.BottomEnd)
+                .padding(Spacing.l),
+    ) {
+        Icon(
+            imageVector = Icons.Filled.MyLocation,
+            contentDescription = stringResource(R.string.garden_map_recentre_action),
+        )
+    }
+}
+
+private const val FALLBACK_ZOOM = 17.0
+private const val ZOOM_SCALE_BASE = 17.0
+private const val MIN_ZOOM = 12.0
+private const val MAX_ZOOM = 20.0
+
+private fun fitViewport(
+    map: MapLibreMap,
+    viewport: MapViewport,
+    origin: Wgs84,
+) {
+    val centreWgs =
+        MetresToWgs84.toWgs84(
+            origin,
+            Coordinate(viewport.centerX, viewport.centerY),
+        )
+    val largestDimension = viewport.largestDimensionMetres
+    val zoom =
+        if (largestDimension <= 0.0) {
+            FALLBACK_ZOOM
+        } else {
+            (ZOOM_SCALE_BASE - log2(largestDimension)).coerceIn(MIN_ZOOM, MAX_ZOOM)
+        }
+    map.cameraPosition =
+        CameraPosition
+            .Builder()
+            .target(LatLng(centreWgs.latitude, centreWgs.longitude))
+            .zoom(zoom)
+            .build()
+}
+
+===== FILE: app/src/main/java/com/mytuin/gardenplanner/ui/garden/GardenMapFeatures.kt =====
+
+package com.mytuin.gardenplanner.ui.garden
+
+import com.mytuin.gardenplanner.domain.model.garden.Coordinate
+import com.mytuin.gardenplanner.domain.model.garden.Geometry
+import org.maplibre.geojson.Feature
+import org.maplibre.geojson.FeatureCollection
+import org.maplibre.geojson.LineString
+import org.maplibre.geojson.Point
+import org.maplibre.geojson.Polygon
+
+/**
+ * FeatureCollection builders for the Garden map (Step 9f).
+ *
+ * Converts each MapShape into a MapLibre Feature with the style
+ * properties that MapShapeStyle chose. Grouped by MapShapeKind so
+ * each source receives only its own shapes and the layer stack keeps
+ * the draw order the design intends (areas under, growing spaces on
+ * top).
+ *
+ * The metre → WGS84 conversion happens here, using the garden
+ * origin. It is the only place MapLibre types enter the codebase
+ * alongside GardenMapStyle.
+ */
+object GardenMapFeatures {
+    fun areas(
+        shapes: List<MapShape>,
+        origin: Wgs84,
+    ): FeatureCollection = collection(shapes.filter { it.kind is MapShapeKind.Area }, origin)
+
+    fun spatialObjects(
+        shapes: List<MapShape>,
+        origin: Wgs84,
+    ): FeatureCollection = collection(shapes.filter { it.kind is MapShapeKind.SpatialObject }, origin)
+
+    fun growingSpaces(
+        shapes: List<MapShape>,
+        origin: Wgs84,
+    ): FeatureCollection = collection(shapes.filter { it.kind is MapShapeKind.GrowingSpace }, origin)
+
+    private fun collection(
+        shapes: List<MapShape>,
+        origin: Wgs84,
+    ): FeatureCollection {
+        val features = shapes.mapNotNull { shape -> feature(shape, origin) }
+        return FeatureCollection.fromFeatures(features)
+    }
+
+    private fun feature(
+        shape: MapShape,
+        origin: Wgs84,
+    ): Feature? {
+        val style = MapShapeStyle.forKind(shape.kind)
+        val geometry =
+            when (val g = shape.geometry) {
+                is Geometry.Point -> point(g.at, origin)
+                is Geometry.LineString -> line(g.vertices, origin)
+                is Geometry.Polygon -> polygon(g.ring, origin)
+            }
+        return Feature
+            .fromGeometry(geometry)
+            .apply {
+                addStringProperty(MapLibreStyleConstants.PROP_SHAPE_ID, shape.id)
+                addStringProperty(MapLibreStyleConstants.PROP_FILL_COLOR, style.fillColor)
+                addNumberProperty(MapLibreStyleConstants.PROP_FILL_OPACITY, style.fillOpacity.toDouble())
+                addStringProperty(MapLibreStyleConstants.PROP_STROKE_COLOR, style.strokeColor)
+                addNumberProperty(MapLibreStyleConstants.PROP_STROKE_WIDTH, style.strokeWidth.toDouble())
+            }
+    }
+
+    private fun point(
+        coordinate: Coordinate,
+        origin: Wgs84,
+    ): Point {
+        val wgs = MetresToWgs84.toWgs84(origin, coordinate)
+        return Point.fromLngLat(wgs.longitude, wgs.latitude)
+    }
+
+    private fun line(
+        vertices: List<Coordinate>,
+        origin: Wgs84,
+    ): LineString {
+        val points = vertices.map { point(it, origin) }
+        return LineString.fromLngLats(points)
+    }
+
+    private fun polygon(
+        ring: List<Coordinate>,
+        origin: Wgs84,
+    ): Polygon {
+        val points = ring.map { point(it, origin) }
+        return Polygon.fromLngLats(listOf(points))
+    }
+}
+
+===== FILE: app/src/main/java/com/mytuin/gardenplanner/ui/garden/MapShape.kt =====
+
+package com.mytuin.gardenplanner.ui.garden
+
+import com.mytuin.gardenplanner.domain.model.garden.Geometry
+import com.mytuin.gardenplanner.domain.vocabulary.GrowingSpaceType
+import com.mytuin.gardenplanner.domain.vocabulary.InfrastructureType
+
+/**
+ * One drawable shape on the garden map (Step 9f).
+ *
+ * Bundles the domain geometry with enough information for the map
+ * to style it: the semantic kind (growing space / spatial object /
+ * area) plus the specific subtype used by MapShapeStyle.
+ *
+ * The map layer never sees domain entities directly — it consumes
+ * MapShape values built in GardenMapViewModel. This keeps the
+ * AndroidView / MapLibre surface independent of the domain model.
+ */
+data class MapShape(
+    val id: String,
+    val kind: MapShapeKind,
+    val geometry: Geometry,
+)
+
+sealed interface MapShapeKind {
+    data class GrowingSpace(
+        val type: GrowingSpaceType,
+    ) : MapShapeKind
+
+    data class SpatialObject(
+        val type: InfrastructureType,
+    ) : MapShapeKind
+
+    data object Area : MapShapeKind
+}
+
+===== FILE: app/src/main/java/com/mytuin/gardenplanner/ui/garden/MapViewport.kt =====
+
+package com.mytuin.gardenplanner.ui.garden
+
+import com.mytuin.gardenplanner.domain.model.garden.Geometry
+
+/**
+ * Bounding box in the garden's local metre frame (Step 9f).
+ *
+ * Used to fit the MapLibre camera so all shapes are visible on
+ * first composition and when the user taps re-centre. The fallback
+ * bounds give the camera somewhere sensible to point when a garden
+ * exists but has no geometry yet.
+ */
+data class MapViewport(
+    val minX: Double,
+    val minY: Double,
+    val maxX: Double,
+    val maxY: Double,
+) {
+    val centerX: Double get() = (minX + maxX) / 2.0
+    val centerY: Double get() = (minY + maxY) / 2.0
+    val widthMetres: Double get() = maxX - minX
+    val heightMetres: Double get() = maxY - minY
+    val largestDimensionMetres: Double get() = maxOf(widthMetres, heightMetres)
+
+    companion object {
+        private const val PADDING_METRES = 3.0
+        private const val FALLBACK_HALF_EXTENT = 15.0
+
+        val FALLBACK: MapViewport =
+            MapViewport(
+                minX = -FALLBACK_HALF_EXTENT,
+                minY = -FALLBACK_HALF_EXTENT,
+                maxX = FALLBACK_HALF_EXTENT,
+                maxY = FALLBACK_HALF_EXTENT,
+            )
+
+        /**
+         * Union of all coordinates across every shape, expanded by
+         * PADDING_METRES on each side so shapes are not flush with
+         * the screen edge. Returns FALLBACK when shapes contain no
+         * coordinates.
+         */
+        fun union(shapes: List<MapShape>): MapViewport {
+            val coords = shapes.flatMap { shape -> shape.geometry.allCoordinates() }
+            if (coords.isEmpty()) return FALLBACK
+            val xs = coords.map { it.x }
+            val ys = coords.map { it.y }
+            return MapViewport(
+                minX = xs.min() - PADDING_METRES,
+                minY = ys.min() - PADDING_METRES,
+                maxX = xs.max() + PADDING_METRES,
+                maxY = ys.max() + PADDING_METRES,
+            )
+        }
+
+        private fun Geometry.allCoordinates(): List<com.mytuin.gardenplanner.domain.model.garden.Coordinate> =
+            when (this) {
+                is Geometry.Point -> listOf(at)
+                is Geometry.LineString -> vertices
+                is Geometry.Polygon -> ring
+            }
+    }
+}
+
+===== FILE: app/src/main/java/com/mytuin/gardenplanner/ui/navigation/MyTuinNavHost.kt =====
+
+package com.mytuin.gardenplanner.ui.navigation
+
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavHostController
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.mytuin.gardenplanner.BuildConfig
+import com.mytuin.gardenplanner.R
+import com.mytuin.gardenplanner.data.database.GARDEN_DATABASE_VERSION
+import com.mytuin.gardenplanner.ui.garden.CreateGardenScreen
+import com.mytuin.gardenplanner.ui.garden.CreateGrowingSpaceScreen
+import com.mytuin.gardenplanner.ui.garden.CreateSpatialObjectScreen
+import com.mytuin.gardenplanner.ui.garden.EditGrowingSpaceScreen
+import com.mytuin.gardenplanner.ui.garden.EditSpatialObjectScreen
+import com.mytuin.gardenplanner.ui.garden.GardenDetailScreen
+import com.mytuin.gardenplanner.ui.garden.GardenScreen
+import com.mytuin.gardenplanner.ui.garden.GrowingSpaceDetailScreen
+import com.mytuin.gardenplanner.ui.garden.GrowingSpacesListScreen
+import com.mytuin.gardenplanner.ui.garden.SpatialObjectDetailScreen
+import com.mytuin.gardenplanner.ui.garden.SpatialObjectsListScreen
+import com.mytuin.gardenplanner.ui.home.DiagnosticsFooter
+import com.mytuin.gardenplanner.ui.home.HomeScreen
+import com.mytuin.gardenplanner.ui.inbox.InboxScreen
+import com.mytuin.gardenplanner.ui.planner.PlannerScreen
+import com.mytuin.gardenplanner.ui.plants.PlantsScreen
+import com.mytuin.gardenplanner.ui.theme.Spacing
+
+@Composable
+fun MyTuinNavHost(
+    modifier: Modifier = Modifier,
+    homeScreenContent: @Composable (
+        onNavigateToCreateGarden: () -> Unit,
+        onNavigateToGardenDetail: (gardenId: String) -> Unit,
+    ) -> Unit = { onCreate, onDetail ->
+        HomeScreen(
+            onNavigateToCreateGarden = onCreate,
+            onGardenClick = onDetail,
+        )
+    },
+) {
+    val navController = rememberNavController()
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+
+    Scaffold(
+        modifier = modifier,
+        bottomBar = { ShellBottomBar(navController, navBackStackEntry) },
+        floatingActionButton = { AddActionFab() },
+    ) { innerPadding ->
+        Box(
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+        ) {
+            ShellNavHost(
+                navController = navController,
+                homeScreenContent = homeScreenContent,
+                modifier = Modifier.fillMaxSize(),
+            )
+            if (BuildConfig.DEBUG) {
+                DiagnosticsFooter(
+                    appVersion = BuildConfig.VERSION_NAME,
+                    schemaVersion = GARDEN_DATABASE_VERSION,
+                    modifier = Modifier.align(Alignment.BottomCenter),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ShellBottomBar(
+    navController: NavHostController,
+    navBackStackEntry: NavBackStackEntry?,
+) {
+    val currentDestination = navBackStackEntry?.destination
+    NavigationBar {
+        Destination.all.forEach { destination ->
+            val selected =
+                currentDestination
+                    ?.hierarchy
+                    ?.any { it.route == destination.route } == true
+
+            NavigationBarItem(
+                selected = selected,
+                onClick = {
+                    navController.navigate(destination.route) {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                },
+                icon = {
+                    Icon(
+                        imageVector = destination.icon,
+                        contentDescription = null,
+                    )
+                },
+                label = { Text(stringResource(destination.labelRes)) },
+            )
+        }
+    }
+}
+
+@Composable
+private fun ShellNavHost(
+    navController: NavHostController,
+    homeScreenContent: @Composable (
+        onNavigateToCreateGarden: () -> Unit,
+        onNavigateToGardenDetail: (gardenId: String) -> Unit,
+    ) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    NavHost(
+        navController = navController,
+        startDestination = Destination.Home.route,
+        modifier = modifier,
+    ) {
+        composable(Destination.Home.route) {
+            homeScreenContent(
+                { navController.navigate(Routes.CREATE_GARDEN) },
+                { gardenId -> navController.navigate(Routes.gardenDetail(gardenId)) },
+            )
+        }
+        composable(Destination.Garden.route) { GardenScreen() }
+        composable(Destination.Plants.route) { PlantsScreen() }
+        composable(Destination.Planner.route) { PlannerScreen() }
+        composable(Destination.Inbox.route) { InboxScreen() }
+        composable(Routes.CREATE_GARDEN) {
+            CreateGardenScreen(
+                onNavigateBack = { navController.popBackStack() },
+            )
+        }
+        gardenDetailRoute(navController)
+        growingSpacesRoute(navController)
+        growingSpaceDetailRoute(navController)
+        createGrowingSpaceRoute(navController)
+        editGrowingSpaceRoute(navController)
+        spatialObjectsRoute(navController)
+        spatialObjectDetailRoute(navController)
+        createSpatialObjectRoute(navController)
+        editSpatialObjectRoute(navController)
+    }
+}
+
+private fun NavGraphBuilder.gardenDetailRoute(navController: NavHostController) {
+    composable(
+        route = Routes.GARDEN_DETAIL_PATTERN,
+        arguments =
+            listOf(
+                navArgument(Routes.GARDEN_DETAIL_ARG_GARDEN_ID) {
+                    type = NavType.StringType
+                },
+            ),
+    ) { backStackEntry ->
+        val gardenId =
+            backStackEntry.arguments?.getString(Routes.GARDEN_DETAIL_ARG_GARDEN_ID).orEmpty()
+        GardenDetailScreen(
+            onNavigateBack = { navController.popBackStack() },
+            onNavigateToGrowingSpaces = {
+                navController.navigate(Routes.growingSpaces(gardenId))
+            },
+            onNavigateToSpatialObjects = {
+                navController.navigate(Routes.spatialObjects(gardenId))
+            },
+        )
+    }
+}
+
+private fun NavGraphBuilder.growingSpacesRoute(navController: NavHostController) {
+    composable(
+        route = Routes.GROWING_SPACES_PATTERN,
+        arguments =
+            listOf(
+                navArgument(Routes.GROWING_SPACES_ARG_GARDEN_ID) {
+                    type = NavType.StringType
+                },
+            ),
+    ) { backStackEntry ->
+        val gardenId =
+            backStackEntry.arguments?.getString(Routes.GROWING_SPACES_ARG_GARDEN_ID).orEmpty()
+        GrowingSpacesListScreen(
+            onNavigateBack = { navController.popBackStack() },
+            onCreateSpace = {
+                navController.navigate(Routes.createGrowingSpace(gardenId))
+            },
+            onSpaceClick = { growingSpaceId ->
+                navController.navigate(Routes.growingSpaceDetail(growingSpaceId))
+            },
+        )
+    }
+}
+
+private fun NavGraphBuilder.growingSpaceDetailRoute(navController: NavHostController) {
+    composable(
+        route = Routes.GROWING_SPACE_DETAIL_PATTERN,
+        arguments =
+            listOf(
+                navArgument(Routes.GROWING_SPACE_DETAIL_ARG_ID) {
+                    type = NavType.StringType
+                },
+            ),
+    ) { backStackEntry ->
+        val growingSpaceId =
+            backStackEntry.arguments?.getString(Routes.GROWING_SPACE_DETAIL_ARG_ID).orEmpty()
+        GrowingSpaceDetailScreen(
+            onNavigateBack = { navController.popBackStack() },
+            onEdit = {
+                navController.navigate(Routes.editGrowingSpace(growingSpaceId))
+            },
+        )
+    }
+}
+
+private fun NavGraphBuilder.createGrowingSpaceRoute(navController: NavHostController) {
+    composable(
+        route = Routes.CREATE_GROWING_SPACE_PATTERN,
+        arguments =
+            listOf(
+                navArgument(Routes.CREATE_GROWING_SPACE_ARG_GARDEN_ID) {
+                    type = NavType.StringType
+                },
+            ),
+    ) {
+        CreateGrowingSpaceScreen(
+            onNavigateBack = { navController.popBackStack() },
+        )
+    }
+}
+
+private fun NavGraphBuilder.editGrowingSpaceRoute(navController: NavHostController) {
+    composable(
+        route = Routes.EDIT_GROWING_SPACE_PATTERN,
+        arguments =
+            listOf(
+                navArgument(Routes.EDIT_GROWING_SPACE_ARG_ID) {
+                    type = NavType.StringType
+                },
+            ),
+    ) {
+        EditGrowingSpaceScreen(
+            onNavigateBack = { navController.popBackStack() },
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AddActionFab() {
+    var showSheet by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState()
+
+    FloatingActionButton(onClick = { showSheet = true }) {
+        Icon(
+            imageVector = Icons.Filled.Add,
+            contentDescription = stringResource(R.string.add_action_content_description),
+        )
+    }
+
+    if (showSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showSheet = false },
+            sheetState = sheetState,
+        ) {
+            AddActionSheet(onDismiss = { showSheet = false })
+        }
+    }
+}
+
+@Composable
+private fun AddActionSheet(onDismiss: () -> Unit) {
+    val options =
+        listOf(
+            R.string.add_option_plant,
+            R.string.add_option_water,
+            R.string.add_option_harvest,
+            R.string.add_option_observe,
+            R.string.add_option_feed,
+            R.string.add_option_prune,
+            R.string.add_option_intervention,
+            R.string.add_option_more,
+        )
+
+    Column(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = Spacing.screenMargin)
+                .padding(bottom = Spacing.xl),
+    ) {
+        Text(
+            text = stringResource(R.string.add_sheet_title),
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(bottom = Spacing.m),
+        )
+        options.forEach { labelRes ->
+            TextButton(
+                onClick = onDismiss,
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = Spacing.xs),
+            ) {
+                Text(
+                    text = stringResource(labelRes),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        }
+    }
+}
+
+private fun NavGraphBuilder.spatialObjectsRoute(navController: NavHostController) {
+    composable(
+        route = Routes.SPATIAL_OBJECTS_PATTERN,
+        arguments =
+            listOf(
+                navArgument(Routes.SPATIAL_OBJECTS_ARG_GARDEN_ID) {
+                    type = NavType.StringType
+                },
+            ),
+    ) { backStackEntry ->
+        val gardenId =
+            backStackEntry.arguments?.getString(Routes.SPATIAL_OBJECTS_ARG_GARDEN_ID).orEmpty()
+        SpatialObjectsListScreen(
+            onNavigateBack = { navController.popBackStack() },
+            onCreateObject = {
+                navController.navigate(Routes.createSpatialObject(gardenId))
+            },
+            onObjectClick = { spatialObjectId ->
+                navController.navigate(Routes.spatialObjectDetail(spatialObjectId))
+            },
+        )
+    }
+}
+
+private fun NavGraphBuilder.spatialObjectDetailRoute(navController: NavHostController) {
+    composable(
+        route = Routes.SPATIAL_OBJECT_DETAIL_PATTERN,
+        arguments =
+            listOf(
+                navArgument(Routes.SPATIAL_OBJECT_DETAIL_ARG_ID) {
+                    type = NavType.StringType
+                },
+            ),
+    ) { backStackEntry ->
+        val spatialObjectId =
+            backStackEntry.arguments?.getString(Routes.SPATIAL_OBJECT_DETAIL_ARG_ID).orEmpty()
+        SpatialObjectDetailScreen(
+            onNavigateBack = { navController.popBackStack() },
+            onEdit = {
+                navController.navigate(Routes.editSpatialObject(spatialObjectId))
+            },
+        )
+    }
+}
+
+private fun NavGraphBuilder.createSpatialObjectRoute(navController: NavHostController) {
+    composable(
+        route = Routes.CREATE_SPATIAL_OBJECT_PATTERN,
+        arguments =
+            listOf(
+                navArgument(Routes.CREATE_SPATIAL_OBJECT_ARG_GARDEN_ID) {
+                    type = NavType.StringType
+                },
+            ),
+    ) {
+        CreateSpatialObjectScreen(
+            onNavigateBack = { navController.popBackStack() },
+        )
+    }
+}
+
+private fun NavGraphBuilder.editSpatialObjectRoute(navController: NavHostController) {
+    composable(
+        route = Routes.EDIT_SPATIAL_OBJECT_PATTERN,
+        arguments =
+            listOf(
+                navArgument(Routes.EDIT_SPATIAL_OBJECT_ARG_ID) {
+                    type = NavType.StringType
+                },
+            ),
+    ) {
+        EditSpatialObjectScreen(
+            onNavigateBack = { navController.popBackStack() },
+        )
+    }
+}
+
+===== FILE: app/src/test/java/com/mytuin/gardenplanner/ui/garden/GardenMapViewModelTest.kt =====
+
+package com.mytuin.gardenplanner.ui.garden
+
+import com.mytuin.gardenplanner.domain.model.garden.Coordinate
+import com.mytuin.gardenplanner.domain.model.garden.Garden
+import com.mytuin.gardenplanner.domain.model.garden.Geometry
+import com.mytuin.gardenplanner.domain.model.garden.GrowingSpace
+import com.mytuin.gardenplanner.domain.model.garden.SpatialObject
+import com.mytuin.gardenplanner.domain.usecases.garden.ObserveAreasInGarden
+import com.mytuin.gardenplanner.domain.usecases.garden.ObserveGrowingSpacesInGarden
+import com.mytuin.gardenplanner.domain.usecases.garden.ObserveSpatialObjectsInGarden
+import com.mytuin.gardenplanner.domain.vocabulary.GrowingSpaceType
+import com.mytuin.gardenplanner.domain.vocabulary.Hemisphere
+import com.mytuin.gardenplanner.domain.vocabulary.InfrastructureType
+import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
+import com.mytuin.gardenplanner.testdoubles.FakeAreaRepository
+import com.mytuin.gardenplanner.testdoubles.FakeGardenRepository
+import com.mytuin.gardenplanner.testdoubles.FakeGrowingSpaceRepository
+import com.mytuin.gardenplanner.testdoubles.FakeSpatialObjectRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+
+@OptIn(ExperimentalCoroutinesApi::class)
+class GardenMapViewModelTest {
+    private val dispatcher = StandardTestDispatcher()
+
+    @BeforeEach
+    fun setUp() {
+        Dispatchers.setMain(dispatcher)
+    }
+
+    @AfterEach
+    fun tearDown() {
+        Dispatchers.resetMain()
+    }
+
+    private fun sampleGarden() =
+        Garden(
+            id = "garden_1",
+            name = "Back Garden",
+            description = null,
+            countryCode = "NZ",
+            region = null,
+            locality = null,
+            latitude = -43.5321,
+            longitude = 172.6362,
+            timezone = null,
+            hemisphere = Hemisphere.SOUTHERN,
+            status = RecordStatus.ACTIVE,
+            createdAt = 1L,
+            updatedAt = 1L,
+        )
+
+    private fun sampleSpace(id: String) =
+        GrowingSpace(
+            id = id,
+            gardenId = "garden_1",
+            name = "Bed $id",
+            spaceType = GrowingSpaceType.RAISED_BED,
+            status = RecordStatus.ACTIVE,
+            geometry =
+                Geometry.Polygon(
+                    listOf(
+                        Coordinate(0.0, 0.0),
+                        Coordinate(2.0, 0.0),
+                        Coordinate(2.0, 1.0),
+                        Coordinate(0.0, 1.0),
+                        Coordinate(0.0, 0.0),
+                    ),
+                ),
+            lengthMetres = null,
+            widthMetres = null,
+            heightMetres = null,
+            diameterMetres = null,
+            areaSquareMetres = null,
+            volumeCubicMetres = null,
+            description = null,
+            areaId = null,
+            notes = null,
+            createdAt = 1L,
+            updatedAt = 1L,
+        )
+
+    private fun sampleObject(id: String) =
+        SpatialObject(
+            id = id,
+            gardenId = "garden_1",
+            objectType = InfrastructureType.FENCE,
+            geometry = Geometry.LineString(listOf(Coordinate(0.0, 0.0), Coordinate(5.0, 0.0))),
+            status = RecordStatus.ACTIVE,
+            name = "Fence",
+            description = null,
+            areaId = null,
+            notes = null,
+            createdAt = 1L,
+            updatedAt = 1L,
+        )
+
+    @Test
+    fun `no garden emits NoGarden`() =
+        runTest {
+            val gardenRepo = FakeGardenRepository()
+            val vm =
+                GardenMapViewModel(
+                    gardenRepo,
+                    ObserveGrowingSpacesInGarden(FakeGrowingSpaceRepository()),
+                    ObserveSpatialObjectsInGarden(FakeSpatialObjectRepository()),
+                    ObserveAreasInGarden(FakeAreaRepository()),
+                )
+            val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
+            testScheduler.advanceUntilIdle()
+            assertEquals(GardenMapUiState.NoGarden, vm.uiState.value)
+            job.cancel()
+        }
+
+    @Test
+    fun `garden without geometry emits NoGeometries`() =
+        runTest {
+            val gardenRepo = FakeGardenRepository()
+            gardenRepo.insert(sampleGarden())
+            val vm =
+                GardenMapViewModel(
+                    gardenRepo,
+                    ObserveGrowingSpacesInGarden(FakeGrowingSpaceRepository()),
+                    ObserveSpatialObjectsInGarden(FakeSpatialObjectRepository()),
+                    ObserveAreasInGarden(FakeAreaRepository()),
+                )
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
+            testScheduler.advanceUntilIdle()
+            assertEquals(GardenMapUiState.NoGeometries, vm.uiState.value)
+        }
+
+    @Test
+    fun `garden with shapes emits Ready with viewport and origin`() =
+        runTest {
+            val gardenRepo = FakeGardenRepository().apply { insert(sampleGarden()) }
+            val spaceRepo = FakeGrowingSpaceRepository().apply { insert(sampleSpace("space_1")) }
+            val objectRepo = FakeSpatialObjectRepository().apply { insert(sampleObject("object_1")) }
+            val vm =
+                GardenMapViewModel(
+                    gardenRepo,
+                    ObserveGrowingSpacesInGarden(spaceRepo),
+                    ObserveSpatialObjectsInGarden(objectRepo),
+                    ObserveAreasInGarden(FakeAreaRepository()),
+                )
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
+            testScheduler.advanceUntilIdle()
+            val state = vm.uiState.value
+            assertTrue(state is GardenMapUiState.Ready)
+            state as GardenMapUiState.Ready
+            assertEquals("Back Garden", state.gardenName)
+            assertEquals(-43.5321, state.origin.latitude, 1e-9)
+            assertEquals(172.6362, state.origin.longitude, 1e-9)
+            assertEquals(2, state.shapes.size)
+            val ids = state.shapes.map { it.id }.toSet()
+            assertEquals(setOf("space_1", "object_1"), ids)
+        }
+}
+
+===== FILE: app/src/main/res/values/strings.xml =====
+
+<resources>
+    <string name="app_name">myTUIN</string>
+
+    <string name="nav_home">Home</string>
+    <string name="nav_garden">Garden</string>
+    <string name="nav_plants">Plants</string>
+    <string name="nav_planner">Planner</string>
+    <string name="nav_inbox">Inbox</string>
+
+    <string name="add_action_content_description">Add</string>
+    <string name="add_sheet_title">Add</string>
+    <string name="add_option_plant">Plant</string>
+    <string name="add_option_water">Water</string>
+    <string name="add_option_harvest">Harvest</string>
+    <string name="add_option_observe">Observe</string>
+    <string name="add_option_feed">Feed</string>
+    <string name="add_option_prune">Prune</string>
+    <string name="add_option_intervention">Intervention</string>
+    <string name="add_option_more">More</string>
+
+    <string name="diagnostics_format">myTUIN %1$s · schema %2$d</string>
+
+    <string name="empty_home_title">Your garden at a glance</string>
+    <string name="empty_home_description">Priorities, upcoming work and recent activity will appear here.</string>
+    <string name="empty_garden_title">Your garden spaces</string>
+    <string name="empty_garden_description">Areas and growing spaces will appear here.</string>
+    <string name="empty_plants_title">Your plant records</string>
+    <string name="empty_plants_description">Plants you add will appear here.</string>
+    <string name="empty_planner_title">Your garden plans</string>
+    <string name="empty_planner_description">Plans for future work will appear here.</string>
+    <string name="empty_inbox_title">Garden items needing attention</string>
+    <string name="empty_inbox_description">Items your garden brings to your attention will appear here.</string>
+
+    <string name="error_retry">Retry</string>
+    <string name="error_details_show">Details</string>
+    <string name="error_details_hide">Hide details</string>
+    <string name="error_default_message">We couldn\'t load that.</string>
+
+    <string name="home_no_garden_title">Welcome to myTUIN</string>
+    <string name="home_no_garden_description">Create your first garden to start tracking your plants, activities, and harvests.</string>
+    <string name="home_no_garden_action">Create your first garden</string>
+    <string name="home_error_generic">We couldn\'t load your garden.</string>
+
+    <string name="home_garden_summary_status_draft">Draft</string>
+    <string name="home_garden_summary_status_active">Active</string>
+    <string name="home_garden_summary_status_inactive">Inactive</string>
+    <string name="home_garden_summary_status_deprecated">Deprecated</string>
+    <string name="home_garden_summary_status_archived">Archived</string>
+
+    <string name="create_garden_title">Create garden</string>
+    <string name="create_garden_name_label">Garden name</string>
+    <string name="create_garden_description_label">Description (optional)</string>
+    <string name="create_garden_save">Save</string>
+    <string name="create_garden_cancel">Cancel</string>
+    <string name="create_garden_name_error_blank">Enter a garden name</string>
+    <string name="create_garden_save_error_generic">We couldn\'t save that change. Try again.</string>
+    <string name="garden_detail_location_section">Location</string>
+    <string name="garden_detail_country_label">Country</string>
+    <string name="garden_detail_region_label">Region</string>
+    <string name="garden_detail_locality_label">Locality</string>
+    <string name="garden_detail_latitude_label">Latitude</string>
+    <string name="garden_detail_longitude_label">Longitude</string>
+    <string name="garden_detail_timezone_label">Timezone</string>
+    <string name="garden_detail_hemisphere_label">Hemisphere</string>
+    <string name="garden_detail_edit_location_action">Edit location</string>
+    <string name="garden_detail_not_set">Not set</string>
+    <string name="garden_detail_load_error">We couldn\'t load this garden.</string>
+
+    <string name="edit_location_title">Edit location</string>
+    <string name="edit_location_save">Save</string>
+    <string name="edit_location_cancel">Cancel</string>
+    <string name="edit_location_pick_country_action">Pick country</string>
+    <string name="edit_location_country_error">Enter a two-letter country code</string>
+    <string name="edit_location_latitude_error">Latitude must be between -90 and 90</string>
+    <string name="edit_location_longitude_error">Longitude must be between -180 and 180</string>
+    <string name="edit_location_save_error_generic">We couldn\'t save that change. Try again.</string>
+
+    <string name="location_updated_message">Location updated</string>
+    <string name="undo_action">Undo</string>
+    <string name="back_action">Back</string>
+
+    <string name="country_picker_title">Select country</string>
+    <string name="country_picker_search_hint">Search countries</string>
+
+    <string name="hemisphere_northern">Northern</string>
+    <string name="hemisphere_southern">Southern</string>
+    <string name="hemisphere_equatorial">Equatorial</string>
+    <string name="hemisphere_global">Global</string>
+    <string name="hemisphere_unknown">Unknown</string>
+
+    <!-- RecordStatus labels -->
+    <string name="status_draft">Draft</string>
+    <string name="status_active">Active</string>
+    <string name="status_inactive">Inactive</string>
+    <string name="status_deprecated">Deprecated</string>
+    <string name="status_archived">Archived</string>
+
+    <!-- GrowingSpaceType labels -->
+    <string name="growing_space_type_garden_bed">Garden bed</string>
+    <string name="growing_space_type_raised_bed">Raised bed</string>
+    <string name="growing_space_type_in_ground_bed">In-ground bed</string>
+    <string name="growing_space_type_container">Container</string>
+    <string name="growing_space_type_pot">Pot</string>
+    <string name="growing_space_type_planter">Planter</string>
+    <string name="growing_space_type_greenhouse">Greenhouse</string>
+    <string name="growing_space_type_polytunnel">Polytunnel</string>
+    <string name="growing_space_type_orchard">Orchard</string>
+    <string name="growing_space_type_row">Row</string>
+    <string name="growing_space_type_border">Border</string>
+    <string name="growing_space_type_vertical_space">Vertical space</string>
+    <string name="growing_space_type_nursery_area">Nursery area</string>
+    <string name="growing_space_type_lawn">Lawn</string>
+    <string name="growing_space_type_mixed_area">Mixed area</string>
+    <string name="growing_space_type_other">Other</string>
+
+    <!-- Growing spaces list -->
+    <string name="growing_spaces_list_title">Growing spaces</string>
+    <string name="growing_spaces_list_empty_title">No growing spaces yet</string>
+    <string name="growing_spaces_list_empty_description">Growing spaces you create will appear here.</string>
+    <string name="growing_spaces_list_error">We couldn\'t load your growing spaces.</string>
+
+    <!-- Garden Detail additions -->
+    <string name="garden_detail_growing_spaces_section">Growing spaces</string>
+    <string name="garden_detail_view_growing_spaces_action">View growing spaces</string>
+
+    <!-- Growing space detail -->
+    <string name="growing_space_detail_section_description">Description</string>
+    <string name="growing_space_detail_section_dimensions">Dimensions</string>
+    <string name="growing_space_detail_section_geometry">Geometry</string>
+    <string name="growing_space_detail_section_notes">Notes</string>
+    <string name="growing_space_detail_length_format">Length: %1$s m</string>
+    <string name="growing_space_detail_width_format">Width: %1$s m</string>
+    <string name="growing_space_detail_height_format">Height: %1$s m</string>
+    <string name="growing_space_detail_diameter_format">Diameter: %1$s m</string>
+    <string name="growing_space_detail_area_format">Area: %1$s m²</string>
+    <string name="growing_space_detail_volume_format">Volume: %1$s m³</string>
+    <string name="growing_space_detail_geometry_point">Point</string>
+    <string name="growing_space_detail_geometry_line">Line</string>
+    <string name="growing_space_detail_geometry_polygon">Polygon</string>
+    <string name="growing_space_detail_geometry_not_set">Not set</string>
+    <string name="growing_space_detail_load_error">We couldn\'t load this growing space.</string>
+    <string name="growing_space_detail_type_and_status_format">%1$s · %2$s</string>
+
+    <!-- Shared growing space form -->
+    <string name="form_growing_space_name_label">Name</string>
+    <string name="form_growing_space_name_error_blank">Enter a name</string>
+    <string name="form_growing_space_type_label">Type</string>
+    <string name="form_growing_space_description_label">Description</string>
+    <string name="form_growing_space_notes_label">Notes</string>
+    <string name="form_growing_space_dimensions_header">Dimensions (optional)</string>
+    <string name="form_growing_space_length_label">Length (m)</string>
+    <string name="form_growing_space_width_label">Width (m)</string>
+    <string name="form_growing_space_height_label">Height (m)</string>
+    <string name="form_growing_space_diameter_label">Diameter (m)</string>
+    <string name="form_growing_space_area_label">Area (m²)</string>
+    <string name="form_growing_space_volume_label">Volume (m³)</string>
+    <string name="form_growing_space_dimension_error">Enter a positive number</string>
+    <string name="form_growing_space_geometry_header">Geometry (optional)</string>
+    <string name="form_growing_space_geometry_current_format">Current geometry: %1$s</string>
+    <string name="form_growing_space_geometry_help_edit">Enter four corners to replace the current geometry with a rectangle. Leave blank to keep the current geometry.</string>
+    <string name="form_growing_space_geometry_help_create">Enter four corners to define a rectangular geometry. Leave blank to create the space without geometry.</string>
+    <string name="form_growing_space_geometry_x1_label">X1 (m)</string>
+    <string name="form_growing_space_geometry_y1_label">Y1 (m)</string>
+    <string name="form_growing_space_geometry_x2_label">X2 (m)</string>
+    <string name="form_growing_space_geometry_y2_label">Y2 (m)</string>
+    <string name="form_growing_space_geometry_error">Enter four valid corners forming a non-zero rectangle, or leave all four blank</string>
+    <string name="form_action_save">Save</string>
+    <string name="form_action_cancel">Cancel</string>
+
+    <!-- Create growing space -->
+    <string name="create_growing_space_title">New growing space</string>
+    <string name="create_growing_space_save_error">We couldn\'t save that change. Try again.</string>
+
+    <!-- Edit growing space -->
+    <string name="edit_growing_space_title">Edit growing space</string>
+    <string name="edit_growing_space_save_error">We couldn\'t save that change. Try again.</string>
+    <string name="edit_growing_space_load_error">We couldn\'t load this growing space.</string>
+
+    <!-- Growing spaces list additions -->
+    <string name="growing_spaces_list_create_action">Create growing space</string>
+    <string name="growing_spaces_list_empty_action">Add your first growing space</string>
+
+    <!-- Growing space detail additions -->
+    <string name="growing_space_detail_edit_action">Edit</string>
+    <string name="growing_space_detail_archive_action">Archive</string>
+    <string name="growing_space_detail_restore_action">Restore</string>
+    <string name="growing_space_archive_confirm_title">Archive this growing space?</string>
+    <string name="growing_space_archive_confirm_message">This space will be hidden from the list. Historical records remain.</string>
+    <string name="growing_space_archive_confirm_confirm">Archive</string>
+    <string name="growing_space_archive_confirm_cancel">Cancel</string>
+
+    <!-- Spatial object — InfrastructureType labels -->
+    <string name="spatial_object_type_path">Path</string>
+    <string name="spatial_object_type_fence">Fence</string>
+    <string name="spatial_object_type_wall">Wall</string>
+    <string name="spatial_object_type_gate">Gate</string>
+    <string name="spatial_object_type_building">Building</string>
+    <string name="spatial_object_type_shed">Shed</string>
+    <string name="spatial_object_type_greenhouse_structure">Greenhouse structure</string>
+    <string name="spatial_object_type_irrigation">Irrigation</string>
+    <string name="spatial_object_type_water_source">Water source</string>
+    <string name="spatial_object_type_drain">Drain</string>
+    <string name="spatial_object_type_compost_area">Compost area</string>
+    <string name="spatial_object_type_storage_area">Storage area</string>
+    <string name="spatial_object_type_support_structure">Support structure</string>
+    <string name="spatial_object_type_trellis">Trellis</string>
+    <string name="spatial_object_type_shade_structure">Shade structure</string>
+    <string name="spatial_object_type_lighting">Lighting</string>
+    <string name="spatial_object_type_utility">Utility</string>
+    <string name="spatial_object_type_other">Other</string>
+
+    <!-- Garden Detail additions (9e) -->
+    <string name="garden_detail_spatial_objects_section">Garden objects</string>
+    <string name="garden_detail_view_spatial_objects_action">View garden objects</string>
+
+    <!-- Spatial objects list -->
+    <string name="spatial_objects_list_title">Garden objects</string>
+    <string name="spatial_objects_list_empty_title">No garden objects yet</string>
+    <string name="spatial_objects_list_empty_description">Objects you create will appear here.</string>
+    <string name="spatial_objects_list_empty_description_show_archived">No objects in this garden.</string>
+    <string name="spatial_objects_list_error">We couldn\'t load your garden objects.</string>
+    <string name="spatial_objects_list_create_action">Create garden object</string>
+    <string name="spatial_objects_list_empty_action">Add your first garden object</string>
+    <string name="spatial_objects_list_show_archived">Show archived</string>
+    <string name="spatial_objects_list_hide_archived">Hide archived</string>
+
+    <!-- Spatial object detail -->
+    <string name="spatial_object_detail_title">Garden object</string>
+    <string name="spatial_object_detail_section_description">Description</string>
+    <string name="spatial_object_detail_section_geometry">Geometry</string>
+    <string name="spatial_object_detail_section_notes">Notes</string>
+    <string name="spatial_object_detail_type_and_status_format">%1$s · %2$s</string>
+    <string name="spatial_object_detail_load_error">We couldn\'t load this garden object.</string>
+    <string name="spatial_object_detail_edit_action">Edit</string>
+    <string name="spatial_object_detail_archive_action">Archive</string>
+    <string name="spatial_object_detail_restore_action">Restore</string>
+    <string name="spatial_object_archive_confirm_title">Archive this garden object?</string>
+    <string name="spatial_object_archive_confirm_message">This object will be hidden from the list. Historical records remain.</string>
+    <string name="spatial_object_archive_confirm_confirm">Archive</string>
+    <string name="spatial_object_archive_confirm_cancel">Cancel</string>
+
+    <!-- Spatial object form -->
+    <string name="form_spatial_object_type_label">Type</string>
+    <string name="form_spatial_object_name_label">Name (optional)</string>
+    <string name="form_spatial_object_description_label">Description</string>
+    <string name="form_spatial_object_notes_label">Notes</string>
+    <string name="form_spatial_object_area_label">Area</string>
+    <string name="form_spatial_object_area_none">No area</string>
+    <string name="form_spatial_object_area_unknown">Unknown area</string>
+    <string name="form_spatial_object_geometry_header">Geometry</string>
+    <string name="form_spatial_object_geometry_current_format">Current geometry: %1$s</string>
+    <string name="form_spatial_object_geometry_help_create">Enter four corners to define the object\'s rectangular footprint. All four are required.</string>
+    <string name="form_spatial_object_geometry_help_edit">Geometry editing is not available in this form. Use the future map editor to reshape an object.</string>
+    <string name="form_spatial_object_geometry_error">Enter four valid corners forming a non-zero rectangle</string>
+
+    <!-- Create spatial object -->
+    <string name="create_spatial_object_title">New garden object</string>
+    <string name="create_spatial_object_save_error">We couldn\'t save that change. Try again.</string>
+
+    <!-- Edit spatial object -->
+    <string name="edit_spatial_object_title">Edit garden object</string>
+    <string name="edit_spatial_object_save_error">We couldn\'t save that change. Try again.</string>
+    <string name="edit_spatial_object_load_error">We couldn\'t load this garden object.</string>
+
+    <!-- Garden map (9f) -->
+    <string name="garden_map_no_garden_title">Your garden spaces</string>
+    <string name="garden_map_no_garden_description">Create a garden to see it on the map.</string>
+    <string name="garden_map_no_geometries_title">No garden layout yet</string>
+    <string name="garden_map_no_geometries_description">Add a growing space or garden object with geometry to see it on the map.</string>
+    <string name="garden_map_error">We couldn\'t load the garden map.</string>
+    <string name="garden_map_recentre_action">Re-centre map</string>
+
+    <!-- Map editor (9g) -->
+    <string name="map_editor_delete_action">Delete</string>
+    <string name="map_editor_undo_action">Undo</string>
+    <string name="map_editor_mode_select">Select</string>
+    <string name="map_editor_mode_draw">Draw</string>
+    <string name="map_editor_close_ring_action">Save outline</string>
+    <string name="map_editor_clear_vertices_action">Clear</string>
+    <string name="map_editor_cancel_draw_action">Cancel</string>
+</resources>
+
+===== FILE: app/src/main/java/com/mytuin/gardenplanner/ui/theme/Theme.kt =====
+
+package com.mytuin.gardenplanner.ui.theme
+
+import android.app.Activity
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
+
+private val LightColorScheme =
+    lightColorScheme(
+        primary = Forest,
+        onPrimary = Color.White,
+        primaryContainer = Sage,
+        onPrimaryContainer = DeepForest,
+        secondary = Sage,
+        onSecondary = Color.White,
+        background = WarmWhite,
+        onBackground = Charcoal,
+        surface = WarmWhite,
+        onSurface = Charcoal,
+        surfaceVariant = Paper,
+        onSurfaceVariant = Charcoal,
+        outline = Stone,
+        outlineVariant = Stone,
+        error = Clay,
+        onError = Color.White,
+    )
+
+private val DarkColorScheme =
+    darkColorScheme(
+        primary = Sage,
+        onPrimary = DeepForest,
+        primaryContainer = DeepForest,
+        onPrimaryContainer = Sage,
+        secondary = Sage,
+        onSecondary = DeepForest,
+        background = DarkSurface,
+        onBackground = WarmWhite,
+        surface = DarkSurface,
+        onSurface = WarmWhite,
+        surfaceVariant = DarkSurfaceVariant,
+        onSurfaceVariant = WarmWhite,
+        outline = MidStone,
+        outlineVariant = MidStone,
+        error = Clay,
+        onError = Color.White,
+    )
+
+/**
+ * V1_VISUAL_DESIGN_SPECIFICATION §53–§55: both themes supported.
+ * Light is the default; dark follows the system.
+ */
+@Composable
+fun MyTuinTheme(
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    content: @Composable () -> Unit,
+) {
+    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+
+    val view = LocalView.current
+    if (!view.isInEditMode) {
+        SideEffect {
+            val window = (view.context as Activity).window
+            WindowCompat
+                .getInsetsController(window, view)
+                .isAppearanceLightStatusBars = !darkTheme
+        }
+    }
+
+    MaterialTheme(
+        colorScheme = colorScheme,
+        typography = MyTuinTypography,
+        content = content,
+    )
+}
+
+
+===== MISSING FILES =====
+(none)

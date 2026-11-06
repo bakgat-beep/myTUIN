@@ -27,5 +27,10 @@ class FakeGrowingSpaceHistoryRepository : GrowingSpaceHistoryRepository {
                 it.validTo > atMillis
         }
 
+    /** Visible-for-tests seeding hook. Mirrors FakeSpatialObjectHistoryRepository.seed. */
+    fun seed(rows: List<GrowingSpaceHistory>) {
+        store.value = rows
+    }
+
     fun snapshot(): List<GrowingSpaceHistory> = store.value
 }

@@ -165,4 +165,84 @@ class GardenMapViewModelTest {
             val ids = state.shapes.map { it.id }.toSet()
             assertEquals(setOf("space_1", "object_1"), ids)
         }
+
+    @Test
+    fun `hiding growing spaces kind excludes them from Ready shapes`() =
+        runTest {
+            val gardenRepo = FakeGardenRepository().apply { insert(sampleGarden()) }
+            val spaceRepo = FakeGrowingSpaceRepository().apply { insert(sampleSpace("space_1")) }
+            val objectRepo = FakeSpatialObjectRepository().apply { insert(sampleObject("object_1")) }
+            val vm =
+                GardenMapViewModel(
+                    gardenRepo,
+                    ObserveGrowingSpacesInGarden(spaceRepo),
+                    ObserveSpatialObjectsInGarden(objectRepo),
+                    ObserveAreasInGarden(FakeAreaRepository()),
+                )
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
+            testScheduler.advanceUntilIdle()
+
+            vm.setShowGrowingSpaces(false)
+            testScheduler.advanceUntilIdle()
+
+            val state = vm.uiState.value
+            assertTrue(state is GardenMapUiState.Ready)
+            state as GardenMapUiState.Ready
+            assertEquals(1, state.shapes.size)
+            assertEquals("object_1", state.shapes.first().id)
+        }
+
+    @Test
+    fun `hiding every kind emits AllLayersHidden`() =
+        runTest {
+            val gardenRepo = FakeGardenRepository().apply { insert(sampleGarden()) }
+            val spaceRepo = FakeGrowingSpaceRepository().apply { insert(sampleSpace("space_1")) }
+            val objectRepo = FakeSpatialObjectRepository().apply { insert(sampleObject("object_1")) }
+            val vm =
+                GardenMapViewModel(
+                    gardenRepo,
+                    ObserveGrowingSpacesInGarden(spaceRepo),
+                    ObserveSpatialObjectsInGarden(objectRepo),
+                    ObserveAreasInGarden(FakeAreaRepository()),
+                )
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
+            testScheduler.advanceUntilIdle()
+
+            vm.setShowGrowingSpaces(false)
+            vm.setShowSpatialObjects(false)
+            testScheduler.advanceUntilIdle()
+
+            assertEquals(GardenMapUiState.AllLayersHidden, vm.uiState.value)
+        }
+
+    @Test
+    fun `resetFilters restores default and re-emits Ready`() =
+        runTest {
+            val gardenRepo = FakeGardenRepository().apply { insert(sampleGarden()) }
+            val spaceRepo = FakeGrowingSpaceRepository().apply { insert(sampleSpace("space_1")) }
+            val objectRepo = FakeSpatialObjectRepository().apply { insert(sampleObject("object_1")) }
+            val vm =
+                GardenMapViewModel(
+                    gardenRepo,
+                    ObserveGrowingSpacesInGarden(spaceRepo),
+                    ObserveSpatialObjectsInGarden(objectRepo),
+                    ObserveAreasInGarden(FakeAreaRepository()),
+                )
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { vm.uiState.collect {} }
+            testScheduler.advanceUntilIdle()
+
+            vm.setShowGrowingSpaces(false)
+            vm.setShowSpatialObjects(false)
+            testScheduler.advanceUntilIdle()
+            assertEquals(GardenMapUiState.AllLayersHidden, vm.uiState.value)
+
+            vm.resetFilters()
+            testScheduler.advanceUntilIdle()
+
+            val state = vm.uiState.value
+            assertTrue(state is GardenMapUiState.Ready)
+            state as GardenMapUiState.Ready
+            assertEquals(2, state.shapes.size)
+            assertEquals(MapFilterState(), vm.filterState.value)
+        }
 }

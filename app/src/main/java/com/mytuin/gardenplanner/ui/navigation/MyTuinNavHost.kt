@@ -46,6 +46,7 @@ import com.mytuin.gardenplanner.ui.garden.CreateSpatialObjectScreen
 import com.mytuin.gardenplanner.ui.garden.EditGrowingSpaceScreen
 import com.mytuin.gardenplanner.ui.garden.EditSpatialObjectScreen
 import com.mytuin.gardenplanner.ui.garden.GardenDetailScreen
+import com.mytuin.gardenplanner.ui.garden.GardenMapHistoryScreen
 import com.mytuin.gardenplanner.ui.garden.GardenScreen
 import com.mytuin.gardenplanner.ui.garden.GrowingSpaceDetailScreen
 import com.mytuin.gardenplanner.ui.garden.GrowingSpacesListScreen
@@ -157,7 +158,11 @@ private fun ShellNavHost(
                 { gardenId -> navController.navigate(Routes.gardenDetail(gardenId)) },
             )
         }
-        composable(Destination.Garden.route) { GardenScreen() }
+        composable(Destination.Garden.route) {
+            GardenScreen(
+                onNavigateToHistory = { navController.navigate(Routes.GARDEN_HISTORY) },
+            )
+        }
         composable(Destination.Plants.route) { PlantsScreen() }
         composable(Destination.Planner.route) { PlannerScreen() }
         composable(Destination.Inbox.route) { InboxScreen() }
@@ -175,6 +180,11 @@ private fun ShellNavHost(
         spatialObjectDetailRoute(navController)
         createSpatialObjectRoute(navController)
         editSpatialObjectRoute(navController)
+        composable(Routes.GARDEN_HISTORY) {
+            GardenMapHistoryScreen(
+                onNavigateBack = { navController.popBackStack() },
+            )
+        }
     }
 }
 

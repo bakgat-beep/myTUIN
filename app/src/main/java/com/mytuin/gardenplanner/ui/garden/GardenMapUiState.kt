@@ -1,12 +1,17 @@
 package com.mytuin.gardenplanner.ui.garden
 
 /**
- * State for the Garden map screen (Step 9f).
+ * State for the Garden map screen (Steps 9f and 9h).
  *
- * Five distinct states: loading, no garden, garden-with-no-geometry,
- * ready with shapes, error. The user must understand which of these
- * applies — the empty-state message differs materially between
- * NoGarden ("create a garden") and NoGeometries ("add a shape").
+ * Six distinct states. The user must understand which applies —
+ * the empty-state message differs materially between:
+ *   NoGarden        ("create a garden")
+ *   NoGeometries    ("add a shape")
+ *   AllLayersHidden ("your filters hide everything; reset them")
+ *
+ * AllLayersHidden is distinct from NoGeometries because the fix is
+ * different: reset the filters vs create a shape. Folding them
+ * together would make both messages half-wrong in the other case.
  */
 sealed interface GardenMapUiState {
     data object Loading : GardenMapUiState
@@ -14,6 +19,8 @@ sealed interface GardenMapUiState {
     data object NoGarden : GardenMapUiState
 
     data object NoGeometries : GardenMapUiState
+
+    data object AllLayersHidden : GardenMapUiState
 
     data class Ready(
         val gardenName: String,

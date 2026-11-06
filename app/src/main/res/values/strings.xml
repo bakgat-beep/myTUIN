@@ -278,4 +278,31 @@
     <string name="map_editor_close_ring_action">Save outline</string>
     <string name="map_editor_clear_vertices_action">Clear</string>
     <string name="map_editor_cancel_draw_action">Cancel</string>
+
+    <!-- Map layers and filters (9h) -->
+    <string name="map_layers_fab_content_description">Layers</string>
+    <string name="map_layers_title">Layers</string>
+    <string name="map_layers_kinds_header">Show layers</string>
+    <string name="map_layers_kind_areas">Areas</string>
+    <string name="map_layers_kind_growing_spaces">Growing spaces</string>
+    <string name="map_layers_kind_spatial_objects">Garden objects</string>
+    <string name="map_layers_growing_space_types_header">Growing space types</string>
+    <string name="map_layers_spatial_object_types_header">Garden object types</string>
+    <string name="map_layers_reset_action">Reset all</string>
+    <string name="map_layers_all_hidden_title">All layers hidden</string>
+    <string name="map_layers_all_hidden_description">Every layer is hidden. Reset filters to see your garden.</string>
+
+    <!-- Map layers → History entry (9i) -->
+    <string name="map_layers_history_action">History</string>
+
+    <!-- Garden history screen (9i) -->
+    <string name="garden_history_title">Garden history</string>
+    <string name="garden_history_no_garden_title">Your garden spaces</string>
+    <string name="garden_history_no_garden_description">Create a garden to see its history.</string>
+    <string name="garden_history_no_shapes_title">No layout yet</string>
+    <string name="garden_history_no_shapes_description">Add a growing space or garden object to see changes over time.</string>
+    <string name="garden_history_no_history_title">No history yet</string>
+    <string name="garden_history_no_history_description">Edit a shape on the map to start recording history.</string>
+    <string name="garden_history_error">We couldn\'t load garden history.</string>
+    <string name="history_slider_jump_to_now">Jump to now</string>
 </resources>
