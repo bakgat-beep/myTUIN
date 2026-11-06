@@ -331,7 +331,10 @@ class VerticalSliceTest {
 
             val spatialObjectRepository: SpatialObjectRepository =
                 SpatialObjectRepositoryImpl(
+                    db = db,
                     spatialObjectDao = db.spatialObjectDao(),
+                    spatialObjectHistoryDao = db.spatialObjectHistoryDao(),
+                    idGenerator = idGenerator,
                     gardenDao = db.gardenDao(),
                     areaDao = db.areaDao(),
                 )
@@ -377,7 +380,10 @@ class VerticalSliceTest {
                 GardenRepositoryImpl(db.gardenDao())
             val reloadedSpatialObjectRepository: SpatialObjectRepository =
                 SpatialObjectRepositoryImpl(
+                    db = db,
                     spatialObjectDao = db.spatialObjectDao(),
+                    spatialObjectHistoryDao = db.spatialObjectHistoryDao(),
+                    idGenerator = idGenerator,
                     gardenDao = db.gardenDao(),
                     areaDao = db.areaDao(),
                 )
@@ -444,7 +450,10 @@ class VerticalSliceTest {
 
             val afterArchiveRepo: SpatialObjectRepository =
                 SpatialObjectRepositoryImpl(
+                    db = db,
                     spatialObjectDao = db.spatialObjectDao(),
+                    spatialObjectHistoryDao = db.spatialObjectHistoryDao(),
+                    idGenerator = idGenerator,
                     gardenDao = db.gardenDao(),
                     areaDao = db.areaDao(),
                 )
@@ -490,7 +499,10 @@ class VerticalSliceTest {
 
             val afterRestoreRepo: SpatialObjectRepository =
                 SpatialObjectRepositoryImpl(
+                    db = db,
                     spatialObjectDao = db.spatialObjectDao(),
+                    spatialObjectHistoryDao = db.spatialObjectHistoryDao(),
+                    idGenerator = idGenerator,
                     gardenDao = db.gardenDao(),
                     areaDao = db.areaDao(),
                 )

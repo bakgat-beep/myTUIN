@@ -37,6 +37,7 @@ import com.mytuin.gardenplanner.data.dao.RotationGroupDao
 import com.mytuin.gardenplanner.data.dao.SoilRecordDao
 import com.mytuin.gardenplanner.data.dao.SourceDao
 import com.mytuin.gardenplanner.data.dao.SpatialObjectDao
+import com.mytuin.gardenplanner.data.dao.SpatialObjectHistoryDao
 import com.mytuin.gardenplanner.data.dao.UserDecisionDao
 import dagger.Module
 import dagger.Provides
@@ -65,6 +66,9 @@ object DatabaseModule {
 
     @Provides
     fun provideSpatialObjectDao(db: GardenDatabase): SpatialObjectDao = db.spatialObjectDao()
+
+    @Provides
+    fun provideSpatialObjectHistoryDao(db: GardenDatabase): SpatialObjectHistoryDao = db.spatialObjectHistoryDao()
 
     @Provides
     fun provideGrowingSpaceDao(db: GardenDatabase): GrowingSpaceDao = db.growingSpaceDao()

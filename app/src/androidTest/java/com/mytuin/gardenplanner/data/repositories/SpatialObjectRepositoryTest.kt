@@ -18,6 +18,7 @@ import com.mytuin.gardenplanner.domain.vocabulary.AreaType
 import com.mytuin.gardenplanner.domain.vocabulary.Hemisphere
 import com.mytuin.gardenplanner.domain.vocabulary.InfrastructureType
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
+import com.mytuin.gardenplanner.platform.identifiers.UuidIdGenerator
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -48,7 +49,10 @@ class SpatialObjectRepositoryTest {
                     .build()
             repository =
                 SpatialObjectRepositoryImpl(
+                    db = db,
                     spatialObjectDao = db.spatialObjectDao(),
+                    spatialObjectHistoryDao = db.spatialObjectHistoryDao(),
+                    idGenerator = UuidIdGenerator(),
                     gardenDao = db.gardenDao(),
                     areaDao = db.areaDao(),
                 )

@@ -10,12 +10,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.mytuin.gardenplanner.R
+import com.mytuin.gardenplanner.domain.model.garden.Geometry
 import com.mytuin.gardenplanner.ui.components.EmptyState
 import com.mytuin.gardenplanner.ui.components.ErrorState
 
 @Composable
 fun GardenMapScreen(
     uiState: GardenMapUiState,
+    editState: GardenMapEditUiState,
+    onSelectShape: (String) -> Unit,
+    onClearSelection: () -> Unit,
+    onSaveGeometry: (MapShape, Geometry) -> Unit,
+    onArchiveSelected: (MapShape) -> Unit,
+    onUndoSelected: (MapShape) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     when (uiState) {
@@ -45,6 +52,12 @@ fun GardenMapScreen(
         is GardenMapUiState.Ready ->
             GardenMapCanvas(
                 uiState = uiState,
+                editState = editState,
+                onSelectShape = onSelectShape,
+                onClearSelection = onClearSelection,
+                onSaveGeometry = onSaveGeometry,
+                onArchiveSelected = onArchiveSelected,
+                onUndoSelected = onUndoSelected,
                 modifier = modifier.fillMaxSize(),
             )
     }

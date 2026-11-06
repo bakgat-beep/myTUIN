@@ -1,6 +1,7 @@
 package com.mytuin.gardenplanner.testdoubles
 
 import com.mytuin.gardenplanner.domain.error.NotFoundError
+import com.mytuin.gardenplanner.domain.model.garden.Geometry
 import com.mytuin.gardenplanner.domain.model.garden.SpatialObject
 import com.mytuin.gardenplanner.domain.model.garden.SpatialObjectFields
 import com.mytuin.gardenplanner.domain.repository.SpatialObjectRepository
@@ -16,8 +17,23 @@ class FakeSpatialObjectRepository : SpatialObjectRepository {
         val at: Long,
     )
 
+    data class FieldsUpdateCall(
+        val id: String,
+        val fields: SpatialObjectFields,
+        val at: Long,
+    )
+
+    data class GeometryUpdateCall(
+        val id: String,
+        val geometry: Geometry,
+        val at: Long,
+        val reason: String?,
+    )
+
     private val store = MutableStateFlow<List<SpatialObject>>(emptyList())
     private val statusChangeCalls = mutableListOf<StatusChangeCall>()
+    private val fieldsUpdateCalls = mutableListOf<FieldsUpdateCall>()
+    private val geometryUpdateCalls = mutableListOf<GeometryUpdateCall>()
 
     override fun observeSpatialObjectsInGarden(
         gardenId: String,
@@ -43,6 +59,26 @@ class FakeSpatialObjectRepository : SpatialObjectRepository {
         store.value = store.value + spatialObject
     }
 
+    override suspend fun updateGeometry(
+        id: String,
+        newGeometry: Geometry,
+        effectiveAt: Long,
+        reason: String?,
+    ) {
+        if (store.value.none { it.id == id }) {
+            throw NotFoundError("SpatialObject", id)
+        }
+        geometryUpdateCalls.add(GeometryUpdateCall(id, newGeometry, effectiveAt, reason))
+        store.value =
+            store.value.map { obj ->
+                if (obj.id == id) {
+                    obj.copy(geometry = newGeometry, updatedAt = effectiveAt)
+                } else {
+                    obj
+                }
+            }
+    }
+
     override suspend fun archive(
         id: String,
         archivedAt: Long,
@@ -56,37 +92,6 @@ class FakeSpatialObjectRepository : SpatialObjectRepository {
     ) {
         applyStatus(id, RecordStatus.ACTIVE, restoredAt)
     }
-
-    private fun applyStatus(
-        id: String,
-        status: RecordStatus,
-        at: Long,
-    ) {
-        if (store.value.none { it.id == id }) {
-            throw NotFoundError("SpatialObject", id)
-        }
-        statusChangeCalls.add(StatusChangeCall(id, status, at))
-        store.value =
-            store.value.map { spatialObject ->
-                if (spatialObject.id == id) {
-                    spatialObject.copy(status = status, updatedAt = at)
-                } else {
-                    spatialObject
-                }
-            }
-    }
-
-    fun snapshot(): List<SpatialObject> = store.value
-
-    fun statusChangeCalls(): List<StatusChangeCall> = statusChangeCalls.toList()
-
-    data class FieldsUpdateCall(
-        val id: String,
-        val fields: SpatialObjectFields,
-        val at: Long,
-    )
-
-    private val fieldsUpdateCalls = mutableListOf<FieldsUpdateCall>()
 
     override suspend fun updateFields(
         id: String,
@@ -114,5 +119,30 @@ class FakeSpatialObjectRepository : SpatialObjectRepository {
             }
     }
 
+    private fun applyStatus(
+        id: String,
+        status: RecordStatus,
+        at: Long,
+    ) {
+        if (store.value.none { it.id == id }) {
+            throw NotFoundError("SpatialObject", id)
+        }
+        statusChangeCalls.add(StatusChangeCall(id, status, at))
+        store.value =
+            store.value.map { spatialObject ->
+                if (spatialObject.id == id) {
+                    spatialObject.copy(status = status, updatedAt = at)
+                } else {
+                    spatialObject
+                }
+            }
+    }
+
+    fun snapshot(): List<SpatialObject> = store.value
+
+    fun statusChangeCalls(): List<StatusChangeCall> = statusChangeCalls.toList()
+
     fun fieldsUpdateCalls(): List<FieldsUpdateCall> = fieldsUpdateCalls.toList()
+
+    fun geometryUpdateCalls(): List<GeometryUpdateCall> = geometryUpdateCalls.toList()
 }

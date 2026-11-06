@@ -38,6 +38,7 @@ object MapLibreStyleConstants {
     const val PROP_FILL_OPACITY = "fillOpacity"
     const val PROP_STROKE_COLOR = "strokeColor"
     const val PROP_STROKE_WIDTH = "strokeWidth"
+    const val PROP_SHAPE_ID = "shapeId"
 }
 
 private const val CIRCLE_RADIUS_PX = 5f

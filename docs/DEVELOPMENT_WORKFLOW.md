@@ -351,7 +351,8 @@ The full current pattern list:
     light_requirement, shade_tolerance, temperature_class,
     frost_sensitivity, heat_tolerance, drought_tolerance,
     salinity_tolerance, waterlogging_tolerance, maintenance_demand,
-    pollination_requirement, container_suitable, value_id
+    pollination_requirement, container_suitable, value_id, valid_from,
+    valid_to, recorded_at
 
 ---
 

@@ -51,6 +51,13 @@ android {
     testOptions {
         unitTests {
             isIncludeAndroidResources = true
+            // Android stubs such as android.util.Log throw by default
+            // in JVM unit tests. Every ViewModel catch block calls
+            // Log.w(...); the first test that exercises an error
+            // path (GardenMapEditViewModelTest.onErrorHandled) needs
+            // the stub to return quietly instead of throwing.
+            // Standard Gradle setting for this situation.
+            isReturnDefaultValues = true
             all { it.useJUnitPlatform() }
         }
     }

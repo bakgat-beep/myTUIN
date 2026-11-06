@@ -1,5 +1,6 @@
 package com.mytuin.gardenplanner.domain.repository
 
+import com.mytuin.gardenplanner.domain.model.garden.Geometry
 import com.mytuin.gardenplanner.domain.model.garden.SpatialObject
 import com.mytuin.gardenplanner.domain.model.garden.SpatialObjectFields
 import kotlinx.coroutines.flow.Flow
@@ -7,9 +8,13 @@ import kotlinx.coroutines.flow.Flow
 /**
  * Repository interface for SpatialObject.
  *
- * Mirrors AreaRepository. No updateGeometry yet: no requirement, and
- * adding it would imply a history-table decision DEC-041 does not
- * currently make for SpatialObject (A4).
+ * Two update paths, mirroring GrowingSpaceRepository:
+ *   - updateGeometry writes the current geometry and a companion
+ *     history row atomically (DEC-041 / DEC-051). newGeometry is
+ *     non-null because SpatialObject.geometry is required (A5).
+ *   - updateFields writes only the mutable scalar fields; geometry,
+ *     status, garden_id and created_at are preserved by the DAO
+ *     query.
  */
 interface SpatialObjectRepository {
     fun observeSpatialObjectsInGarden(
@@ -22,6 +27,13 @@ interface SpatialObjectRepository {
     suspend fun getSpatialObject(id: String): SpatialObject?
 
     suspend fun insert(spatialObject: SpatialObject)
+
+    suspend fun updateGeometry(
+        id: String,
+        newGeometry: Geometry,
+        effectiveAt: Long,
+        reason: String?,
+    )
 
     suspend fun archive(
         id: String,

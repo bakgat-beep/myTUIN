@@ -6,15 +6,22 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
-/**
- * The Garden tab. In 9f this is the production map; the debug-gated
- * MapLibrePoc that previously filled this screen is deleted.
- */
 @Composable
 fun GardenScreen(
     modifier: Modifier = Modifier,
     viewModel: GardenMapViewModel = hiltViewModel(),
+    editViewModel: GardenMapEditViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    GardenMapScreen(uiState = uiState, modifier = modifier)
+    val editState by editViewModel.uiState.collectAsStateWithLifecycle()
+    GardenMapScreen(
+        uiState = uiState,
+        editState = editState,
+        onSelectShape = editViewModel::selectShape,
+        onClearSelection = editViewModel::clearSelection,
+        onSaveGeometry = editViewModel::saveGeometry,
+        onArchiveSelected = editViewModel::archiveSelected,
+        onUndoSelected = editViewModel::undoLastEdit,
+        modifier = modifier,
+    )
 }

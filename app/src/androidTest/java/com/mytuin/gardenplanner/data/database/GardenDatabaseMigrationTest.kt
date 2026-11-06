@@ -33,6 +33,7 @@ class GardenDatabaseMigrationTest {
             "garden_plant_preference",
             "area",
             "spatial_object",
+            "spatial_object_history",
             "plant_instance",
             "plant_instance_history",
             "activity",
@@ -2062,6 +2063,80 @@ class GardenDatabaseMigrationTest {
             .use { cursor ->
                 assertTrue("v26 plant row must survive migration", cursor.moveToFirst())
                 assertEquals("V26 Plant", cursor.getString(0))
+            }
+
+        migrated.close()
+    }
+
+    @Test
+    fun fixture_migrates_from_v27_to_current_adding_spatial_object_history_table_with_data_intact() {
+        helper.createDatabase("v27-fixture", 27).apply {
+            execSQL(
+                """
+                INSERT INTO garden (
+                    id, name, created_at, updated_at, status, hemisphere
+                ) VALUES (
+                    'garden_test_v27',
+                    'V27 Garden',
+                    1700000000000,
+                    1700000000000,
+                    'draft',
+                    'unknown'
+                )
+                """.trimIndent(),
+            )
+            execSQL(
+                """
+                INSERT INTO spatial_object (
+                    id, garden_id, object_type, geometry_type, geometry_data,
+                    status, created_at, updated_at
+                ) VALUES (
+                    'spatialobject_test_v27',
+                    'garden_test_v27',
+                    'fence',
+                    'polygon',
+                    '{"type":"Polygon","coordinates":[[[0.0,0.0],[3.0,0.0],[3.0,1.0],[0.0,1.0],[0.0,0.0]]]}',
+                    'active',
+                    1700000000000,
+                    1700000000000
+                )
+                """.trimIndent(),
+            )
+            close()
+        }
+
+        val migrated = helper.runMigrationsAndValidate("v27-fixture", GARDEN_DATABASE_VERSION, true, Migrations.MIGRATION_19_20)
+
+        migrated
+            .query(
+                "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'spatial_object_history'",
+            ).use { cursor ->
+                assertTrue(
+                    "spatial_object_history table must exist after v27 migration",
+                    cursor.moveToFirst(),
+                )
+            }
+
+        assertColumnsPresent(
+            migrated,
+            "spatial_object_history",
+            "id",
+            "spatial_object_id",
+            "geometry_type",
+            "geometry_data",
+            "valid_from",
+            "valid_to",
+            "recorded_at",
+            "reason",
+        )
+
+        migrated
+            .query(
+                "SELECT object_type, geometry_type FROM spatial_object WHERE id = 'spatialobject_test_v27'",
+            ).use { cursor ->
+                assertTrue("v27 spatial_object row must survive migration", cursor.moveToFirst())
+                assertEquals("fence", cursor.getString(0))
+                assertEquals("polygon", cursor.getString(1))
             }
 
         migrated.close()

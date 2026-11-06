@@ -40,6 +40,7 @@ import com.mytuin.gardenplanner.data.dao.RotationGroupDao
 import com.mytuin.gardenplanner.data.dao.SoilRecordDao
 import com.mytuin.gardenplanner.data.dao.SourceDao
 import com.mytuin.gardenplanner.data.dao.SpatialObjectDao
+import com.mytuin.gardenplanner.data.dao.SpatialObjectHistoryDao
 import com.mytuin.gardenplanner.data.dao.UserDecisionDao
 import com.mytuin.gardenplanner.data.entities.ActivityEntity
 import com.mytuin.gardenplanner.data.entities.AreaEntity
@@ -78,9 +79,10 @@ import com.mytuin.gardenplanner.data.entities.RotationGroupEntity
 import com.mytuin.gardenplanner.data.entities.SoilRecordEntity
 import com.mytuin.gardenplanner.data.entities.SourceEntity
 import com.mytuin.gardenplanner.data.entities.SpatialObjectEntity
+import com.mytuin.gardenplanner.data.entities.SpatialObjectHistoryEntity
 import com.mytuin.gardenplanner.data.entities.UserDecisionEntity
 
-const val GARDEN_DATABASE_VERSION: Int = 27
+const val GARDEN_DATABASE_VERSION: Int = 28
 
 /**
  * The V1 Room database.
@@ -114,6 +116,7 @@ const val GARDEN_DATABASE_VERSION: Int = 27
  *   v26 — adds Experiment, ExperimentLink and InboxItem (Phase 1 step 7).
  *   v27 — Plant §41 completion (fertility_requirement, toxicity scalars and three multi-value kinds),
  *         Measurement.source_id, Problem.priority (Phase 1 wrap-up step 8).
+ *   v28 — adds spatial_object_history companion table (Phase 2 step 9g, DEC-051).
  *
  * All migrations are @AutoMigration. Room derives the SQL from the
  * schema diff at compile time.
@@ -127,6 +130,7 @@ const val GARDEN_DATABASE_VERSION: Int = 27
         GardenPlantPreferenceEntity::class,
         AreaEntity::class,
         SpatialObjectEntity::class,
+        SpatialObjectHistoryEntity::class,
         GrowingSpaceEntity::class,
         GrowingSpaceHistoryEntity::class,
         PlantEntity::class,
@@ -189,6 +193,7 @@ const val GARDEN_DATABASE_VERSION: Int = 27
         AutoMigration(from = 24, to = 25),
         AutoMigration(from = 25, to = 26),
         AutoMigration(from = 26, to = 27),
+        AutoMigration(from = 27, to = 28),
     ],
 )
 @TypeConverters(VocabularyConverters::class)
@@ -200,6 +205,8 @@ abstract class GardenDatabase : RoomDatabase() {
     abstract fun areaDao(): AreaDao
 
     abstract fun spatialObjectDao(): SpatialObjectDao
+
+    abstract fun spatialObjectHistoryDao(): SpatialObjectHistoryDao
 
     abstract fun growingSpaceDao(): GrowingSpaceDao
 

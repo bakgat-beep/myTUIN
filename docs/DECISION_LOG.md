@@ -2408,3 +2408,34 @@ docs/V1_SCREEN_SPECIFICATION.md §7, §79
 
 **Supersedes**
 No earlier decision. This is the first formal record of the online basemap choice.
+
+---
+
+**DEC-051 — SpatialObject geometry history via companion table**
+Date: November 2026
+Status: Accepted
+Area: Data / Architecture
+
+**Decision**
+SpatialObject gains a companion history table spatial_object_history (schema v28), following the DEC-041 pattern already used for GrowingSpace and PlantInstance. Geometry changes on a SpatialObject write the prior state to the history table in the same transaction as the current-state update. History is append-only. The user explicitly authorised this in the 9g pre-code statement.
+
+**Rationale**
+9g enables map editing of both growing spaces and spatial objects. Growing-space edits already write history via GrowingSpaceRepository.updateGeometry. Editing spatial-object geometry without equivalent history would create two ways to change a shape — one historical, one not — undermining DEC-041's consistency. Adding the companion table now, while the schema bump is small (one new table, no column changes), is cheaper than adding it after production data exists.
+
+**Consequences**
+- GARDEN_DATABASE_VERSION = 28.
+- AutoMigration(from = 27, to = 28).
+- SpatialObjectHistoryEntity, SpatialObjectHistoryDao, SpatialObjectHistoryRepository, SpatialObjectHistoryRepositoryImpl added, mirroring the growing-space equivalents minus dimension columns (SpatialObject has none).
+- SpatialObjectDao.updateGeometry query added.
+- SpatialObjectRepository.updateGeometry(id, newGeometry, effectiveAt, reason) added. Note the signature difference from growing spaces: newGeometry is non-null because SpatialObject.geometry is required (A5).
+- UpdateSpatialObjectGeometry use case added.
+- IdGenerator.newSpatialObjectHistoryId() added; UuidIdGenerator implements it.
+- SpatialObjectRepositoryImpl gains db, spatialObjectHistoryDao, idGenerator constructor parameters. All construction sites must update.
+
+**Related documents**
+docs/DECISION_LOG.md DEC-041
+docs/V1_DATABASE_SCHEMA.md §14, §15
+docs/DATA_MODEL.md §9
+
+**Supersedes**
+No earlier decision. This extends DEC-041 to a third state entity.

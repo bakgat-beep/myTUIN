@@ -269,4 +269,13 @@
     <string name="garden_map_no_geometries_description">Add a growing space or garden object with geometry to see it on the map.</string>
     <string name="garden_map_error">We couldn\'t load the garden map.</string>
     <string name="garden_map_recentre_action">Re-centre map</string>
+
+    <!-- Map editor (9g) -->
+    <string name="map_editor_delete_action">Delete</string>
+    <string name="map_editor_undo_action">Undo</string>
+    <string name="map_editor_mode_select">Select</string>
+    <string name="map_editor_mode_draw">Draw</string>
+    <string name="map_editor_close_ring_action">Save outline</string>
+    <string name="map_editor_clear_vertices_action">Clear</string>
+    <string name="map_editor_cancel_draw_action">Cancel</string>
 </resources>

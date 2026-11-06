@@ -59,6 +59,7 @@ object GardenMapFeatures {
         return Feature
             .fromGeometry(geometry)
             .apply {
+                addStringProperty(MapLibreStyleConstants.PROP_SHAPE_ID, shape.id)
                 addStringProperty(MapLibreStyleConstants.PROP_FILL_COLOR, style.fillColor)
                 addNumberProperty(MapLibreStyleConstants.PROP_FILL_OPACITY, style.fillOpacity.toDouble())
                 addStringProperty(MapLibreStyleConstants.PROP_STROKE_COLOR, style.strokeColor)

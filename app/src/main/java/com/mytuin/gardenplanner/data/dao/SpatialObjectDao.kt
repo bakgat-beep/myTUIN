@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import com.mytuin.gardenplanner.data.entities.SpatialObjectEntity
+import com.mytuin.gardenplanner.domain.vocabulary.GeometryType
 import com.mytuin.gardenplanner.domain.vocabulary.InfrastructureType
 import com.mytuin.gardenplanner.domain.vocabulary.RecordStatus
 import kotlinx.coroutines.flow.Flow
@@ -53,11 +54,6 @@ interface SpatialObjectDao {
 
     /**
      * Updates the mutable scalar fields only (Step 9e).
-     *
-     * Geometry is deliberately excluded: geometry changes on
-     * SpatialObject would require a companion history table per
-     * DEC-041, which 9i owns. status is excluded: status changes
-     * go through updateStatus (archive/restore).
      */
     @Query(
         """
@@ -78,6 +74,30 @@ interface SpatialObjectDao {
         description: String?,
         areaId: String?,
         notes: String?,
+        updatedAt: Long,
+    ): Int
+
+    /**
+     * Updates only the geometry columns (Step 9g).
+     *
+     * The caller (SpatialObjectRepositoryImpl.updateGeometry) writes
+     * the prior state to spatial_object_history in the same
+     * transaction, per DEC-041 / DEC-051. Scalar fields and status
+     * are deliberately excluded from this query.
+     */
+    @Query(
+        """
+        UPDATE spatial_object
+        SET geometry_type = :geometryType,
+            geometry_data = :geometryData,
+            updated_at = :updatedAt
+        WHERE id = :id
+        """,
+    )
+    suspend fun updateGeometry(
+        id: String,
+        geometryType: GeometryType,
+        geometryData: String,
         updatedAt: Long,
     ): Int
 }

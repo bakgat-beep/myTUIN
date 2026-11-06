@@ -23,6 +23,8 @@ interface IdGenerator {
 
     fun newSpatialObjectId(): String
 
+    fun newSpatialObjectHistoryId(): String
+
     fun newPlantInstanceId(): String
 
     fun newPlantInstanceHistoryId(): String
